@@ -1,7 +1,14 @@
-import { Text, View } from "react-native";
+import { useState } from "react";
+import { Pressable, Text, View } from "react-native";
+import { Contador } from "@/components/Contador";
 
 export default function Index() {
+
+    
+  
   return (
+
+
     <View
       style={{
         flex: 1,
@@ -9,7 +16,7 @@ export default function Index() {
         alignItems: "center",
       }}
     >
-      <Text>Edit app/index.tsx to edit this screen.</Text>
+    <Contador />
     </View>
   );
 }
