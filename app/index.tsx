@@ -1,14 +1,12 @@
 import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { Contador } from "@/components/Contador";
+import Tarjeta from "@/components/Tarjeta";
 
 export default function Index() {
-
-    
-  
   return (
 
-
+    
     <View
       style={{
         flex: 1,
@@ -17,6 +15,7 @@ export default function Index() {
       }}
     >
     <Contador />
+    <Tarjeta/>
     </View>
   );
 }
