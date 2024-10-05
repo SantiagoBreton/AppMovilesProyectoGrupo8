@@ -1,6 +1,7 @@
+// src/screens/RootLayout.tsx
 import { Tabs } from "expo-router";
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
-
+import Prueba from "./prueba";
 
 export default function RootLayout() {
   return (
@@ -27,7 +28,7 @@ export default function RootLayout() {
         <FontAwesome5 name="plus" size={size} color={color} />
         ),
       }}name="creacion_evento" /> 
+      
     </Tabs>
-    
   );
 }
