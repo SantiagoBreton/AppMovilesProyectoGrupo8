@@ -1,5 +1,5 @@
 import React from 'react';
-import MapView, { Marker, Callout } from 'react-native-maps';
+import MapView, { Marker, Callout, Circle } from 'react-native-maps';
 import { StyleSheet, View, Text } from 'react-native';
 import { useEffect, useState } from 'react';
 import * as Location from 'expo-location';
@@ -28,8 +28,8 @@ export default function Index() {
         id: 1,
         title: 'Evento ',
         description: ' sin control, no se permiten mujeres ni  (opcional), por favor traer facturas',
-        latitude: location.coords.latitude ,
-        longitude: location.coords.longitude ,
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
       };
 
       setEvents([eventNearby]);
@@ -37,11 +37,11 @@ export default function Index() {
       setLoading(false);
     })();
   }, []);
-  
+
   if (loading) {
     return <ActivityIndicator size="large" color="#0000ff" />;
   }
-  
+
   return (
     <View style={styles.container}>
       {location && (
@@ -66,17 +66,28 @@ export default function Index() {
           ]}
         >
           {events.map(event => (
-            <Marker
-              key={event.id}
-              coordinate={{ latitude: event.latitude, longitude: event.longitude }}
-            >
-              <Callout>
-                <View>
-                  <Text style={styles.title}>{event.title}</Text>
-                  <Text>{event.description}</Text>
-                </View>
-              </Callout>
-            </Marker>
+            <React.Fragment key={event.id}>
+              <Marker
+                key={`marker-${event.id}`} // Unique key for Marker
+                coordinate={{ latitude: event.latitude, longitude: event.longitude }}
+              >
+                <Callout>
+                  <View>
+                    <Text style={styles.title}>{event.title}</Text>
+                    <Text>{event.description}</Text>
+                  </View>
+                </Callout>
+              </Marker>
+              {/* Circle to represent the area */}
+              <Circle
+                key={`circle-${event.id}`} // Unique key for Circle
+                center={{ latitude: event.latitude, longitude: event.longitude }}
+                radius={500} // Radius in meters, adjust for your needs
+                strokeColor="rgba(0, 255, 0, 0.5)" // Outline color
+                fillColor="rgba(0, 255, 0, 0.2)" // Fill color with transparency
+                strokeWidth={2}
+              />
+            </React.Fragment>
           ))}
         </MapView>
       )}
