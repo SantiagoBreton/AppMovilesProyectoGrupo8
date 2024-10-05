@@ -1,7 +1,7 @@
 // src/screens/RootLayout.tsx
 import { Tabs } from "expo-router";
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
-import Prueba from "./prueba";
+
 
 export default function RootLayout() {
   return (
