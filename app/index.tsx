@@ -1,9 +1,8 @@
 import React from 'react';
 import MapView, { Marker, Callout, Circle } from 'react-native-maps';
-import { StyleSheet, View, Text } from 'react-native';
+import { StyleSheet, View, Text, ActivityIndicator } from 'react-native';
 import { useEffect, useState } from 'react';
 import * as Location from 'expo-location';
-import { ActivityIndicator } from 'react-native';
 
 export default function Index() {
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
@@ -67,21 +66,28 @@ export default function Index() {
         >
           {events.map(event => (
             <React.Fragment key={event.id}>
-              <Marker
-                key={`marker-${event.id}`} // Unique key for Marker
-                coordinate={{ latitude: event.latitude, longitude: event.longitude }}
-              >
+                <Marker
+                coordinate={{
+                  latitude: event.latitude + (Math.random() - 0.5) * (500 / 111000),
+                  longitude: event.longitude + (Math.random() - 0.5) * (500 / (111000 * Math.cos(event.latitude * (Math.PI / 180)))),
+                }}
+                
+                image={require('../assets/images/react-logo.png')}
+                >
                 <Callout>
                   <View>
-                    <Text style={styles.title}>{event.title}</Text>
-                    <Text>{event.description}</Text>
+                  <Text style={styles.title}>{event.title}</Text>
+                  <Text>{event.description}</Text>
                   </View>
                 </Callout>
-              </Marker>
-              {/* Circle to represent the area */}
+                </Marker>
               <Circle
-                key={`circle-${event.id}`} // Unique key for Circle
-                center={{ latitude: event.latitude, longitude: event.longitude }}
+                key={`circle-${event.id}`} 
+                //center={{ latitude: event.latitude, longitude: event.longitude }}
+                center={{
+                  latitude: event.latitude + (Math.random() - 0.5) * (500 / 111000),
+                  longitude: event.longitude + (Math.random() - 0.5) * (500 / (111000 * Math.cos(event.latitude * (Math.PI / 180)))),
+                }}
                 radius={500} // Radius in meters, adjust for your needs
                 strokeColor="rgba(0, 255, 0, 0.5)" // Outline color
                 fillColor="rgba(0, 255, 0, 0.2)" // Fill color with transparency
