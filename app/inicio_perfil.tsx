@@ -5,22 +5,57 @@ export default function InicioPerfil() {
     const [isLogin, setIsLogin] = useState(true);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
+    const [userName, setUsername] = useState('');
     
     // separo los values de las animatciones para cada input
     const emailAnimation = useState(new Animated.Value(1))[0];
     const passwordAnimation = useState(new Animated.Value(1))[0];
     const confirmPasswordAnimation = useState(new Animated.Value(1))[0];
 
+    interface User {
+        email: string;
+        password: string;
+        userName: string;
+    };
+
     const handleAuth = () => {
         if (isLogin) {
             console.log('Iniciar sesión con', email, password);
         } else {
-            if (password === confirmPassword) {
+            if (password === password) {
                 console.log('Registrar con', email, password);
             } else {
                 console.log('Las contraseñas no coinciden');
             }
+        }
+    };
+
+
+
+
+    const createNewUser = async function createUser() {
+        const user: User = {
+            email: email,
+            password: password,
+            userName: userName,
+        };
+        try {
+            const response = await fetch('http://localhost:3030/createUser', {
+                method: 'POST',
+                headers: {
+                'Content-Type': 'application/json',
+                },
+            body: JSON.stringify(user),
+        });
+       
+        if (!response.ok) {
+            throw new Error('Failed to create user');
+        }
+       
+        const newUser = await response.json();
+        console.log('User created:', newUser);
+        } catch (error) {
+        console.error('Error creating user:', error);
         }
     };
 
@@ -69,20 +104,21 @@ export default function InicioPerfil() {
                     />
                 </Animated.View>
                 {!isLogin && (
+                    
                     <Animated.View style={{ transform: [{ scale: confirmPasswordAnimation }] }}>
                         <TextInput
                             style={styles.input}
-                            placeholder="Confirmar Contraseña"
-                            value={confirmPassword}
-                            onChangeText={setConfirmPassword}
+                            placeholder="Nombre De Usuario"
+                            value={userName}
+                            onChangeText={setUsername}
                             secureTextEntry
                             placeholderTextColor="#A9A9A9"
                             onFocus={() => bounceAnimation(confirmPasswordAnimation)} // bouncea inpt
                         />
                     </Animated.View>
                 )}
-                <TouchableOpacity style={styles.button} onPress={handleAuth}>
-                    <Text style={styles.buttonText}>{isLogin ? 'Iniciar Sesión' : 'Registrar'}</Text>
+                <TouchableOpacity style={styles.button} onPress={createNewUser}>
+                    <Text style={styles.buttonText }>{isLogin ? 'Iniciar Sesión' : 'Registrar'}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => setIsLogin(!isLogin)}>
                     <Text style={styles.toggleText}>
