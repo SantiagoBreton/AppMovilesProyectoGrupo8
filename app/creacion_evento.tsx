@@ -14,6 +14,7 @@ export default function CreacionEvento() {
     const [selectedLocation, setSelectedLocation] = useState<{ latitude: number; longitude: number } | null>(null);
     const [initialRegion, setInitialRegion] = useState<Region | null>(null);
     const [selectedDate, setSelectedDate] = useState(new Date());
+    const [maxParticipants, setMaxParticipants] = useState(0);
 
     useEffect(() => {
         (async () => {
@@ -55,6 +56,11 @@ export default function CreacionEvento() {
         setModalVisible(false);
     };
 
+    const handleMaxParticipantsChange = (text: string) => {
+        const numericValue = parseInt(text, 10);
+        setMaxParticipants(isNaN(numericValue) ? 0 : numericValue);
+    };
+
     return (
         <ScrollView style={styles.container}>
             <Text style={styles.title}>Crear Evento</Text>
@@ -76,6 +82,17 @@ export default function CreacionEvento() {
                     onChangeText={setDescripcion}
                     placeholder="Ingrese la descripción del evento"
                     placeholderTextColor="#A9A9A9"
+                />
+            </View>
+            <View style={styles.section}>
+                <Text style={styles.label}>Numero Maximo De Participantes</Text>
+                <TextInput
+                    style={styles.input}
+                    value={maxParticipants.toString()} // Convert the number to a string for TextInput
+                    onChangeText={handleMaxParticipantsChange}
+                    placeholder="Ingrese el número máximo de participantes"
+                    placeholderTextColor="#A9A9A9"
+                    keyboardType="numeric" // This shows a numeric keyboard for input
                 />
             </View>
             <View style={styles.section}>
