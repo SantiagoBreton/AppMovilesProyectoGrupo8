@@ -3,6 +3,7 @@ import { View, Text, TextInput, Button, StyleSheet, ScrollView, Modal, Alert, To
 import * as Location from 'expo-location';
 import MapView, { Marker, Region } from 'react-native-maps';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { Float } from 'react-native/Libraries/Types/CodegenTypes';
 
 export default function CreacionEvento() {
     const [titulo, setTitulo] = useState('');
@@ -15,6 +16,21 @@ export default function CreacionEvento() {
     const [initialRegion, setInitialRegion] = useState<Region | null>(null);
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [maxParticipants, setMaxParticipants] = useState(0);
+    const [selectedLatitude, setLatitude] = useState<number | null>(null);
+    const [selectedLongitude, setLongitude] = useState<number | null>(null);
+
+
+    interface Event {
+        name: String;
+        date: Date;
+        latitude: Float;
+        longitude: Float;
+        description: String;
+        maxParticipants: number;
+        currentParticipants: number;
+        userId: number;
+    };
+
 
     useEffect(() => {
         (async () => {
@@ -34,9 +50,6 @@ export default function CreacionEvento() {
         })();
     }, []);
 
-    const handleCrearEvento = () => {
-        console.log('Evento creado:', { titulo, descripcion, fecha, selectedLocation });
-    };
 
     const showDatePicker = () => {
         setDatePickerVisible(true);
@@ -52,6 +65,8 @@ export default function CreacionEvento() {
     const handleMapPress = (event: { nativeEvent: { coordinate: { latitude: number; longitude: number; }; }; }) => {
         const { latitude, longitude } = event.nativeEvent.coordinate;
         setSelectedLocation({ latitude, longitude });
+        setLatitude(latitude);
+        setLongitude(longitude);
         setUbicacion(`${latitude},${longitude}`);
         setModalVisible(false);
     };
@@ -60,6 +75,46 @@ export default function CreacionEvento() {
         const numericValue = parseInt(text, 10);
         setMaxParticipants(isNaN(numericValue) ? 0 : numericValue);
     };
+
+
+    const createEvent = async function createEvent() {
+        const event: Event = {
+            name: titulo,
+            date: selectedDate,
+            latitude: selectedLatitude ?? 0,
+            longitude: selectedLongitude ?? 0,
+            description: descripcion,
+            maxParticipants: maxParticipants,
+            currentParticipants: 0,
+            userId: 1
+        };
+        try {
+            const response = await fetch('http://192.168.0.212:3000/createEvent', {
+                method: 'POST',
+                headers: {
+                'Content-Type': 'application/json',
+                },
+            body: JSON.stringify(event),
+        });
+       
+        if (!response.ok) {
+            throw new Error('Failed to create event');
+        }
+       
+        const newEvent = await response.json();
+        console.log('User created:', newEvent);
+        } catch (error) {
+        console.error('Error creating user:', error);
+        }
+    };
+
+
+
+
+
+
+
+
 
     return (
         <ScrollView style={styles.container}>
@@ -126,7 +181,7 @@ export default function CreacionEvento() {
                 />
                 <Button title="Seleccionar en el mapa" onPress={() => setModalVisible(true)} color="#FF7F50" />
             </View>
-            <Button title="Crear Evento" onPress={handleCrearEvento} color="#FF7F50" />
+            <Button title="Crear Evento" onPress={createEvent} color="#FF7F50" />
 
             <Modal visible={modalVisible} animationType="slide">
                 {initialRegion ? (
