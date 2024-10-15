@@ -15,7 +15,7 @@ export default function InicioPerfil() {
     interface User {
         email: string;
         password: string;
-        userName: string;
+        name: string;
     };
 
     const handleAuth = () => {
@@ -37,10 +37,10 @@ export default function InicioPerfil() {
         const user: User = {
             email: email,
             password: password,
-            userName: userName,
+            name: userName,
         };
         try {
-            const response = await fetch('http://localhost:3030/createUser', {
+            const response = await fetch('http://192.168.0.212:3000/createUser', {
                 method: 'POST',
                 headers: {
                 'Content-Type': 'application/json',
