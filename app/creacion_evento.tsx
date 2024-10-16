@@ -89,7 +89,7 @@ export default function CreacionEvento() {
             userId: 1
         };
         try {
-            const response = await fetch('http://192.168.0.212:3000/createEvent', {
+            const response = await fetch('http://172.29.133.131:3000/createEvent', {
                 method: 'POST',
                 headers: {
                 'Content-Type': 'application/json',

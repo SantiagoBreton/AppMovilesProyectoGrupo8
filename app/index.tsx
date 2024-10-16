@@ -1,20 +1,27 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import MapView, { Marker, Callout, Circle } from 'react-native-maps';
 import { StyleSheet, View, Text, ActivityIndicator } from 'react-native';
-import { useEffect, useState } from 'react';
 import * as Location from 'expo-location';
 
 export default function Index() {
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
   const [loading, setLoading] = useState(true);
-  const [events, setEvents] = useState([
-    // Simulación de eventos con coordenadas e información
-    { id: 1, title: 'Evento', description: 'sin control, no se permiten mujeres ni , por favor traer facturas', latitude: 37.78825, longitude: -122.4324 },
-    { id: 2, title: 'Evento no , mas bien ', description: 'tiro al blanco con chinos, utilizamos chinos para tiro al blanco, aunque sean amarillos', latitude: 37.78925, longitude: -122.4354 },
-  ]);
+  const [events, setEvents] = useState<Event[]>([]);
+
+  interface Event {
+    id: number,
+    name: string,
+    date: Date,
+    latitude: number,
+    longitude: number,
+    description: string,
+    maxParticipants: number,
+    currentParticipants: number,
+    userId: number
+  }
 
   useEffect(() => {
-    (async () => {
+    const fetchLocationAndEvents = async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
         console.log('Permission to access location was denied');
@@ -22,19 +29,31 @@ export default function Index() {
       }
 
       let location = await Location.getCurrentPositionAsync({});
-
-      const eventNearby = {
-        id: 1,
-        title: 'Evento ',
-        description: ' sin control, no se permiten mujeres ni  (opcional), por favor traer facturas',
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
-      };
-
-      setEvents([eventNearby]);
       setLocation(location);
+
+      // Fetch events from the server
+      try {
+        const response = await fetch('http://172.29.133.131:3000/getEvents', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to get events');
+        }
+
+        const fetchedEvents = await response.json();
+        setEvents(fetchedEvents); // Set the fetched events to state
+      } catch (error) {
+        console.error('Error fetching events:', error);
+      }
+
       setLoading(false);
-    })();
+    };
+
+    fetchLocationAndEvents();
   }, []);
 
   if (loading) {
@@ -66,31 +85,29 @@ export default function Index() {
         >
           {events.map(event => (
             <React.Fragment key={event.id}>
-                <Marker
+              <Marker
                 coordinate={{
                   latitude: event.latitude + (Math.random() - 0.5) * (500 / 111000),
                   longitude: event.longitude + (Math.random() - 0.5) * (500 / (111000 * Math.cos(event.latitude * (Math.PI / 180)))),
                 }}
-                
                 image={require('../assets/images/react-logo.png')}
-                >
+              >
                 <Callout>
                   <View>
-                  <Text style={styles.title}>{event.title}</Text>
-                  <Text>{event.description}</Text>
+                    <Text style={styles.title}>{event.name}</Text>
+                    <Text>{event.description}</Text>
                   </View>
                 </Callout>
-                </Marker>
+              </Marker>
               <Circle
                 key={`circle-${event.id}`} 
-                //center={{ latitude: event.latitude, longitude: event.longitude }}
                 center={{
                   latitude: event.latitude + (Math.random() - 0.5) * (500 / 111000),
                   longitude: event.longitude + (Math.random() - 0.5) * (500 / (111000 * Math.cos(event.latitude * (Math.PI / 180)))),
                 }}
-                radius={500} // Radius in meters, adjust for your needs
-                strokeColor="rgba(0, 255, 0, 0.5)" // Outline color
-                fillColor="rgba(0, 255, 0, 0.2)" // Fill color with transparency
+                radius={500}
+                strokeColor="rgba(0, 255, 0, 0.5)"
+                fillColor="rgba(0, 255, 0, 0.2)"
                 strokeWidth={2}
               />
             </React.Fragment>

@@ -40,7 +40,7 @@ export default function InicioPerfil() {
             name: userName,
         };
         try {
-            const response = await fetch('http://192.168.0.212:3000/createUser', {
+            const response = await fetch('http://172.29.133.131:3000/createUser', {
                 method: 'POST',
                 headers: {
                 'Content-Type': 'application/json',
