@@ -9,6 +9,7 @@ import { SERVER_IP } from '@env';
 import { useLocation } from '../hooks/useLocation';
 import { allEvents } from '@/services/allEvents';
 import { myEvents } from '@/services/myEvents';
+import { deleteEventById } from '@/services/deleteEventById';
 
 
 export default function CreacionEvento() {
@@ -103,44 +104,65 @@ export default function CreacionEvento() {
         setSelectedView(view);
     };
     
+    const handleEventPress = (event: { name: any; description: any; }) => {
+        // Aquí puedes navegar a la pantalla de detalles del evento
+        Alert.alert('Detalles del Evento', `Nombre: ${event.name}\nDescripción: ${event.description}`);
+    };
+    const handleEditEvent = (eventId: any) => {
+        // Aquí iría la lógica para editar el evento
+        Alert.alert('Editar Evento', `Editar el evento con id: ${eventId}`);
+    };
+    const handleDeleteEvent = (eventId: any) => {
+        deleteEventById(eventId)
+        Alert.alert('Eliminar Evento', `Eliminar el evento con id: ${eventId}`);
+    };
 
     return (
         <View style={styles.container}>
-             <Text style={styles.header}>Mis Eventos</Text>
+              <Text style={styles.header}>Mis Eventos</Text>
 
-                    {/* Botones para cambiar la vista */}
-                    <View style={styles.buttonContainer}>
-                        <View style={styles.buttonWrapper}>
-                            <Button
-                                title="Eventos a los que me Inscribí"
-                                onPress={() => switchView('inscritos')}
-                                color={selectedView === 'inscritos' ? '#FF7F50' : '#000'}
-                            />
-                        </View>
-                        <View style={styles.buttonWrapper}>
-                            <Button
-                                title="Mis Eventos Creados"
-                                onPress={() => switchView('creados')}
-                                color={selectedView === 'creados' ? '#FF7F50' : '#000'}
-                            />
-                        </View>
+                {/* Botones para cambiar la vista */}
+                <View style={styles.buttonContainer}>
+                    <View style={styles.buttonWrapper}>
+                        <Button
+                            title="Eventos a los que me Inscribí"
+                            onPress={() => switchView('inscritos')}
+                            color={selectedView === 'inscritos' ? '#FF7F50' : '#000'}
+                        />
                     </View>
+                    <View style={styles.buttonWrapper}>
+                        <Button
+                            title="Mis Eventos Creados"
+                            onPress={() => switchView('creados')}
+                            color={selectedView === 'creados' ? '#FF7F50' : '#000'}
+                        />
+                    </View>
+                </View>
 
-                    {/* Lista de eventos */}
-                    <FlatList
-                        data={eventsToDisplay}
-                        renderItem={({ item }) => (
-                            <View style={styles.eventCard}>
-                                <Text style={styles.eventName}>{item.name}</Text>
-                                <Text>
-                                    {/* Safely parse the date and display it */}
-                                    {item.date ? new Date(item.date).toLocaleDateString() : 'Fecha no disponible'}
-                                </Text>
-                                <Text>{item.description}</Text>
-                            </View>
-                        )}
-                        keyExtractor={(item) => item.id.toString()}
-                    />
+                {/* Lista de eventos */}
+                <FlatList
+                    data={eventsToDisplay}
+                    renderItem={({ item }) => (
+                        <TouchableOpacity
+                            style={styles.eventCard}
+                            onPress={() => handleEventPress(item)}
+                        >
+                            <Text style={styles.eventName}>{item.name}</Text>
+                            <Text>
+                                {item.date ? new Date(item.date).toLocaleDateString() : 'Fecha no disponible'}
+                            </Text>
+                            <Text>{item.description}</Text>
+
+                            {item.userId === 1 && (
+                                <View style={styles.actionButtons}>
+                                    <Button title="Editar" onPress={() => handleEditEvent(item.id)} />
+                                    <Button title="Eliminar" onPress={() => handleDeleteEvent(item.id)} />
+                                </View>
+                            )}
+                        </TouchableOpacity>
+                    )}
+                    keyExtractor={(item) => item.id.toString()}
+                />
 
 
                 {/* Botón para abrir el modal de creación de evento */}
@@ -284,6 +306,11 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         marginBottom: 20,
         color: '#FF7F50',
+    },
+    actionButtons: {
+        marginTop: 10,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
     },
     eventCard: {
         padding: 15,
