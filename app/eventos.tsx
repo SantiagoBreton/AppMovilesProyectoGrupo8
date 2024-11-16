@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Button, StyleSheet, FlatList, Modal, TextInput, ScrollView, TouchableOpacity, Alert, Platform } from 'react-native';
 
-import * as Location from 'expo-location';
+
 import MapView, { Marker, Region } from 'react-native-maps';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Float } from 'react-native/Libraries/Types/CodegenTypes';
 import { SERVER_IP } from '@env';
 import { useLocation } from '../hooks/useLocation';
-import { useEvents } from '../hooks/useAllEvents';
+import { allEvents } from '@/services/allEvents';
+import { myEvents } from '@/services/myEvents';
 
 
 export default function CreacionEvento() {
@@ -26,9 +27,9 @@ export default function CreacionEvento() {
     const [selectedView, setSelectedView] = useState('inscritos'); // 'inscritos' o 'creados'
 
     const { location, locationError } = useLocation();
-    const { events, loading, eventsError } = useEvents();
-
-    const eventsToDisplay = selectedView === 'inscritos' ? events : null;
+    const  allevents  = allEvents();
+    const  myUserEvents = myEvents(1); // Call myEvents and store the result directly in the variable
+    const eventsToDisplay = selectedView === 'inscritos' ? allevents.events : myUserEvents.myEvents;
     
     interface Event {
         name: String;

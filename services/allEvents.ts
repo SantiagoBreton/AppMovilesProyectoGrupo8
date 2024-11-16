@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { SERVER_IP } from '@env';
 
-export const useEvents = () => {
+export const allEvents = () => {
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [eventsError, setEventsError] = useState<string | null>(null);

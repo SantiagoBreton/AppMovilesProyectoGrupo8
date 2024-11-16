@@ -2,11 +2,11 @@ import React from 'react';
 import { StyleSheet, View, Text, ActivityIndicator } from 'react-native';
 import MapView, { Marker,Callout, Circle } from 'react-native-maps';
 import { useLocation } from '../hooks/useLocation';
-import { useEvents } from '../hooks/useAllEvents';
+import { allEvents } from '@/services/allEvents';
 
 export default function Index() {
   const { location, locationError } = useLocation();
-  const { events, loading, eventsError } = useEvents();
+  const { events, loading, eventsError } = allEvents();
 
   if (loading) {
     return <ActivityIndicator size="large" color="#0000ff" />;
