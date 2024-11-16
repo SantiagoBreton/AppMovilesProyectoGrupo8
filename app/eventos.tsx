@@ -21,7 +21,8 @@ export default function CreacionEvento() {
     const [maxParticipants, setMaxParticipants] = useState(0);
     const [selectedLatitude, setLatitude] = useState<number | null>(null);
     const [selectedLongitude, setLongitude] = useState<number | null>(null);
-    const events = [
+    const [events, setEvents] = useState<EventGetter[]>([]);
+    const events1 = [
         { id: '1', name: 'Yoga Class', date: '2024-11-17', description: 'A relaxing yoga session' },
         { id: '2', name: 'Coding Bootcamp', date: '2024-11-20', description: 'A coding bootcamp for beginners' }
     ];
@@ -36,25 +37,61 @@ export default function CreacionEvento() {
         currentParticipants: number;
         userId: number;
     };
+    interface EventGetter {
+        id: number,
+        name: string,
+        date: Date,
+        latitude: number,
+        longitude: number,
+        description: string,
+        maxParticipants: number,
+        currentParticipants: number,
+        userId: number
+    }
 
 
     useEffect(() => {
-        (async () => {
-            const { status } = await Location.requestForegroundPermissionsAsync();
-            if (status !== 'granted') {
-                Alert.alert('Permiso denegado', 'La aplicación necesita acceso a tu ubicación para funcionar.');
-                return;
+        const fetchData = async () => {
+            try {
+                // Request location permissions
+                const { status } = await Location.requestForegroundPermissionsAsync();
+                if (status !== 'granted') {
+                    Alert.alert('Permiso denegado', 'La aplicación necesita acceso a tu ubicación para funcionar.');
+                    return;
+                }
+    
+                // Get current location
+                const location = await Location.getCurrentPositionAsync({});
+                setInitialRegion({
+                    latitude: location.coords.latitude,
+                    longitude: location.coords.longitude,
+                    latitudeDelta: 0.01,
+                    longitudeDelta: 0.01,
+                });
+    
+                // Fetch events
+                const response = await fetch(`http://${SERVER_IP}:3000/getEvents`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+    
+                if (!response.ok) {
+                    throw new Error('Failed to get events');
+                }
+    
+                const fetchedEvents = await response.json();
+                setEvents(fetchedEvents); // Update state with fetched events
+            } catch (error) {
+                console.error('Error fetching events:', error);
+                Alert.alert('Error', 'Hubo un problema al obtener los eventos. Por favor, intenta más tarde.');
             }
-
-            const location = await Location.getCurrentPositionAsync({});
-            setInitialRegion({
-                latitude: location.coords.latitude,
-                longitude: location.coords.longitude,
-                latitudeDelta: 0.01,
-                longitudeDelta: 0.01,
-            });
-        })();
-    }, []);
+        };
+    
+        fetchData();
+    }, []); // Empty dependency array to run only once on component mount
+    
 
 
     const showDatePicker = () => {
@@ -122,16 +159,20 @@ export default function CreacionEvento() {
 
                 {/* Lista de eventos actuales */}
                 <FlatList
-                    data={events}
+                    data={events} // Pass events state here
                     renderItem={({ item }) => (
                         <View style={styles.eventCard}>
                             <Text style={styles.eventName}>{item.name}</Text>
-                            <Text>{item.date}</Text>
+                            <Text>
+                                {/* Safely parse the date and display it */}
+                                {item.date ? new Date(item.date).toLocaleDateString() : 'Fecha no disponible'}
+                            </Text>
                             <Text>{item.description}</Text>
                         </View>
                     )}
-                    keyExtractor={(item) => item.id}
+                    keyExtractor={(item) => item.id.toString()} // Assuming each item has a unique 'id' property
                 />
+
 
                 {/* Botón para abrir el modal de creación de evento */}
                 <Button
