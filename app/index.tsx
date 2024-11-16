@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import MapView, { Marker, Callout, Circle } from 'react-native-maps';
 import { StyleSheet, View, Text, ActivityIndicator } from 'react-native';
 import * as Location from 'expo-location';
+import { SERVER_IP } from '@env';
 
 export default function Index() {
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
@@ -33,7 +34,7 @@ export default function Index() {
 
       // Fetch events from the server
       try {
-        const response = await fetch('http://172.29.133.131:3000/getEvents', {
+        const response = await fetch(`http://${SERVER_IP}:3000/getEvents`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
