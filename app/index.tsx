@@ -1,88 +1,34 @@
-import React, { useEffect, useState } from 'react';
-import MapView, { Marker, Callout, Circle } from 'react-native-maps';
+import React from 'react';
 import { StyleSheet, View, Text, ActivityIndicator } from 'react-native';
-import * as Location from 'expo-location';
-import { SERVER_IP } from '@env';
+import MapView, { Marker,Callout, Circle } from 'react-native-maps';
+import { useLocation } from '../hooks/useLocation';
+import { useEvents } from '../hooks/useAllEvents';
 
 export default function Index() {
-  const [location, setLocation] = useState<Location.LocationObject | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [events, setEvents] = useState<Event[]>([]);
-
-  interface Event {
-    id: number,
-    name: string,
-    date: Date,
-    latitude: number,
-    longitude: number,
-    description: string,
-    maxParticipants: number,
-    currentParticipants: number,
-    userId: number
-  }
-
-  useEffect(() => {
-    const fetchLocationAndEvents = async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        console.log('Permission to access location was denied');
-        return;
-      }
-
-      let location = await Location.getCurrentPositionAsync({});
-      setLocation(location);
-
-      // Fetch events from the server
-      try {
-        const response = await fetch(`http://${SERVER_IP}:3000/getEvents`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to get events');
-        }
-
-        const fetchedEvents = await response.json();
-        setEvents(fetchedEvents); // Set the fetched events to state
-      } catch (error) {
-        console.error('Error fetching events:', error);
-      }
-
-      setLoading(false);
-    };
-
-    fetchLocationAndEvents();
-  }, []);
+  const { location, locationError } = useLocation();
+  const { events, loading, eventsError } = useEvents();
 
   if (loading) {
     return <ActivityIndicator size="large" color="#0000ff" />;
   }
 
+  const getRandomOffset = (latitude: number, longitude: number, radius: number) => {
+
+  }
+
   return (
     <View style={styles.container}>
+      {locationError && <Text>{locationError}</Text>}
+      {eventsError && <Text>{eventsError}</Text>}
       {location && (
         <MapView
           style={styles.map}
-          showsUserLocation={true}
           initialRegion={{
             latitude: location.coords.latitude,
             longitude: location.coords.longitude,
-            latitudeDelta: 0.005,
-            longitudeDelta: 0.005,
+            latitudeDelta: 0.0922,
+            longitudeDelta: 0.0421,
           }}
-          customMapStyle={[
-            {
-              elementType: 'geometry',
-              stylers: [{ visibility: 'simplified' }],
-            },
-            {
-              elementType: 'labels.icon',
-              stylers: [{ visibility: 'off' }],
-            },
-          ]}
         >
           {events.map(event => (
             <React.Fragment key={event.id}>
@@ -91,7 +37,6 @@ export default function Index() {
                   latitude: event.latitude + (Math.random() - 0.5) * (500 / 111000),
                   longitude: event.longitude + (Math.random() - 0.5) * (500 / (111000 * Math.cos(event.latitude * (Math.PI / 180)))),
                 }}
-                image={require('../assets/images/react-logo.png')}
               >
                 <Callout>
                   <View>

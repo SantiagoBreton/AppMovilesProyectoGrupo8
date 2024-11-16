@@ -20,6 +20,7 @@
     "@prisma/client": "^5.20.0",
     "@react-native-community/datetimepicker": "^8.2.0",
     "@react-navigation/native": "^6.0.2",
+    "@types/react-native-dotenv": "^0.2.2",
     "axios": "^1.7.7",
     "expo": "~51.0.28",
     "expo-constants": "~16.0.2",
