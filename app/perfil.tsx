@@ -1,12 +1,12 @@
 import React from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Image, ScrollView } from 'react-native';
 
-export default function Perfil () {
+export default function Perfil() {
     const [nombre, setNombre] = React.useState('');
     const [email, setEmail] = React.useState('');
 
     const handleSave = () => {
-        // Lógica para guardar la información del usuario
+        // Logic to save user information
     };
 
     return (
@@ -31,18 +31,15 @@ export default function Perfil () {
                     onChangeText={setEmail}
                 />
             </View>
-            <Button title="Guardar" onPress={handleSave} />
+            <Button title="Guardar" onPress={handleSave} color="#FF7F50" />
             <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Fotos</Text>
-                {/* Aquí puedes mapear y mostrar las fotos del usuario */}
             </View>
             <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Eventos Creados</Text>
-                {/* Aquí puedes mapear y mostrar los eventos creados por el usuario */}
             </View>
             <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Calificaciones</Text>
-                {/* Aquí puedes mapear y mostrar las calificaciones del usuario */}
             </View>
         </ScrollView>
     );
@@ -52,6 +49,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 20,
+        backgroundColor: '#ffffff',
     },
     header: {
         alignItems: 'center',
@@ -66,6 +64,7 @@ const styles = StyleSheet.create({
         fontSize: 24,
         fontWeight: 'bold',
         marginTop: 10,
+        color: '#FF7F50',
     },
     section: {
         marginBottom: 20,
@@ -73,16 +72,19 @@ const styles = StyleSheet.create({
     label: {
         fontSize: 18,
         marginBottom: 5,
+        color: '#FF7F50',
     },
     input: {
         borderWidth: 1,
-        borderColor: '#ccc',
+        borderColor: '#FF7F50',
         padding: 10,
-        borderRadius: 5,
+        borderRadius: 25,
+        backgroundColor: '#ffffff',
     },
     sectionTitle: {
         fontSize: 20,
         fontWeight: 'bold',
         marginBottom: 10,
+        color: 'black', 
     },
 });

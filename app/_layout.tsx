@@ -1,29 +1,62 @@
+// src/screens/RootLayout.tsx
 import { Tabs } from "expo-router";
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 
-
 export default function RootLayout() {
   return (
-    <Tabs>
-      <Tabs.Screen name="index" />
-      <Tabs.Screen options={{
-        tabBarIcon: ({ color, size }) => (
-        <FontAwesome5 name="user-plus" size={size} color={color} />
-        ),
+    <Tabs
+      screenOptions={{
+        tabBarActiveTintColor: '#808080', 
+        tabBarInactiveTintColor: '#ffffff', 
+        tabBarStyle: {
+          backgroundColor: '#FF7F50',
+          borderTopColor: '#FF7F50',
+        },
+        headerStyle: {
+          backgroundColor: '#FF7F50',
+        },
+        headerTintColor: '#ffffff',
+        headerTitleStyle: {
+          fontWeight: 'bold',
+        },
       }}
-      name="inicio_perfil" /> 
-      <Tabs.Screen options={{
-        tabBarIcon: ({ color, size }) => (
-        <FontAwesome5 name="user-tie" size={size} color={color} />
-        ),
-      }} name="perfil" 
+    >
+      <Tabs.Screen
+        name="index"
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <FontAwesome5 name="map" size={size} color={color} />
+          ),
+          title: 'Mapa',
+        }}
       />
-      <Tabs.Screen options={{
-        tabBarIcon: ({ color, size }) => (
-        <FontAwesome5 name="plus" size={size} color={color} />
-        ),
-      }}name="creacion_evento" /> 
+      <Tabs.Screen
+        name="inicio_perfil"
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <FontAwesome5 name="user-plus" size={size} color={color} />
+          ),
+          title: 'Inicio Perfil',
+        }}
+      />
+      <Tabs.Screen
+        name="perfil"
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <FontAwesome5 name="user-tie" size={size} color={color} />
+          ),
+          title: 'Perfil',
+        }}
+      />
+      <Tabs.Screen
+        name="creacion_evento"
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <FontAwesome5 name="plus" size={size} color={color} />
+          ),
+          title: 'Crear Evento',
+        }}
+      />
     </Tabs>
-    
   );
 }
