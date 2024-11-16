@@ -48,13 +48,14 @@ export default function RootLayout() {
           title: 'Perfil',
         }}
       />
+
       <Tabs.Screen
-        name="creacion_evento"
+        name="eventos"
         options={{
           tabBarIcon: ({ color, size }) => (
             <FontAwesome5 name="plus" size={size} color={color} />
           ),
-          title: 'Crear Evento',
+          title: 'Eventos',
         }}
       />
     </Tabs>
