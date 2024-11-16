@@ -9,6 +9,7 @@ import { SERVER_IP } from '@env';
 import { useLocation } from '../hooks/useLocation';
 import { useEvents } from '../hooks/useAllEvents';
 
+
 export default function CreacionEvento() {
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [titulo, setTitulo] = useState('');
@@ -22,10 +23,12 @@ export default function CreacionEvento() {
     const [maxParticipants, setMaxParticipants] = useState(0);
     const [selectedLatitude, setLatitude] = useState<number | null>(null);
     const [selectedLongitude, setLongitude] = useState<number | null>(null);
+    const [selectedView, setSelectedView] = useState('inscritos'); // 'inscritos' o 'creados'
 
     const { location, locationError } = useLocation();
     const { events, loading, eventsError } = useEvents();
 
+    const eventsToDisplay = selectedView === 'inscritos' ? events : null;
     
     interface Event {
         name: String;
@@ -37,11 +40,6 @@ export default function CreacionEvento() {
         currentParticipants: number;
         userId: number;
     };
-
-
-
-    
-
 
     const showDatePicker = () => {
         setDatePickerVisible(true);
@@ -100,27 +98,48 @@ export default function CreacionEvento() {
         console.error('Error creating user:', error);
         }
     };
-
+    const switchView = (view: string) => {
+        setSelectedView(view);
+    };
+    
 
     return (
         <View style={styles.container}>
-             <Text style={styles.header}>Mis Eventus</Text>
+             <Text style={styles.header}>Mis Eventos</Text>
 
-                {/* Lista de eventos actuales */}
-                <FlatList
-                    data={events} // Pass events state here
-                    renderItem={({ item }) => (
-                        <View style={styles.eventCard}>
-                            <Text style={styles.eventName}>{item.name}</Text>
-                            <Text>
-                                {/* Safely parse the date and display it */}
-                                {item.date ? new Date(item.date).toLocaleDateString() : 'Fecha no disponible'}
-                            </Text>
-                            <Text>{item.description}</Text>
+                    {/* Botones para cambiar la vista */}
+                    <View style={styles.buttonContainer}>
+                        <View style={styles.buttonWrapper}>
+                            <Button
+                                title="Eventos a los que me Inscribí"
+                                onPress={() => switchView('inscritos')}
+                                color={selectedView === 'inscritos' ? '#FF7F50' : '#000'}
+                            />
                         </View>
-                    )}
-                    keyExtractor={(item) => item.id.toString()} // Assuming each item has a unique 'id' property
-                />
+                        <View style={styles.buttonWrapper}>
+                            <Button
+                                title="Mis Eventos Creados"
+                                onPress={() => switchView('creados')}
+                                color={selectedView === 'creados' ? '#FF7F50' : '#000'}
+                            />
+                        </View>
+                    </View>
+
+                    {/* Lista de eventos */}
+                    <FlatList
+                        data={eventsToDisplay}
+                        renderItem={({ item }) => (
+                            <View style={styles.eventCard}>
+                                <Text style={styles.eventName}>{item.name}</Text>
+                                <Text>
+                                    {/* Safely parse the date and display it */}
+                                    {item.date ? new Date(item.date).toLocaleDateString() : 'Fecha no disponible'}
+                                </Text>
+                                <Text>{item.description}</Text>
+                            </View>
+                        )}
+                        keyExtractor={(item) => item.id.toString()}
+                    />
 
 
                 {/* Botón para abrir el modal de creación de evento */}
@@ -254,6 +273,11 @@ const styles = StyleSheet.create({
     map: {
         flex: 1,
     },
+    buttonContainer: {
+        flexDirection: 'row',        // Alineación de los botones en fila
+        justifyContent: 'space-between', // Espaciado entre los botones
+        marginBottom: 20,            // Margen abajo para separar de la lista
+    },
     header: {
         fontSize: 24,
         fontWeight: 'bold',
@@ -272,5 +296,8 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: 'bold',
         color: '#FF7F50',
-    }
+    },
+    buttonWrapper: {
+        width: '45%',               // Controla el ancho de cada botón
+    },
 });
