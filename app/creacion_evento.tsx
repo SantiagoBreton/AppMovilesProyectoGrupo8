@@ -4,6 +4,7 @@ import * as Location from 'expo-location';
 import MapView, { Marker, Region } from 'react-native-maps';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Float } from 'react-native/Libraries/Types/CodegenTypes';
+import { SERVER_IP } from '@env';
 
 export default function CreacionEvento() {
     const [titulo, setTitulo] = useState('');
@@ -89,7 +90,7 @@ export default function CreacionEvento() {
             userId: 1
         };
         try {
-            const response = await fetch('http://192.168.0.212:3000/createEvent', {
+            const response = await fetch(`http://${SERVER_IP}:3000/createEvent`, {
                 method: 'POST',
                 headers: {
                 'Content-Type': 'application/json',

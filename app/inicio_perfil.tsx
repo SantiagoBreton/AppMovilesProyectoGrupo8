@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Animated, Keyboard, TouchableWithoutFeedback } from 'react-native';
+import { SERVER_IP } from '@env';
 
 export default function InicioPerfil() {
     const [isLogin, setIsLogin] = useState(true);
@@ -40,7 +41,7 @@ export default function InicioPerfil() {
             name: userName,
         };
         try {
-            const response = await fetch('http://192.168.0.212:3000/createUser', {
+            const response = await fetch(`http://${SERVER_IP}:3000/createUser`, {
                 method: 'POST',
                 headers: {
                 'Content-Type': 'application/json',
