@@ -10,6 +10,7 @@ import { useLocation } from '../hooks/useLocation';
 import { allEvents } from '@/services/allEvents';
 import { myEvents } from '@/services/myEvents';
 import { deleteEventById } from '@/services/deleteEventById';
+import { useEventContext } from '@/context/eventContext';
 
 
 export default function CreacionEvento() {
@@ -26,12 +27,12 @@ export default function CreacionEvento() {
     const [selectedLatitude, setLatitude] = useState<number | null>(null);
     const [selectedLongitude, setLongitude] = useState<number | null>(null);
     const [selectedView, setSelectedView] = useState('inscritos'); // 'inscritos' o 'creados'
-
+    const {refreshEvents} = useEventContext();
     const { location, locationError } = useLocation();
 
-    
+    const { trigger } = useEventContext();
 
-    const  allevents  = allEvents();
+    const  allevents  = allEvents(trigger);
     const  myUserEvents = myEvents(); // Call myEvents and store the result directly in the variable
     const eventsToDisplay = selectedView === 'inscritos' ? allevents.events : myUserEvents.myEvents;
 
@@ -97,10 +98,11 @@ export default function CreacionEvento() {
         if (!response.ok) {
             throw new Error('Failed to create event');
         }
-       
+        
         const newEvent = await response.json();
         console.log('User created:', newEvent);
         setIsModalVisible(false);
+        refreshEvents();
         } catch (error) {
         console.error('Error creating user:', error);
         }
@@ -119,6 +121,7 @@ export default function CreacionEvento() {
     };
     const handleDeleteEvent = (eventId: any) => {
         deleteEventById(eventId)
+        refreshEvents();
         Alert.alert('Eliminar Evento', `Eliminar el evento con id: ${eventId}`);
     };
 
@@ -158,7 +161,7 @@ export default function CreacionEvento() {
                             </Text>
                             <Text>{item.description}</Text>
 
-                            {item.userId === 1 && (
+                            {item.userId === 12 && (
                                 <View style={styles.actionButtons}>
                                     <Button title="Editar" onPress={() => handleEditEvent(item.id)} />
                                     <Button title="Eliminar" onPress={() => handleDeleteEvent(item.id)} />

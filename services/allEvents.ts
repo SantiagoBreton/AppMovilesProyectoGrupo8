@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { SERVER_IP } from '@env';
 
-export const allEvents = () => {
+export const allEvents = (trigger: boolean) => {
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [eventsError, setEventsError] = useState<string | null>(null);
@@ -31,7 +31,7 @@ export const allEvents = () => {
     };
 
     fetchEvents();
-  }, []);
+  }, [trigger]);
 
   return { events, loading, eventsError };
 };
