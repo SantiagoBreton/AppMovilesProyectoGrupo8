@@ -34,6 +34,7 @@ export default function Index() {
 
       // Fetch events from the server
       try {
+        console.log(SERVER_IP)
         const response = await fetch(`http://${SERVER_IP}:3000/getEvents`, {
           method: 'GET',
           headers: {

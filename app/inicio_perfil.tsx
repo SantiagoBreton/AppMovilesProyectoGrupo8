@@ -7,8 +7,8 @@ export default function InicioPerfil() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [userName, setUsername] = useState('');
-    
-    // separo los values de las animatciones para cada input
+
+    // Separate animation values for each input
     const emailAnimation = useState(new Animated.Value(1))[0];
     const passwordAnimation = useState(new Animated.Value(1))[0];
     const confirmPasswordAnimation = useState(new Animated.Value(1))[0];
@@ -16,47 +16,68 @@ export default function InicioPerfil() {
     interface User {
         email: string;
         password: string;
-        name: string;
+        name?: string;
     };
 
-    const handleAuth = () => {
-        if (isLogin) {
-            console.log('Iniciar sesión con', email, password);
-        } else {
-            if (password === password) {
-                console.log('Registrar con', email, password);
-            } else {
-                console.log('Las contraseñas no coinciden');
-            }
-        }
-    };
-
-
-
-
-    const createNewUser = async function createUser() {
+    const createNewUser = async () => {
         const user: User = {
             email: email,
             password: password,
             name: userName,
         };
         try {
-            const response = await fetch(`http://${SERVER_IP}:3000/createUser`, {
+            const response = await fetch(`http://${SERVER_IP}:3000/auth/register`, {
                 method: 'POST',
                 headers: {
-                'Content-Type': 'application/json',
+                    'Content-Type': 'application/json',
                 },
-            body: JSON.stringify(user),
-        });
-       
-        if (!response.ok) {
-            throw new Error('Failed to create user');
-        }
-       
-        const newUser = await response.json();
-        console.log('User created:', newUser);
+                body: JSON.stringify(user),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to create user');
+            }
+
+            const newUser = await response.json();
+            console.log('User created:', newUser);
         } catch (error) {
-        console.error('Error creating user:', error);
+            console.error('Error creating user:', error);
+        }
+    };
+
+    const loginUser = async () => {
+        const user: User = {
+            email: email,
+            password: password,
+        };
+        try {
+            const response = await fetch(`http://${SERVER_IP}:3000/auth/login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(user),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to login');
+            }
+
+            const data = await response.json();
+            console.log('User logged in:', data);
+            // Handle successful login (e.g., store token, navigate to another screen)
+        } catch (error) {
+            console.error('Error logging in:', error);
+        }
+    };
+
+    const handlePress = () => {
+        if (isLogin) {
+            loginUser();
+        } else {
+            createNewUser();
         }
     };
 
@@ -67,7 +88,7 @@ export default function InicioPerfil() {
             tension: 100,
             useNativeDriver: true,
         }).start(() => {
-            // Esto lo vuelve a la escala OG
+            // Return to original scale
             Animated.spring(animation, {
                 toValue: 1,
                 friction: 3,
@@ -90,7 +111,7 @@ export default function InicioPerfil() {
                         keyboardType="email-address"
                         autoCapitalize="none"
                         placeholderTextColor="#A9A9A9"
-                        onFocus={() => bounceAnimation(emailAnimation)} //bouncea cuando clicekas en el input
+                        onFocus={() => bounceAnimation(emailAnimation)} // Bounce when input is focused
                     />
                 </Animated.View>
                 <Animated.View style={{ transform: [{ scale: passwordAnimation }] }}>
@@ -101,25 +122,23 @@ export default function InicioPerfil() {
                         onChangeText={setPassword}
                         secureTextEntry
                         placeholderTextColor="#A9A9A9"
-                        onFocus={() => bounceAnimation(passwordAnimation)} //bouncea cuando clickeas en el input
+                        onFocus={() => bounceAnimation(passwordAnimation)} // Bounce when input is focused
                     />
                 </Animated.View>
                 {!isLogin && (
-                    
                     <Animated.View style={{ transform: [{ scale: confirmPasswordAnimation }] }}>
                         <TextInput
                             style={styles.input}
                             placeholder="Nombre De Usuario"
                             value={userName}
                             onChangeText={setUsername}
-                            secureTextEntry
                             placeholderTextColor="#A9A9A9"
-                            onFocus={() => bounceAnimation(confirmPasswordAnimation)} // bouncea inpt
+                            onFocus={() => bounceAnimation(confirmPasswordAnimation)} // Bounce when input is focused
                         />
                     </Animated.View>
                 )}
-                <TouchableOpacity style={styles.button} onPress={createNewUser}>
-                    <Text style={styles.buttonText }>{isLogin ? 'Iniciar Sesión' : 'Registrar'}</Text>
+                <TouchableOpacity style={styles.button} onPress={handlePress}>
+                    <Text style={styles.buttonText}>{isLogin ? 'Iniciar Sesión' : 'Registrar'}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => setIsLogin(!isLogin)}>
                     <Text style={styles.toggleText}>
@@ -142,31 +161,31 @@ const styles = StyleSheet.create({
         fontSize: 24,
         marginBottom: 16,
         textAlign: 'center',
-        color: '#FF7F50', 
+        color: '#FF7F50',
     },
     input: {
         height: 50,
-        borderColor: '#FF7F50', 
+        borderColor: '#FF7F50',
         borderWidth: 1,
-        borderRadius: 25, 
+        borderRadius: 25,
         marginBottom: 12,
         paddingHorizontal: 16,
         backgroundColor: '#ffffff',
     },
     button: {
-        backgroundColor: '#FF7F50', 
-        borderRadius: 25, 
+        backgroundColor: '#FF7F50',
+        borderRadius: 25,
         paddingVertical: 12,
         alignItems: 'center',
         marginVertical: 10,
     },
     buttonText: {
-        color: '#ffffff', 
+        color: '#ffffff',
         fontSize: 18,
     },
     toggleText: {
         textAlign: 'center',
-        color: '#FF7F50', 
+        color: '#FF7F50',
         marginTop: 10,
     },
 });
