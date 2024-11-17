@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Button, StyleSheet, FlatList, Modal, TextInput, ScrollView, TouchableOpacity, Alert, Platform } from 'react-native';
 
-
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import MapView, { Marker, Region } from 'react-native-maps';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Float } from 'react-native/Libraries/Types/CodegenTypes';
@@ -28,10 +28,14 @@ export default function CreacionEvento() {
     const [selectedView, setSelectedView] = useState('inscritos'); // 'inscritos' o 'creados'
 
     const { location, locationError } = useLocation();
-    const  allevents  = allEvents();
-    const  myUserEvents = myEvents(1); // Call myEvents and store the result directly in the variable
-    const eventsToDisplay = selectedView === 'inscritos' ? allevents.events : myUserEvents.myEvents;
+
     
+
+    const  allevents  = allEvents();
+    const  myUserEvents = myEvents(); // Call myEvents and store the result directly in the variable
+    const eventsToDisplay = selectedView === 'inscritos' ? allevents.events : myUserEvents.myEvents;
+
+
     interface Event {
         name: String;
         date: Date;
@@ -70,6 +74,7 @@ export default function CreacionEvento() {
 
 
     const createEvent = async function createEvent() {
+        const currentUserId = await AsyncStorage.getItem('userId');
         const event: Event = {
             name: titulo,
             date: selectedDate,
@@ -78,7 +83,7 @@ export default function CreacionEvento() {
             description: descripcion,
             maxParticipants: maxParticipants,
             currentParticipants: 0,
-            userId: 1
+            userId: currentUserId ? parseInt(currentUserId, 10) : 0,
         };
         try {
             const response = await fetch(`http://${SERVER_IP}:3000/createEvent`, {

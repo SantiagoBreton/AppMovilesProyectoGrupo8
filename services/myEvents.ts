@@ -1,14 +1,16 @@
 import { SERVER_IP } from "@env";
 import { useEffect, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-export const myEvents = (id: number) => {
+export const myEvents = () => {
     const [myEvents, setMyEvents] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [eventsError, setEventsError] = useState<string | null>(null);
   
     useEffect(() => {
-      const getEventsByUserId = async (id: number) => {
+      const getEventsByUserId = async () => {
         try {
+          const id = await AsyncStorage.getItem('userId');
           const response = await fetch(`http://${SERVER_IP}:3000/getEventsByUserId/${id}`);
           if (response.ok) {
             const data = await response.json();
@@ -24,10 +26,9 @@ export const myEvents = (id: number) => {
         }
       };
   
-      if (id) {
-        getEventsByUserId(id);
-      }
-    }, [id]);
+      getEventsByUserId();
+      
+    });
   
     return { myEvents, loading, eventsError }; // Return state and loading/error status
   };
