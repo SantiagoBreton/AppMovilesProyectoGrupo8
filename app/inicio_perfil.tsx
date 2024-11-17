@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Animated, Keyboard, TouchableWithoutFeedback } from 'react-native';
 import { SERVER_IP } from '@env';
 
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+
 export default function InicioPerfil() {
     const [isLogin, setIsLogin] = useState(true);
     const [email, setEmail] = useState('');
@@ -52,7 +55,7 @@ export default function InicioPerfil() {
             password: password,
         };
         try {
-            const response = await fetch(`http://${SERVER_IP}:3000/auth/login`, {
+            const response = await fetch(`http://${SERVER_IP}:3000/userLogin`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -67,7 +70,8 @@ export default function InicioPerfil() {
 
             const data = await response.json();
             console.log('User logged in:', data);
-            // Handle successful login (e.g., store token, navigate to another screen)
+            await AsyncStorage.setItem("userId", data.id.toString());
+            
         } catch (error) {
             console.error('Error logging in:', error);
         }
