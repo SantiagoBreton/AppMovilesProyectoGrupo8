@@ -2,6 +2,7 @@
 import { Tabs } from "expo-router";
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 
+
 export default function RootLayout() {
   return (
     <Tabs

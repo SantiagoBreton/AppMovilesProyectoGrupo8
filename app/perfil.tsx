@@ -1,12 +1,18 @@
 import React from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Image, ScrollView } from 'react-native';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 
 export default function Perfil() {
     const [nombre, setNombre] = React.useState('');
     const [email, setEmail] = React.useState('');
 
-    const handleSave = () => {
-        // Logic to save user information
+    const handleSave = async () => {
+        // const userId = await AsyncStorage.getItem('userId');
+        // console.log('User token:', userId)
+        // await AsyncStorage.removeItem("userId");
+        // const userId = await AsyncStorage.getItem('userId');
+        // console.log('User token:', userId)
     };
 
     return (
