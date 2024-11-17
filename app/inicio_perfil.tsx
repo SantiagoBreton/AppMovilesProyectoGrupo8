@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Animated, Keyboard, TouchableWithoutFeedback } from 'react-native';
 import { SERVER_IP } from '@env';
-
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 

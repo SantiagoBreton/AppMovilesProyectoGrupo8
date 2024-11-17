@@ -8,8 +8,11 @@ export default function Perfil() {
     const [email, setEmail] = React.useState('');
 
     const handleSave = async () => {
-        const userId = await AsyncStorage.getItem('userId');
-        console.log('User token:', userId)
+        // const userId = await AsyncStorage.getItem('userId');
+        // console.log('User token:', userId)
+        // await AsyncStorage.removeItem("userId");
+        // const userId = await AsyncStorage.getItem('userId');
+        // console.log('User token:', userId)
     };
 
     return (
