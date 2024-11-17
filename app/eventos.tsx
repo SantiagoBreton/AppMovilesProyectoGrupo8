@@ -1,11 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Button, StyleSheet, FlatList, Modal, TextInput, ScrollView, TouchableOpacity, Alert, Platform } from 'react-native';
 
-import * as Location from 'expo-location';
+
 import MapView, { Marker, Region } from 'react-native-maps';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Float } from 'react-native/Libraries/Types/CodegenTypes';
 import { SERVER_IP } from '@env';
+import { useLocation } from '../hooks/useLocation';
+import { allEvents } from '@/services/allEvents';
+import { myEvents } from '@/services/myEvents';
+import { deleteEventById } from '@/services/deleteEventById';
+
 
 export default function CreacionEvento() {
     const [isModalVisible, setIsModalVisible] = useState(false);
@@ -16,16 +21,17 @@ export default function CreacionEvento() {
     const [datePickerVisible, setDatePickerVisible] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedLocation, setSelectedLocation] = useState<{ latitude: number; longitude: number } | null>(null);
-    const [initialRegion, setInitialRegion] = useState<Region | null>(null);
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [maxParticipants, setMaxParticipants] = useState(0);
     const [selectedLatitude, setLatitude] = useState<number | null>(null);
     const [selectedLongitude, setLongitude] = useState<number | null>(null);
-    const events = [
-        { id: '1', name: 'Yoga Class', date: '2024-11-17', description: 'A relaxing yoga session' },
-        { id: '2', name: 'Coding Bootcamp', date: '2024-11-20', description: 'A coding bootcamp for beginners' }
-    ];
+    const [selectedView, setSelectedView] = useState('inscritos'); // 'inscritos' o 'creados'
 
+    const { location, locationError } = useLocation();
+    const  allevents  = allEvents();
+    const  myUserEvents = myEvents(1); // Call myEvents and store the result directly in the variable
+    const eventsToDisplay = selectedView === 'inscritos' ? allevents.events : myUserEvents.myEvents;
+    
     interface Event {
         name: String;
         date: Date;
@@ -36,26 +42,6 @@ export default function CreacionEvento() {
         currentParticipants: number;
         userId: number;
     };
-
-
-    useEffect(() => {
-        (async () => {
-            const { status } = await Location.requestForegroundPermissionsAsync();
-            if (status !== 'granted') {
-                Alert.alert('Permiso denegado', 'La aplicación necesita acceso a tu ubicación para funcionar.');
-                return;
-            }
-
-            const location = await Location.getCurrentPositionAsync({});
-            setInitialRegion({
-                latitude: location.coords.latitude,
-                longitude: location.coords.longitude,
-                latitudeDelta: 0.01,
-                longitudeDelta: 0.01,
-            });
-        })();
-    }, []);
-
 
     const showDatePicker = () => {
         setDatePickerVisible(true);
@@ -114,24 +100,70 @@ export default function CreacionEvento() {
         console.error('Error creating user:', error);
         }
     };
-
+    const switchView = (view: string) => {
+        setSelectedView(view);
+    };
+    
+    const handleEventPress = (event: { name: any; description: any; }) => {
+        // Aquí puedes navegar a la pantalla de detalles del evento
+        Alert.alert('Detalles del Evento', `Nombre: ${event.name}\nDescripción: ${event.description}`);
+    };
+    const handleEditEvent = (eventId: any) => {
+        // Aquí iría la lógica para editar el evento
+        Alert.alert('Editar Evento', `Editar el evento con id: ${eventId}`);
+    };
+    const handleDeleteEvent = (eventId: any) => {
+        deleteEventById(eventId)
+        Alert.alert('Eliminar Evento', `Eliminar el evento con id: ${eventId}`);
+    };
 
     return (
         <View style={styles.container}>
-             <Text style={styles.header}>Mis Eventus</Text>
+              <Text style={styles.header}>Mis Eventos</Text>
 
-                {/* Lista de eventos actuales */}
+                {/* Botones para cambiar la vista */}
+                <View style={styles.buttonContainer}>
+                    <View style={styles.buttonWrapper}>
+                        <Button
+                            title="Eventos a los que me Inscribí"
+                            onPress={() => switchView('inscritos')}
+                            color={selectedView === 'inscritos' ? '#FF7F50' : '#000'}
+                        />
+                    </View>
+                    <View style={styles.buttonWrapper}>
+                        <Button
+                            title="Mis Eventos Creados"
+                            onPress={() => switchView('creados')}
+                            color={selectedView === 'creados' ? '#FF7F50' : '#000'}
+                        />
+                    </View>
+                </View>
+
+                {/* Lista de eventos */}
                 <FlatList
-                    data={events}
+                    data={eventsToDisplay}
                     renderItem={({ item }) => (
-                        <View style={styles.eventCard}>
+                        <TouchableOpacity
+                            style={styles.eventCard}
+                            onPress={() => handleEventPress(item)}
+                        >
                             <Text style={styles.eventName}>{item.name}</Text>
-                            <Text>{item.date}</Text>
+                            <Text>
+                                {item.date ? new Date(item.date).toLocaleDateString() : 'Fecha no disponible'}
+                            </Text>
                             <Text>{item.description}</Text>
-                        </View>
+
+                            {item.userId === 1 && (
+                                <View style={styles.actionButtons}>
+                                    <Button title="Editar" onPress={() => handleEditEvent(item.id)} />
+                                    <Button title="Eliminar" onPress={() => handleDeleteEvent(item.id)} />
+                                </View>
+                            )}
+                        </TouchableOpacity>
                     )}
-                    keyExtractor={(item) => item.id}
+                    keyExtractor={(item) => item.id.toString()}
                 />
+
 
                 {/* Botón para abrir el modal de creación de evento */}
                 <Button
@@ -207,10 +239,15 @@ export default function CreacionEvento() {
                 <Button title="cerrar" onPress={() => setIsModalVisible(false)} color="#FF7F50" />
 
                 <Modal visible={modalVisible} animationType="slide">
-                    {initialRegion ? (
+                    {location ? (
                         <MapView
                             style={styles.map}
-                            initialRegion={initialRegion}
+                            initialRegion={{
+                                latitude: location.coords.latitude,
+                                longitude: location.coords.longitude,
+                                latitudeDelta: 0.01,
+                                longitudeDelta: 0.01,
+                            }}
                             onPress={handleMapPress}
                         >
                             {selectedLocation && (
@@ -259,11 +296,21 @@ const styles = StyleSheet.create({
     map: {
         flex: 1,
     },
+    buttonContainer: {
+        flexDirection: 'row',        // Alineación de los botones en fila
+        justifyContent: 'space-between', // Espaciado entre los botones
+        marginBottom: 20,            // Margen abajo para separar de la lista
+    },
     header: {
         fontSize: 24,
         fontWeight: 'bold',
         marginBottom: 20,
         color: '#FF7F50',
+    },
+    actionButtons: {
+        marginTop: 10,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
     },
     eventCard: {
         padding: 15,
@@ -277,5 +324,8 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: 'bold',
         color: '#FF7F50',
-    }
+    },
+    buttonWrapper: {
+        width: '45%',               // Controla el ancho de cada botón
+    },
 });
