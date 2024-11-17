@@ -36,6 +36,22 @@ export default function CreacionEvento() {
     const  myUserEvents = myEvents(); // Call myEvents and store the result directly in the variable
     const eventsToDisplay = selectedView === 'inscritos' ? allevents.events : myUserEvents.myEvents;
 
+    const [userId, setUserId] = useState<number | null>(null);
+
+    useEffect(() => {
+        const fetchUserId = async () => {
+        try {
+            const storedUserId = await AsyncStorage.getItem('userId');
+            if (storedUserId) {
+            setUserId(parseInt(storedUserId, 10)); // Convierte el ID de string a número
+            }
+        } catch (error) {
+            console.error('Error fetching userId:', error);
+        }
+        };
+
+        fetchUserId();
+    }, []);
 
     interface Event {
         name: String;
@@ -161,7 +177,7 @@ export default function CreacionEvento() {
                             </Text>
                             <Text>{item.description}</Text>
 
-                            {item.userId === 12 && (
+                            {userId !== null && item.userId === userId &&  (
                                 <View style={styles.actionButtons}>
                                     <Button title="Editar" onPress={() => handleEditEvent(item.id)} />
                                     <Button title="Eliminar" onPress={() => handleDeleteEvent(item.id)} />
