@@ -63,7 +63,7 @@ export default function Perfil() {
         <ScrollView style={styles.container}>
             <View style={styles.header}>
                 <Image source={{ uri: 'https://via.placeholder.com/150' }} style={styles.profileImage} />
-                <Text style={styles.name}>Nombre del Usuario</Text>
+                <Text style={styles.name}>{nombre}</Text>
             </View>
             <View style={styles.section}>
                 <Text style={styles.label}>Nombre:</Text>
