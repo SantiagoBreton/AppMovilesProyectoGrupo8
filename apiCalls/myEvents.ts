@@ -11,6 +11,9 @@ export const myEvents = (trigger: boolean) => {
       const getEventsByUserId = async () => {
         try {
           const id = await AsyncStorage.getItem('userId');
+          if (!id) {
+            throw new Error('User ID not found');
+          }
           const response = await fetch(`http://${SERVER_IP}:3000/getEventsByUserId/${id}`);
           if (response.ok) {
             const data = await response.json();

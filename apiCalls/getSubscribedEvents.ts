@@ -11,7 +11,9 @@ export const getSubscribedEvents = (trigger: boolean) => {
       try {
         const userIdString = await AsyncStorage.getItem('userId');
         const userIdInt = userIdString ? parseInt(userIdString) : null;
-
+        if (userIdInt === null) {
+          throw new Error('User ID is null');
+        }
         const response = await fetch(`http://${SERVER_IP}:3000/getSubscribedEvents/${userIdInt}`);
 
         if (!response.ok) {
