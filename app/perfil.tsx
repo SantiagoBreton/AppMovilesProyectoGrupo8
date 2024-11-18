@@ -10,7 +10,7 @@ export default function Perfil() {
     const handleSave = async () => {
         // const userId = await AsyncStorage.getItem('userId');
         // console.log('User token:', userId)
-        // await AsyncStorage.removeItem("userId");
+        //await AsyncStorage.removeItem("userId");
         // const userId = await AsyncStorage.getItem('userId');
         // console.log('User token:', userId)
     };

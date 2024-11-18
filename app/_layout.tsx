@@ -1,10 +1,11 @@
 // src/screens/RootLayout.tsx
 import { Tabs } from "expo-router";
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
-
+import { EventProvider } from "@/context/eventContext";
 
 export default function RootLayout() {
   return (
+    <EventProvider>
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: '#808080', 
@@ -60,5 +61,6 @@ export default function RootLayout() {
         }}
       />
     </Tabs>
+    </EventProvider>
   );
 }
