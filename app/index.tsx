@@ -59,16 +59,16 @@ export default function Index() {
             <React.Fragment key={event.id}>
               <Marker
                 coordinate={{
-                  latitude: event.latitude + (Math.random() - 0.5) * (500 / 111000),
-                  longitude: event.longitude + (Math.random() - 0.5) * (500 / (111000 * Math.cos(event.latitude * (Math.PI / 180)))) 
+                  latitude: event.latitude + event.latitudeOffset,
+                  longitude: event.longitude + event.longitudeOffset
                 }}
                 onPress={() => handleMarkerPress(event)} 
               />
               <Circle
                 key={`circle-${event.id}`} 
                 center={{
-                  latitude: event.latitude + (Math.random() - 0.5) * (500 / 111000),
-                  longitude: event.longitude + (Math.random() - 0.5) * (500 / (111000 * Math.cos(event.latitude * (Math.PI / 180)))) 
+                  latitude: event.latitude + event.latitudeOffset,
+                  longitude: event.longitude + event.longitudeOffset 
                 }}
                 radius={500}
                 strokeColor="rgba(0, 255, 0, 0.5)"

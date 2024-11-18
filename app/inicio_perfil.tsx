@@ -23,15 +23,20 @@ export default function InicioPerfil() {
   const createUser = async () => {
     const user = { email, password, name: userName };
     try {
-      await createNewUser(user);
-      await AsyncStorage.setItem('userId', user.email);  // Save user data in AsyncStorage
-      login();  // Call login method to update auth state
+      const res = await createNewUser(user);
+  
+      // Check if user creation was successful before calling login
+      if (res) {
+        login();  // Only call login if the user creation was successful
+      } else {
+        setErrorMessage('Error al crear el usuario, por favor inténtalo de nuevo.');
+      }
     } catch (error) {
       setErrorMessage('Error al crear el usuario, por favor inténtalo de nuevo.');
       console.error('Error creating user:', error);
     }
   };
-
+  
   const loginNewUser = async () => {
     const user = { email, password, name: "" };
   
