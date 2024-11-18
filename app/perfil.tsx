@@ -1,19 +1,23 @@
 import React from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Image, ScrollView } from 'react-native';
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
+import { myData } from '@/apiCalls/getMyUserData';
 
 export default function Perfil() {
-    const [nombre, setNombre] = React.useState('');
-    const [email, setEmail] = React.useState('');
+    const { nombre, email, dataError } = myData();
 
     const handleSave = async () => {
-        // const userId = await AsyncStorage.getItem('userId');
-        // console.log('User token:', userId)
-        //await AsyncStorage.removeItem("userId");
-        // const userId = await AsyncStorage.getItem('userId');
-        // console.log('User token:', userId)
+        const userId = await AsyncStorage.getItem('userId');
+        console.log('User token:', userId)
     };
+
+    const handleLogout = async () => {
+        await AsyncStorage.removeItem("userId");
+        const userId = await AsyncStorage.getItem('userId');
+        console.log('User token:', userId)
+    }
+
+
 
     return (
         <ScrollView style={styles.container}>
@@ -23,30 +27,25 @@ export default function Perfil() {
             </View>
             <View style={styles.section}>
                 <Text style={styles.label}>Nombre:</Text>
-                <TextInput
-                    style={styles.input}
-                    value={nombre}
-                    onChangeText={setNombre}
+                <TextInput 
+                style={styles.input} 
+                value={nombre}
                 />
             </View>
             <View style={styles.section}>
                 <Text style={styles.label}>Email:</Text>
-                <TextInput
-                    style={styles.input}
-                    value={email}
-                    onChangeText={setEmail}
+                <TextInput 
+                style={styles.input} 
+                value={email}
                 />
             </View>
             <Button title="Guardar" onPress={handleSave} color="#FF7F50" />
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Fotos</Text>
-            </View>
+            <Button title="Cerrar Sesion" onPress={handleLogout} color="#FF7F50" />
+            
             <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Eventos Creados</Text>
             </View>
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Calificaciones</Text>
-            </View>
+            
         </ScrollView>
     );
 };
