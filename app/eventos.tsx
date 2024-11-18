@@ -89,6 +89,9 @@ export default function CreacionEvento() {
         const numericValue = parseInt(text, 10);
         setMaxParticipants(isNaN(numericValue) ? 0 : numericValue);
     };
+    const handleDetailsEvent= (item: Event) => {
+        Alert.alert('Detalles del Evento', `Nombre: ${item.name}\nDescripción: ${item.description}\nFecha: ${item.date}\nUbicación: ${item.latitude}, ${item.longitude}\nParticipantes: ${item.currentParticipants}/${item.maxParticipants}`);
+    };
 
 
     const createNewEvent = async function createNewEvent() {
@@ -171,6 +174,12 @@ export default function CreacionEvento() {
                                 <View style={styles.actionButtons}>
                                     <Button title="Editar" onPress={() => handleEditEvent(item.id)} />
                                     <Button title="Eliminar" onPress={() => handleDeleteEvent(item.id)} />
+                                </View>
+                            )}
+                            {userId !== null && item.userId != userId &&  (
+                                <View style={styles.detailButton}>
+                                    <Button  title="Detalles" onPress={() => handleDetailsEvent(item.id)} />
+
                                 </View>
                             )}
                         </TouchableOpacity>
@@ -326,6 +335,12 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
     },
+    detailButton: {
+        marginTop: 10,
+        flexDirection: 'row',
+        width: '100%', // Make the button container take full width of the card
+        justifyContent: 'center', // Center the button within the container
+    },
     eventCard: {
         padding: 15,
         backgroundColor: '#f9f9f9',
@@ -342,4 +357,5 @@ const styles = StyleSheet.create({
     buttonWrapper: {
         width: '45%',               // Controla el ancho de cada botón
     },
+
 });
