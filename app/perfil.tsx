@@ -5,14 +5,14 @@ import { myData } from '@/apiCalls/getMyUserData';
 import { myEvents } from '@/apiCalls/myEvents';
 import { useEventContext } from '@/context/eventContext';
 import { Float } from 'react-native/Libraries/Types/CodegenTypes';
-
+import { useAuthContext } from '@/context/userLoginContext';  // Updated import
 
 export default function Perfil() {
     const { nombre, email, dataError } = myData();
     const { trigger } = useEventContext();
     const  myUserEvents = myEvents(trigger);
     const eventsToDisplay = myUserEvents.myEvents;
-
+    const { logout } = useAuthContext();
 
     const [userId, setUserId] = useState<number | null>(null);
 
@@ -52,6 +52,7 @@ export default function Perfil() {
         await AsyncStorage.removeItem("userId");
         const userId = await AsyncStorage.getItem('userId');
         console.log('User token:', userId)
+        logout();
     }
 
     const handleDetailsEvent= (item: Event) => {
