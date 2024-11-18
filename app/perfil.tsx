@@ -1,15 +1,48 @@
-import React from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Image, ScrollView } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, TextInput, StyleSheet, Image, ScrollView, Button, FlatList, TouchableOpacity, Alert, Platform } from 'react-native';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { myData } from '@/apiCalls/getMyUserData';
+import { myEvents } from '@/apiCalls/myEvents';
+import { useEventContext } from '@/context/eventContext';
 
 export default function Perfil() {
     const { nombre, email, dataError } = myData();
+    const { trigger } = useEventContext();
+    const  myUserEvents = myEvents(trigger);
+    const eventsToDisplay = myUserEvents.myEvents;
 
-    const handleSave = async () => {
-        const userId = await AsyncStorage.getItem('userId');
-        console.log('User token:', userId)
+    const [userId, setUserId] = useState<number | null>(null);
+
+    useEffect(() => {
+        const fetchUserId = async () => {
+        try {
+            const storedUserId = await AsyncStorage.getItem('userId');
+            if (storedUserId) {
+            setUserId(parseInt(storedUserId, 10)); // Convierte el ID de string a número
+            }
+        } catch (error) {
+            console.error('Error fetching userId:', error);
+        }
+        };
+
+        fetchUserId();
+    }, []);
+
+    interface Event {
+        name: String;
+        date: Date;
+        latitude: Float;
+        longitude: Float;
+        description: String;
+        maxParticipants: number;
+        currentParticipants: number;
+        userId: number;
     };
+
+    // const handleSave = async () => {
+    //     const userId = await AsyncStorage.getItem('userId');
+    //     console.log('User token:', userId)
+    // };
 
     const handleLogout = async () => {
         await AsyncStorage.removeItem("userId");
@@ -27,23 +60,40 @@ export default function Perfil() {
             </View>
             <View style={styles.section}>
                 <Text style={styles.label}>Nombre:</Text>
-                <TextInput 
-                style={styles.input} 
-                value={nombre}
-                />
+                <Text style={styles.input}>{nombre}</Text>
             </View>
             <View style={styles.section}>
                 <Text style={styles.label}>Email:</Text>
-                <TextInput 
-                style={styles.input} 
-                value={email}
-                />
+                <Text style={styles.input}>{email}</Text>
             </View>
-            <Button title="Guardar" onPress={handleSave} color="#FF7F50" />
+            {/* <Button title="Guardar" onPress={handleSave} color="#FF7F50" /> */}
             <Button title="Cerrar Sesion" onPress={handleLogout} color="#FF7F50" />
             
             <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Eventos Creados</Text>
+                <FlatList
+                    data={eventsToDisplay}
+                    renderItem={({ item }) => (
+                        <TouchableOpacity
+                            style={styles.eventCard}
+                            onPress={() => handleEventPress(item)}
+                        >
+                            <Text style={styles.eventName}>{item.name}</Text>
+                            <Text>
+                                {item.date ? new Date(item.date).toLocaleDateString() : 'Fecha no disponible'}
+                            </Text>
+                            <Text>{item.description}</Text>
+
+                            {userId !== null && item.userId != userId &&  (
+                                <View style={styles.detailButton}>
+                                    <Button  title="Detalles" onPress={() => handleDetailsEvent(item.id)} />
+
+                                </View>
+                            )}
+                        </TouchableOpacity>
+                    )}
+                    keyExtractor={(item) => item.id.toString()}
+                />
             </View>
             
         </ScrollView>
