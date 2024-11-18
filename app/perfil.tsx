@@ -3,8 +3,10 @@ import { View, Text, TextInput, Button, StyleSheet, Image, ScrollView } from 're
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { myData } from '@/apiCalls/getMyUserData';
 
+
 export default function Perfil() {
     const { nombre, email, dataError } = myData();
+
 
     const handleSave = async () => {
         const userId = await AsyncStorage.getItem('userId');
