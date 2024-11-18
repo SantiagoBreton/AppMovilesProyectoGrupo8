@@ -22,7 +22,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = async () => {
-    await AsyncStorage.setItem('userId', 'someUserId');
     setIsAuthenticated(true);
   };
 

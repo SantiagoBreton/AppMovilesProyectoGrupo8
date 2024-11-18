@@ -13,7 +13,7 @@ export default function Perfil() {
     const  myUserEvents = myEvents(trigger);
     const eventsToDisplay = myUserEvents.myEvents;
 
-\
+
     const [userId, setUserId] = useState<number | null>(null);
 
     useEffect(() => {
