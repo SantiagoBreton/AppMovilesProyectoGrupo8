@@ -10,7 +10,7 @@ export const subscribeToEvent = async (eventId: number) => {
   try {
     
     const userIdString = await AsyncStorage.getItem('userId'); // Get the userId from AsyncStorage
-    const userIdInt = userIdString ? parseInt(userIdString, 10) : null; // Convert the userId to an integer if not null
+    const userIdInt = userIdString ? parseInt(userIdString) : null; // Convert the userId to an integer if not null
     const eventUser: EventUser = {
         eventId: eventId,
         userId: userIdInt!,

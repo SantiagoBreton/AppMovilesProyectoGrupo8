@@ -11,7 +11,7 @@ export default function Index() {
   const { trigger } = useEventContext();
   const { events, loading, eventsError } = allEvents(trigger);
   const [errorMessage, setErrorMessage] = useState<string | null>(null); // Mensaje de error
-
+  const {refreshEvents} = useEventContext();
   const [modalVisible, setModalVisible] = useState(false); // Modal visibility state
   const [selectedEvent, setSelectedEvent] = useState<{ id: string; name: string; description: string; date: string; currentParticipants: number; maxParticipants: number; latitude: number; longitude: number; } | null>(null); // Selected event state
 
@@ -24,6 +24,7 @@ export default function Index() {
       await subscribeToEvent(eventId);
       console.log('Successfully subscribed to event:', eventId);
       handleCloseModal(); // Cerrar el modal después de una suscripción exitosa
+      refreshEvents(); // Actualizar la lista de eventos
     } catch (error: any) {
       setErrorMessage(error.message || 'Que lastima, no te has podido subscribir Zorra.');
     }
