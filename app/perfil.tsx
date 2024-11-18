@@ -6,12 +6,14 @@ import { myEvents } from '@/apiCalls/myEvents';
 import { useEventContext } from '@/context/eventContext';
 import { Float } from 'react-native/Libraries/Types/CodegenTypes';
 
+
 export default function Perfil() {
     const { nombre, email, dataError } = myData();
     const { trigger } = useEventContext();
     const  myUserEvents = myEvents(trigger);
     const eventsToDisplay = myUserEvents.myEvents;
 
+\
     const [userId, setUserId] = useState<number | null>(null);
 
     useEffect(() => {
@@ -43,6 +45,7 @@ export default function Perfil() {
     const handleEventPress = (event: { name: any; description: any; }) => {
         // Aquí puedes navegar a la pantalla de detalles del evento
         Alert.alert('Detalles del Evento', `Nombre: ${event.name}\nDescripción: ${event.description}`);
+
     };
 
     const handleLogout = async () => {
