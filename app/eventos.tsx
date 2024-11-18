@@ -1,17 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Button, StyleSheet, FlatList, Modal, TextInput, ScrollView, TouchableOpacity, Alert, Platform } from 'react-native';
-
+import * as Location from 'expo-location';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import MapView, { Marker, Region } from 'react-native-maps';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Float } from 'react-native/Libraries/Types/CodegenTypes';
 import { useLocation } from '../hooks/useLocation';
-import { allEvents } from '@/apiCalls/getAllEvents';
+
 import { myEvents } from '@/apiCalls/myEvents';
 import { deleteEventById } from '@/apiCalls/deleteEventById';
 import { useEventContext } from '@/context/eventContext';
 import { createEvent } from '@/apiCalls/createEvent';
 import { getSubscribedEvents } from '@/apiCalls/getSubscribedEvents';
+
+
 
 
 export default function CreacionEvento() {
@@ -30,9 +32,11 @@ export default function CreacionEvento() {
     const [selectedView, setSelectedView] = useState('inscritos'); // 'inscritos' o 'creados'
     const {refreshEvents} = useEventContext();
     const { location, locationError } = useLocation();
-
+    const [isDetailsModalVisible, setIsDetailsModalVisible] = useState(false);
+    const [eventDetails, setEventDetails] = useState<Event | null>(null);
+    const [eventLocation, setEventLocation] = useState<string | null>(null);
     const { trigger } = useEventContext();
-
+    const [isMapVisible, setMapVisible] = useState(false);
     const  allevents  = getSubscribedEvents(trigger);
     const  myUserEvents = myEvents(trigger); // Call myEvents and store the result directly in the variable
     const eventsToDisplay = selectedView === 'inscritos' ? allevents.events : myUserEvents.myEvents;
@@ -55,11 +59,11 @@ export default function CreacionEvento() {
     }, []);
 
     interface Event {
-        name: String;
+        name: string;
         date: Date;
         latitude: Float;
         longitude: Float;
-        description: String;
+        description: string;
         maxParticipants: number;
         currentParticipants: number;
         userId: number;
@@ -68,7 +72,8 @@ export default function CreacionEvento() {
     const showDatePicker = () => {
         setDatePickerVisible(true);
     };
-
+    const handleShowMap = () => setMapVisible(true);
+    const handleCloseMap = () => setMapVisible(false);
     const handleDateChange = (event: any, selectedDate?: Date) => {
         setDatePickerVisible(false);
         if (selectedDate) {
@@ -89,10 +94,28 @@ export default function CreacionEvento() {
         const numericValue = parseInt(text, 10);
         setMaxParticipants(isNaN(numericValue) ? 0 : numericValue);
     };
-    const handleDetailsEvent= (item: Event) => {
-        Alert.alert('Detalles del Evento', `Nombre: ${item.name}\nDescripción: ${item.description}\nFecha: ${item.date}\nUbicación: ${item.latitude}, ${item.longitude}\nParticipantes: ${item.currentParticipants}/${item.maxParticipants}`);
-    };
 
+    const handleDetailsEvent = async (item: Event) => {
+        try {
+            const addresses = await Location.reverseGeocodeAsync({
+                latitude: item.latitude,
+                longitude: item.longitude,
+            });
+    
+            const location =
+                addresses.length > 0
+                    ? `${addresses[0].city}, ${addresses[0].region}, ${addresses[0].country}`
+                    : 'Address not found';
+    
+            setEventDetails(item);
+            setEventLocation(location);
+            setIsDetailsModalVisible(true);
+        } catch (error) {
+            console.error('Error fetching address:', error);
+            Alert.alert('Error', 'Failed to fetch event details');
+        }
+    };
+    
 
     const createNewEvent = async function createNewEvent() {
         try{
@@ -176,10 +199,9 @@ export default function CreacionEvento() {
                                     <Button title="Eliminar" onPress={() => handleDeleteEvent(item.id)} />
                                 </View>
                             )}
-                            {userId !== null && item.userId != userId &&  (
+                            {userId !== null && item.userId != userId && (
                                 <View style={styles.detailButton}>
-                                    <Button  title="Detalles" onPress={() => handleDetailsEvent(item.id)} />
-
+                                    <Button title="Detalles" onPress={() => handleDetailsEvent(item)} />
                                 </View>
                             )}
                         </TouchableOpacity>
@@ -282,7 +304,84 @@ export default function CreacionEvento() {
                     )}
                     <Button title="Cerrar" onPress={() => setModalVisible(false)} color="#FF7F50" />
                 </Modal>
-            </Modal>  
+            </Modal>
+            <Modal
+                visible={isDetailsModalVisible}
+                transparent={true}
+                animationType="slide"
+                onRequestClose={() => setIsDetailsModalVisible(false)}
+            >
+                <View style={styles.modalContainer}>
+                    <View style={styles.modalContent}>
+                        {eventDetails && (
+                            <>
+                                <Text style={styles.modalTitle}>{eventDetails.name}</Text>
+                                <Text style={styles.modalText}>
+                                    Descripción: {eventDetails.description}
+                                </Text>
+                                <Text style={styles.modalText}>
+                                    Fecha: {new Date(eventDetails.date).toLocaleDateString()}
+                                </Text>
+                                <Text style={styles.modalText}>Ubicación: {eventLocation}</Text>
+                                <Text style={styles.modalText}>
+                                    Participantes: {eventDetails.currentParticipants}/
+                                    {eventDetails.maxParticipants}
+                                </Text>
+                                <TouchableOpacity
+                                    style={styles.locationButton}
+                                    onPress={handleShowMap}
+                                >
+                                    <Text style={styles.locationButtonText}>Ver en el Mapa</Text>
+                                </TouchableOpacity>
+                            </>
+                        )}
+                        <TouchableOpacity
+                            style={styles.closeButton}
+                            onPress={() => setIsDetailsModalVisible(false)}
+                        >
+                            <Text style={styles.closeButtonText}>Cerrar</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
+
+            {/* Map Modal */}
+            <Modal
+                visible={isMapVisible}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={handleCloseMap}
+            >
+                <View style={styles.mapModalContainer}>
+                    <View style={styles.mapModalContent}>
+                        <MapView
+                            style={styles.map}
+                            initialRegion={{
+                                latitude: eventDetails?.latitude ?? 0,
+                                longitude: eventDetails?.longitude ?? 0,
+                                latitudeDelta: 0.01,
+                                longitudeDelta: 0.01,
+                            }}
+                        >
+                            <Marker
+                                coordinate={{
+                                    latitude: eventDetails?.latitude ?? 0,
+                                    longitude: eventDetails?.longitude ?? 0,
+                                }}
+                                title={eventDetails?.name ?? ''}
+                                description={eventDetails?.description ?? ''}
+                            />
+                        </MapView>
+                        <TouchableOpacity
+                            style={styles.closeMapButton}
+                            onPress={handleCloseMap}
+                        >
+                            <Text style={styles.closeMapButtonText}>Cerrar Mapa</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
+            
         </View>
     );
 }
@@ -316,8 +415,12 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         backgroundColor: '#ffffff',
     },
-    map: {
-        flex: 1,
+    locationButton: {
+        marginTop: 15,
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        backgroundColor: '#4CAF50',
+        borderRadius: 5,
     },
     buttonContainer: {
         flexDirection: 'row',        // Alineación de los botones en fila
@@ -349,13 +452,92 @@ const styles = StyleSheet.create({
         borderColor: '#FF7F50',
         borderWidth: 1,
     },
+    locationButtonText: {
+        color: '#fff',
+        fontSize: 16,
+        textAlign: 'center',
+        fontWeight: 'bold',
+    },
     eventName: {
         fontSize: 18,
         fontWeight: 'bold',
         color: '#FF7F50',
     },
+    closeMapButton: {
+        position: 'absolute',
+        bottom: 10,
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        backgroundColor: '#f44336',
+        borderRadius: 5,
+    },
+    closeMapButtonText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
     buttonWrapper: {
         width: '45%',               // Controla el ancho de cada botón
+    },
+    mapModalContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    },
+    mapModalContent: {
+        width: '90%',
+        height: '60%',
+        backgroundColor: '#fff',
+        borderRadius: 10,
+        overflow: 'hidden',
+        alignItems: 'center',
+    },
+    map: {
+        width: '100%',
+        height: '100%',
+    },
+    modalContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent background
+    },
+    modalContent: {
+        width: '80%',
+        padding: 20,
+        backgroundColor: '#fff',
+        borderRadius: 10,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5,
+    },
+    modalTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#FF7F50',
+        marginBottom: 10,
+        textAlign: 'center',
+    },
+    modalText: {
+        fontSize: 16,
+        color: '#333',
+        marginBottom: 10,
+    },
+    closeButton: {
+        marginTop: 20,
+        alignSelf: 'center',
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        backgroundColor: '#FF7F50',
+        borderRadius: 5,
+    },
+    closeButtonText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: 'bold',
     },
 
 });
