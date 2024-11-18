@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Animated, Keyboard, TouchableWithoutFeedback } from 'react-native';
-import { SERVER_IP } from '@env';
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { createNewUser } from '@/apiCalls/createNewUser';
+import { loginUser } from '@/apiCalls/loginUser';
 
 
 export default function InicioPerfil() {
@@ -18,59 +18,30 @@ export default function InicioPerfil() {
     interface User {
         email: string;
         password: string;
-        name?: string;
+        name: string;
     };
 
-    const createNewUser = async () => {
+    const createUser = async () => {
         const user: User = {
             email: email,
             password: password,
             name: userName,
         };
         try {
-            const response = await fetch(`http://${SERVER_IP}:3000/auth/register`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(user),
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Failed to create user');
-            }
-
-            const newUser = await response.json();
-            console.log('User created:', newUser);
+            await createNewUser(user);
         } catch (error) {
             console.error('Error creating user:', error);
         }
     };
 
-    const loginUser = async () => {
+    const loginNewUser = async () => {
         const user: User = {
             email: email,
             password: password,
+            name: "",
         };
         try {
-            const response = await fetch(`http://${SERVER_IP}:3000/userLogin`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(user),
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Failed to login');
-            }
-
-            const data = await response.json();
-            console.log('User logged in:', data);
-            await AsyncStorage.setItem("userId", data.id.toString());
-            
+            loginUser(user);
         } catch (error) {
             console.error('Error logging in:', error);
         }
@@ -78,9 +49,9 @@ export default function InicioPerfil() {
 
     const handlePress = () => {
         if (isLogin) {
-            loginUser();
+            loginNewUser();
         } else {
-            createNewUser();
+            createUser();
         }
     };
 

@@ -5,12 +5,12 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import MapView, { Marker, Region } from 'react-native-maps';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Float } from 'react-native/Libraries/Types/CodegenTypes';
-import { SERVER_IP } from '@env';
 import { useLocation } from '../hooks/useLocation';
-import { allEvents } from '@/services/allEvents';
-import { myEvents } from '@/services/myEvents';
-import { deleteEventById } from '@/services/deleteEventById';
+import { allEvents } from '@/apiCalls/getAllEvents';
+import { myEvents } from '@/apiCalls/myEvents';
+import { deleteEventById } from '@/apiCalls/deleteEventById';
 import { useEventContext } from '@/context/eventContext';
+import { createEvent } from '@/apiCalls/createEvent';
 
 
 export default function CreacionEvento() {
@@ -90,39 +90,28 @@ export default function CreacionEvento() {
     };
 
 
-    const createEvent = async function createEvent() {
-        const currentUserId = await AsyncStorage.getItem('userId');
-        const event: Event = {
-            name: titulo,
-            date: selectedDate,
-            latitude: selectedLatitude ?? 0,
-            longitude: selectedLongitude ?? 0,
-            description: descripcion,
-            maxParticipants: maxParticipants,
-            currentParticipants: 0,
-            userId: currentUserId ? parseInt(currentUserId, 10) : 0,
-        };
-        try {
-            const response = await fetch(`http://${SERVER_IP}:3000/createEvent`, {
-                method: 'POST',
-                headers: {
-                'Content-Type': 'application/json',
-                },
-            body: JSON.stringify(event),
-        });
-       
-        if (!response.ok) {
-            throw new Error('Failed to create event');
-        }
-        
-        const newEvent = await response.json();
-        console.log('User created:', newEvent);
+    const createNewEvent = async function createNewEvent() {
+        try{
+            const currentUserId = await AsyncStorage.getItem('userId');
+            const event: Event = {
+                name: titulo,
+                date: selectedDate,
+                latitude: selectedLatitude ?? 0,
+                longitude: selectedLongitude ?? 0,
+                description: descripcion,
+                maxParticipants: maxParticipants,
+                currentParticipants: 0,
+                userId: currentUserId ? parseInt(currentUserId, 10) : 0,
+            };
+            await createEvent(event);
+            setIsModalVisible(false);
+            refreshEvents();
+        }  catch (error) {
         setIsModalVisible(false);
         refreshEvents();
-        } catch (error) {
-        console.error('Error creating user:', error);
-        }
+        } 
     };
+
     const switchView = (view: string) => {
         setSelectedView(view);
     };
@@ -259,7 +248,7 @@ export default function CreacionEvento() {
                     />
                     <Button title="Seleccionar en el mapa" onPress={() => setModalVisible(true)} color="#FF7F50" />
                 </View>
-                <Button title="Crear Evento" onPress={createEvent} color="#FF7F50" />
+                <Button title="Crear Evento" onPress={createNewEvent} color="#FF7F50" />
                 <Button title="cerrar" onPress={() => setIsModalVisible(false)} color="#FF7F50" />
 
                 <Modal visible={modalVisible} animationType="slide">

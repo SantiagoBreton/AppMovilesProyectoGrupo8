@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { StyleSheet, View, Text, ActivityIndicator, Button, Modal } from 'react-native';
 import MapView, { Marker, Circle } from 'react-native-maps';
 import { useLocation } from '../hooks/useLocation';
-import { allEvents } from '@/services/allEvents';
+import { allEvents } from '@/apiCalls/getAllEvents';
 import { useEventContext } from '@/context/eventContext';
-import { subscribeToEvent } from '@/services/subscribeToAnEvent';
+import { subscribeToEvent } from '@/apiCalls/subscribeToAnEvent';
 
 export default function Index() {
   const { location, locationError } = useLocation();
