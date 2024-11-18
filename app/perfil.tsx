@@ -4,6 +4,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { myData } from '@/apiCalls/getMyUserData';
 import { myEvents } from '@/apiCalls/myEvents';
 import { useEventContext } from '@/context/eventContext';
+import { Float } from 'react-native/Libraries/Types/CodegenTypes';
 
 export default function Perfil() {
     const { nombre, email, dataError } = myData();
@@ -39,10 +40,10 @@ export default function Perfil() {
         userId: number;
     };
 
-    // const handleSave = async () => {
-    //     const userId = await AsyncStorage.getItem('userId');
-    //     console.log('User token:', userId)
-    // };
+    const handleEventPress = (event: { name: any; description: any; }) => {
+        // Aquí puedes navegar a la pantalla de detalles del evento
+        Alert.alert('Detalles del Evento', `Nombre: ${event.name}\nDescripción: ${event.description}`);
+    };
 
     const handleLogout = async () => {
         await AsyncStorage.removeItem("userId");
@@ -50,7 +51,9 @@ export default function Perfil() {
         console.log('User token:', userId)
     }
 
-
+    const handleDetailsEvent= (item: Event) => {
+        Alert.alert('Detalles del Evento', `Nombre: ${item.name}\nDescripción: ${item.description}\nFecha: ${item.date}\nUbicación: ${item.latitude}, ${item.longitude}\nParticipantes: ${item.currentParticipants}/${item.maxParticipants}`);
+    };
 
     return (
         <ScrollView style={styles.container}>
@@ -87,7 +90,6 @@ export default function Perfil() {
                             {userId !== null && item.userId != userId &&  (
                                 <View style={styles.detailButton}>
                                     <Button  title="Detalles" onPress={() => handleDetailsEvent(item.id)} />
-
                                 </View>
                             )}
                         </TouchableOpacity>
@@ -142,4 +144,23 @@ const styles = StyleSheet.create({
         marginBottom: 10,
         color: 'black', 
     },
+    eventCard: {
+        padding: 15,
+        backgroundColor: '#f9f9f9',
+        borderRadius: 8,
+        marginBottom: 10,
+        borderColor: '#FF7F50',
+        borderWidth: 1,
+    },
+    detailButton: {
+        marginTop: 10,
+        flexDirection: 'row',
+        width: '100%', // Make the button container take full width of the card
+        justifyContent: 'center', // Center the button within the container
+    },
+    eventName: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#FF7F50',
+    }
 });
