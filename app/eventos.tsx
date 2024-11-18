@@ -11,6 +11,7 @@ import { myEvents } from '@/apiCalls/myEvents';
 import { deleteEventById } from '@/apiCalls/deleteEventById';
 import { useEventContext } from '@/context/eventContext';
 import { createEvent } from '@/apiCalls/createEvent';
+import { getSubscribedEvents } from '@/apiCalls/getSubscribedEvents';
 
 
 export default function CreacionEvento() {
@@ -32,8 +33,8 @@ export default function CreacionEvento() {
 
     const { trigger } = useEventContext();
 
-    const  allevents  = allEvents(trigger);
-    const  myUserEvents = myEvents(); // Call myEvents and store the result directly in the variable
+    const  allevents  = getSubscribedEvents(trigger);
+    const  myUserEvents = myEvents(trigger); // Call myEvents and store the result directly in the variable
     const eventsToDisplay = selectedView === 'inscritos' ? allevents.events : myUserEvents.myEvents;
 
     const [userId, setUserId] = useState<number | null>(null);

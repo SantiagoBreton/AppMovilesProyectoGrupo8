@@ -2,7 +2,7 @@ import { SERVER_IP } from "@env";
 import { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-export const myEvents = () => {
+export const myEvents = (trigger: boolean) => {
     const [myEvents, setMyEvents] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [eventsError, setEventsError] = useState<string | null>(null);
@@ -28,7 +28,7 @@ export const myEvents = () => {
   
       getEventsByUserId();
       
-    });
+    }, [trigger]);
   
     return { myEvents, loading, eventsError }; // Return state and loading/error status
   };
