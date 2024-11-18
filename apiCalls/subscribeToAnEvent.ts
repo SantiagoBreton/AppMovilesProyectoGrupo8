@@ -31,10 +31,10 @@ export const subscribeToEvent = async (eventId: number) => {
       // Handle the response data (e.g., show a success message)
       return data;
     } else {
-      throw new Error('Failed to subscribe to event');
+      const errorData = await response.json(); // Captura el cuerpo del error
+      throw new Error(errorData.error || 'Unknown error occurred'); // Lanza el mensaje del backend como error
     }
   } catch (error) {
-    console.error('Error subscribing to event:', error);
     throw error; // Propagate the error for further handling
   }
 };

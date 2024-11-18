@@ -10,7 +10,8 @@ export default function Index() {
   const { location, locationError } = useLocation();
   const { trigger } = useEventContext();
   const { events, loading, eventsError } = allEvents(trigger);
-  
+  const [errorMessage, setErrorMessage] = useState<string | null>(null); // Mensaje de error
+
   const [modalVisible, setModalVisible] = useState(false); // Modal visibility state
   const [selectedEvent, setSelectedEvent] = useState<{ id: string; name: string; description: string; date: string; currentParticipants: number; maxParticipants: number; latitude: number; longitude: number; } | null>(null); // Selected event state
 
@@ -19,9 +20,15 @@ export default function Index() {
   }
 
   const handleSubscribe = async (eventId: number) => {
-    subscribeToEvent(eventId);
-    console.log('Subscribing to eventds:', eventId);
+    try {
+      await subscribeToEvent(eventId);
+      console.log('Successfully subscribed to event:', eventId);
+      handleCloseModal(); // Cerrar el modal después de una suscripción exitosa
+    } catch (error: any) {
+      setErrorMessage(error.message || 'Que lastima, no te has podido subscribir Zorra.');
+    }
   };
+  
 
   const handleMarkerPress = (event: { id: string; name: string; description: string; date: string; currentParticipants: number; maxParticipants: number; latitude: number; longitude: number; }) => {
     setSelectedEvent(event);
@@ -103,6 +110,27 @@ export default function Index() {
           </View>
         </Modal>
       )}
+      {errorMessage && (
+    <Modal
+      transparent={true}
+      visible={!!errorMessage}
+      animationType="fade"
+      onRequestClose={() => setErrorMessage(null)} // Cerrar el modal al presionar fuera
+    >
+      <View style={styles.errorModalContainer}>
+        <View style={styles.errorModalCard}>
+          <Text style={styles.errorTitle}>¡Cuidado!</Text>
+          <Text style={styles.errorDescription}>{errorMessage}</Text>
+          <Button
+            title="Cerrar"
+            color="#FF6347"
+            onPress={() => setErrorMessage(null)} // Cerrar el modal de error
+          />
+        </View>
+      </View>
+    </Modal>
+  )}
+
     </View>
   );
 }
@@ -149,4 +177,36 @@ const styles = StyleSheet.create({
     marginTop: 10,
     width: '100%',
   },
+  errorModalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    zIndex: 1000,
+  },
+  errorModalCard: {
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 20,
+    width: 300,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  errorTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color: '#B22222',
+  },
+  errorDescription: {
+    fontSize: 14,
+    textAlign: 'center',
+    color: '#555',
+    marginBottom: 15,
+  },
+  
 });
