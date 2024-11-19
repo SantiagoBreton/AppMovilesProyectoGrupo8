@@ -11,13 +11,14 @@ import {
   Modal,
   Alert,
   Button,
+  ScrollView,
 } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
 import MapView, { Circle, Marker } from 'react-native-maps';
 import { Float } from 'react-native/Libraries/Types/CodegenTypes';
 import * as Location from 'expo-location';
 import { getEventByName } from '@/apiCalls/getEventByName';
-
+import { getUserByName } from '@/apiCalls/getUserByName';
 
 export default function Busqueda() {
   const [query, setQuery] = useState('');
@@ -28,6 +29,7 @@ export default function Busqueda() {
   const [eventLocation, setEventLocation] = useState<string | null>(null);
   const [isMapVisible, setMapVisible] = useState(false);
   const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
 
   interface Event {
     id: number;
@@ -41,27 +43,52 @@ export default function Busqueda() {
     userId: number;
 };
 
+interface User {
+    id: number;
+    name: string;
+    email: string;
+};
+
   const handleShowMap = () => setMapVisible(true);
   const handleCloseMap = () => setMapVisible(false);
-  
-  const handleSearch = async () => {
-    setIsSearching(true);
-    try {
-      if (query.length === 0) { 
-        setResults([]);
-        setFilteredEvents([]);
-        return;
+
+    const handleEventSearch = async () => {
+        setIsSearching(true);
+        try {
+            if (query.length === 0) {
+                setResults([]);
+                setFilteredEvents([]);
+                return;
+            }
+            const filteredResults = await getEventByName(query);
+            setResults(filteredResults.data);
+            setFilteredEvents(filteredResults.data);
+        } catch (error) {
+            console.error('Error fetching events:', error);
+            Alert.alert('Error', 'Failed to fetch events');
+        } finally {
+            setIsSearching(false);
         }
-        const filteredResults = await getEventByName(query);
-      setResults(filteredResults.data);
-      setFilteredEvents(filteredResults.data);
-    } catch (error) {
-      console.error('Error fetching events:', error);
-      Alert.alert('Error', 'Failed to fetch events');
-    } finally {
-      setIsSearching(false);
     }
-  };
+
+    const handleUserSearch = async () => {
+        setIsSearching(true);
+        try {
+            if (query.length === 0) {
+                setResults([]);
+                setFilteredUsers([]);
+                return;
+            }
+            const filteredResults = await getUserByName(query);
+            setResults(filteredResults.data);
+            setFilteredUsers(filteredResults.data);
+        } catch (error) {
+            console.error('Error fetching users:', error);
+            Alert.alert('Error', 'Failed to fetch users');
+        } finally {
+            setIsSearching(false);
+        }
+    }
 
   const handleDetailsEvent = async (item: Event) => {
     try {
@@ -84,7 +111,7 @@ export default function Busqueda() {
     }
 };
 
-  const renderResult = ({ item }: { item: Event }) => (
+  const renderEventResult = ({ item }: { item: Event }) => (
       <FlatList
           data={filteredEvents}
           renderItem={({ item }) => (
@@ -108,40 +135,67 @@ export default function Busqueda() {
       />
   );
 
-  return (
-        <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-            style={styles.container}
-        >
-            <Text style={styles.header}>Buscar Eventos o Usuarios</Text>
-            <View style={styles.searchContainer}>
-                <TextInput
-                    style={styles.input}
-                    placeholder="Escribe el nombre del evento o usuario..."
-                    placeholderTextColor="#A9A9A9"
-                    value={query}
-                    onChangeText={setQuery}
-                    onSubmitEditing={handleSearch}
-                />
-                <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
-                    <FontAwesome5 name="search" size={20} color="#FFFFFF" />
-                </TouchableOpacity>
+  const renderUserResult = ({ item }: { item: User }) => (
+        <View style={styles.resultCard}>
+            <FontAwesome5 name="user" size={24} color="#FF7F50" style={styles.resultIcon} />
+            <View>
+                <Text style={styles.resultTitle}>{item.name}</Text>
+                <Text style={styles.resultType}>{item.email}</Text>
             </View>
+        </View>);
 
-            {isSearching ? (
-                <Text style={styles.loadingText}>Buscando...</Text>
-            ) : (
-                <FlatList
-                    data={results}
-                    keyExtractor={(item) => item.id.toString()}
-                    renderItem={renderResult}
-                    ListEmptyComponent={
-                        <Text style={styles.noResultsText}>
-                            {query.length > 0 ? 'No se encontraron resultados.' : 'Comienza a buscar.'}
-                        </Text>
-                    }
-                />
-            )}
+return (
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      style={styles.container}
+    >
+      <Text style={styles.header}>Buscar Eventos o Usuarios</Text>
+      <View style={styles.searchContainer}>
+        <TextInput
+          style={styles.input}
+          placeholder="Escribe el nombre del evento o usuario..."
+          placeholderTextColor="#A9A9A9"
+          value={query}
+          onChangeText={setQuery}
+          onSubmitEditing={() => {
+            handleEventSearch();
+            handleUserSearch();
+          }}
+        />
+        <TouchableOpacity
+          style={styles.searchButton}
+          onPress={() => {
+            handleEventSearch();
+            handleUserSearch();
+          }}
+        >
+          <FontAwesome5 name="search" size={20} color="#FFFFFF" />
+        </TouchableOpacity>
+      </View>
+
+      {isSearching ? (
+        <Text style={styles.loadingText}>Buscando...</Text>
+      ) : (
+        <ScrollView>
+          {/* Events Section */}
+          <Text style={styles.sectionHeader}>Eventos</Text>
+          <FlatList
+            data={filteredEvents}
+            renderItem={renderEventResult}
+            keyExtractor={(item) => item.id.toString()}
+            ListEmptyComponent={<Text style={styles.noResultsText}>No se encontraron eventos.</Text>}
+          />
+
+          {/* Users Section */}
+          <Text style={styles.sectionHeader}>Usuarios</Text>
+          <FlatList
+            data={filteredUsers}
+            renderItem={renderUserResult}
+            keyExtractor={(item) => item.id.toString()}
+            ListEmptyComponent={<Text style={styles.noResultsText}>No se encontraron usuarios.</Text>}
+          />
+        </ScrollView>
+      )}
             <Modal
                 visible={isDetailsModalVisible}
                 transparent={true}
@@ -238,6 +292,13 @@ const styles = StyleSheet.create({
     color: '#FF7F50',
     textAlign: 'center',
     marginBottom: 20,
+  },
+  sectionHeader: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#FF7F50',
+    marginTop: 10,
+    marginBottom: 5,
   },
   searchContainer: {
     flexDirection: 'row',
