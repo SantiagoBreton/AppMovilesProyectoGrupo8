@@ -6,13 +6,13 @@ import MapView, { Marker, Region } from 'react-native-maps';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Float } from 'react-native/Libraries/Types/CodegenTypes';
 import { useLocation } from '../hooks/useLocation';
-
+import { unsubscribeUserFromAnEvent } from '@/apiCalls/unsubscribeUserFromEvent';
 import { myEvents } from '@/apiCalls/myEvents';
 import { deleteEventById } from '@/apiCalls/deleteEventById';
 import { useEventContext } from '@/context/eventContext';
 import { createEvent } from '@/apiCalls/createEvent';
 import { getSubscribedEvents } from '@/apiCalls/getSubscribedEvents';
-
+import { getAllUsersSubscribedToAnEvent } from '@/apiCalls/getAllUsersSubscribedToAnEvent';
 
 
 
@@ -40,6 +40,11 @@ export default function CreacionEvento() {
     const  allevents  = getSubscribedEvents(trigger);
     const  myUserEvents = myEvents(trigger); // Call myEvents and store the result directly in the variable
     const eventsToDisplay = selectedView === 'inscritos' ? allevents.events : myUserEvents.myEvents;
+    const [isAdminModalVisible, setIsAdminModalVisible] = useState(false);
+    const [adminEventDetails, setAdminEventDetails] = useState<EventWithId | null>(null);
+    const [subscribedUsers, setSubscribedUsers] = useState<{ id: number; name: string }[]>([]);
+    const [updatedName, setUpdatedName] = useState('');
+    
 
     const [userId, setUserId] = useState<number | null>(null);
 
@@ -68,6 +73,18 @@ export default function CreacionEvento() {
         currentParticipants: number;
         userId: number;
     };
+    interface EventWithId {
+        id : number;
+        name: string;
+        date: Date;
+        latitude: Float;
+        longitude: Float;
+        description: string;
+        maxParticipants: number;
+        currentParticipants: number;
+        userId: number;
+    };
+
 
     const showDatePicker = () => {
         setDatePickerVisible(true);
@@ -146,13 +163,51 @@ export default function CreacionEvento() {
         setSelectedView(view);
     };
     
-    const handleEventPress = (event: { name: any; description: any; }) => {
+    const handleEventPress = (event: EventWithId) => {
         // Aquí puedes navegar a la pantalla de detalles del evento
         Alert.alert('Detalles del Evento', `Nombre: ${event.name}\nDescripción: ${event.description}`);
     };
-    const handleEditEvent = (eventId: any) => {
-        // Aquí iría la lógica para editar el evento
-        Alert.alert('Editar Evento', `Editar el evento con id: ${eventId}`);
+    const handleAdministrarEvent = async (event: EventWithId) => {
+        try {
+            const allSubscribedUser = await getAllUsersSubscribedToAnEvent(event.id);
+
+            if (allSubscribedUser.data) {
+                setSubscribedUsers(allSubscribedUser.data);
+            } else {
+                Alert.alert('Error', 'No se pudo cargar la información de los usuarios inscritos.');
+            }
+            setAdminEventDetails(event);
+            if (event) {
+                setUpdatedName(event.name);
+            }
+            setIsAdminModalVisible(true);
+        } catch (error) {
+            Alert.alert('Error', 'No se pudo cargar la información del evento.');
+        }
+    };
+
+    const handleEliminateUserFromEvent = async (userId: number, eventId: number) => {
+        try {
+            await unsubscribeUserFromAnEvent(userId, eventId);
+            Alert.alert('Éxito', 'Usuario eliminado del evento correctamente.');
+            refreshEvents();
+        } catch (error) {
+            Alert.alert('Error', 'No se pudo eliminar al usuario del evento.');
+        }
+    }
+    ;
+
+    const handleUpdateEventName = async (idEvent: any) => {
+        try {
+            // Simulate API call to update event name
+            if (adminEventDetails) {
+                console.log(`Updating event ID ${idEvent} with name: ${updatedName}`);
+            }
+            Alert.alert('Éxito', 'El nombre del evento se actualizó correctamente.');
+            setIsAdminModalVisible(false);
+        } catch (error) {
+            Alert.alert('Error', 'No se pudo actualizar el nombre del evento.');
+        }
     };
     const handleDeleteEvent = (eventId: any) => {
         deleteEventById(eventId)
@@ -198,7 +253,7 @@ export default function CreacionEvento() {
 
                             {userId !== null && item.userId === userId &&  (
                                 <View style={styles.actionButtons}>
-                                    <Button title="Editar" onPress={() => handleEditEvent(item.id)} />
+                                    <Button title="Administar" onPress={() => {handleAdministrarEvent(item)}} />
                                     <Button title="Eliminar" onPress={() => handleDeleteEvent(item.id)} />
                                 </View>
                             )}
@@ -384,6 +439,72 @@ export default function CreacionEvento() {
                     </View>
                 </View>
             </Modal>
+            <Modal
+    visible={isAdminModalVisible}
+    transparent={true}
+    animationType="slide"
+    onRequestClose={() => setIsAdminModalVisible(false)}
+>
+    <View style={styles.modalContainer}>
+        <ScrollView contentContainerStyle={styles.modalContent}>
+            <Text style={styles.modalTitle}>Administrar Evento</Text>
+            
+            {/* Detalles del evento */}
+            {adminEventDetails && (
+                <>
+                    <Text style={styles.modalText}>Nombre: {adminEventDetails.name}</Text>
+                    <Text style={styles.modalText}>
+                        Fecha Actual: {new Date(adminEventDetails.date).toLocaleDateString()}
+                    </Text>
+                    <TouchableOpacity
+                        style={styles.dateChangeButton}
+                        onPress={() => setDatePickerVisible(true)}
+                    >
+                        <Text style={styles.dateChangeText}>Cambiar Fecha</Text>
+                    </TouchableOpacity>
+                    {datePickerVisible && (
+                        <DateTimePicker
+                            value={selectedDate}
+                            mode="date"
+                            display={Platform.OS === 'ios' ? 'inline' : 'default'}
+                            onChange={handleDateChange}
+                        />
+                    )}
+                </>
+            )}
+
+            {/* Lista de usuarios inscritos */}
+            <Text style={styles.sectionTitle}>Usuarios Inscritos:</Text>
+            {subscribedUsers.map((user) => (
+                <View key={user.id} style={styles.userRow}>
+                    <Text style={styles.userName}>{user.name}</Text>
+                    <TouchableOpacity
+                        onPress={() =>handleEliminateUserFromEvent(user.id, adminEventDetails?.id ?? 0)}
+                        style={styles.deleteUserButton}
+                    >
+                        <Text style={styles.deleteUserText}>Eliminar</Text>
+                    </TouchableOpacity>
+                </View>
+            ))}
+
+            {/* Botones de acción */}
+            <View style={styles.actionButtons}>
+                <TouchableOpacity
+                    style={styles.updateButton}
+                    onPress={() => adminEventDetails && handleUpdateEventName(adminEventDetails.id)}
+                >
+                    <Text style={styles.updateButtonText}>Guardar Cambios</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                    style={styles.closeButton}
+                    onPress={() => setIsAdminModalVisible(false)}
+                >
+                    <Text style={styles.closeButtonText}>Cerrar</Text>
+                </TouchableOpacity>
+            </View>
+        </ScrollView>
+    </View>
+</Modal>
             
         </View>
     );
@@ -405,10 +526,16 @@ const styles = StyleSheet.create({
     section: {
         marginBottom: 20,
     },
+
     label: {
         fontSize: 16,
         marginBottom: 8,
         color: '#FF7F50',
+    },
+    buttonGroup: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        marginTop: 20,
     },
     input: {
         height: 50,
@@ -436,11 +563,7 @@ const styles = StyleSheet.create({
         marginBottom: 20,
         color: '#FF7F50',
     },
-    actionButtons: {
-        marginTop: 10,
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-    },
+
     detailButton: {
         marginTop: 10,
         flexDirection: 'row',
@@ -500,20 +623,23 @@ const styles = StyleSheet.create({
         width: '100%',
         height: '100%',
     },
+
+
     modalContainer: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent background
+        backgroundColor: 'rgba(0, 0, 0, 0.7)', // Fondo semi-transparente
     },
     modalContent: {
-        width: '80%',
-        padding: 20,
+        width: '90%',
+        marginTop: 50,
         backgroundColor: '#fff',
         borderRadius: 10,
+        padding: 20,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
+        shadowOpacity: 0.5,
         shadowRadius: 4,
         elevation: 5,
     },
@@ -521,7 +647,7 @@ const styles = StyleSheet.create({
         fontSize: 20,
         fontWeight: 'bold',
         color: '#FF7F50',
-        marginBottom: 10,
+        marginBottom: 20,
         textAlign: 'center',
     },
     modalText: {
@@ -529,18 +655,76 @@ const styles = StyleSheet.create({
         color: '#333',
         marginBottom: 10,
     },
-    closeButton: {
-        marginTop: 20,
-        alignSelf: 'center',
+    sectionTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginVertical: 10,
+        color: '#FF7F50',
+    },
+    userRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
         paddingVertical: 10,
-        paddingHorizontal: 20,
-        backgroundColor: '#FF7F50',
+        borderBottomColor: '#ccc',
+        borderBottomWidth: 1,
+    },
+    userName: {
+        fontSize: 16,
+        color: '#333',
+    },
+    deleteUserButton: {
+        backgroundColor: '#f44336',
+        paddingVertical: 5,
+        paddingHorizontal: 10,
         borderRadius: 5,
+    },
+    deleteUserText: {
+        color: '#fff',
+        fontSize: 14,
+        fontWeight: 'bold',
+    },
+    dateChangeButton: {
+        backgroundColor: '#FF7F50',
+        padding: 10,
+        borderRadius: 5,
+        marginVertical: 10,
+        alignItems: 'center',
+    },
+    dateChangeText: {
+        color: '#fff',
+        fontSize: 14,
+        fontWeight: 'bold',
+    },
+    actionButtons: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        marginTop: 20,
+    },
+    updateButton: {
+        backgroundColor: '#4CAF50',
+        padding: 10,
+        borderRadius: 5,
+        width: '45%',
+    },
+    updateButtonText: {
+        color: '#fff',
+        fontSize: 14,
+        textAlign: 'center',
+        fontWeight: 'bold',
+    },
+    closeButton: {
+        backgroundColor: '#f44336',
+        padding: 10,
+        borderRadius: 5,
+        width: '45%',
     },
     closeButtonText: {
         color: '#fff',
-        fontSize: 16,
+        fontSize: 14,
+        textAlign: 'center',
         fontWeight: 'bold',
     },
+    
 
 });
