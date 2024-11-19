@@ -72,8 +72,11 @@ export default function CreacionEvento() {
     const showDatePicker = () => {
         setDatePickerVisible(true);
     };
+    
     const handleShowMap = () => setMapVisible(true);
+
     const handleCloseMap = () => setMapVisible(false);
+
     const handleDateChange = (event: any, selectedDate?: Date) => {
         setDatePickerVisible(false);
         if (selectedDate) {

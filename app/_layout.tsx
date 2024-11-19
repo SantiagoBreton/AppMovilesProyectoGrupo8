@@ -47,6 +47,14 @@ function RootLayout() {
           }}
         />
         <Tabs.Screen
+          name="busqueda"
+          options={{
+            tabBarIcon: ({ color, size }) => (
+              <FontAwesome5 name="search" size={size} color={color} />
+            )
+          }}
+        />
+        <Tabs.Screen
           name="inicio_perfil"
           options={{
             tabBarButton: () => null,
