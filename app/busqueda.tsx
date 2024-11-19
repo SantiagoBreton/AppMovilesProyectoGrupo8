@@ -16,40 +16,51 @@ import { FontAwesome5 } from '@expo/vector-icons';
 import MapView, { Circle, Marker } from 'react-native-maps';
 import { Float } from 'react-native/Libraries/Types/CodegenTypes';
 import * as Location from 'expo-location';
-import { allEvents } from '@/apiCalls/getAllEvents';
-import { useEventContext } from '@/context/eventContext';
+import { getEventByName } from '@/apiCalls/getEventByName';
 
-interface SearchResult {
-  id: number;
-  name: string;
-  type: 'Evento' | 'Usuario';
-}
 
 export default function Busqueda() {
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<SearchResult[]>([]);
+  const [results, setResults] = useState<Event[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isDetailsModalVisible, setIsDetailsModalVisible] = useState(false);
   const [eventDetails, setEventDetails] = useState<Event | null>(null);
   const [eventLocation, setEventLocation] = useState<string | null>(null);
   const [isMapVisible, setMapVisible] = useState(false);
-  const { trigger } = useEventContext();
-  const  allevents  = allEvents(trigger);
-  const eventsToDisplay = allevents.events;
+  const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
+
+  interface Event {
+    id: number;
+    name: string;
+    date: Date;
+    latitude: Float;
+    longitude: Float;
+    description: string;
+    maxParticipants: number;
+    currentParticipants: number;
+    userId: number;
+};
 
   const handleShowMap = () => setMapVisible(true);
   const handleCloseMap = () => setMapVisible(false);
   
-  const handleSearch = () => {
+  const handleSearch = async () => {
     setIsSearching(true);
-    // Simula la búsqueda con datos de muestra
-    const filteredResults = eventsToDisplay.filter((item) =>
-      item.name.toLowerCase().includes(query.toLowerCase())
-    );
-    setTimeout(() => {
-      setResults(filteredResults);
+    try {
+      if (query.length === 0) { 
+        setResults([]);
+        setFilteredEvents([]);
+        return;
+        }
+        const filteredResults = await getEventByName(query);
+      setResults(filteredResults.data);
+      setFilteredEvents(filteredResults.data);
+    } catch (error) {
+      console.error('Error fetching events:', error);
+      Alert.alert('Error', 'Failed to fetch events');
+    } finally {
       setIsSearching(false);
-    }, 500); // Simula un pequeño retraso
+    }
   };
 
   const handleDetailsEvent = async (item: Event) => {
@@ -73,9 +84,9 @@ export default function Busqueda() {
     }
 };
 
-  const renderResult = ({ item }: { item: SearchResult }) => (
+  const renderResult = ({ item }: { item: Event }) => (
       <FlatList
-          data={eventsToDisplay}
+          data={filteredEvents}
           renderItem={({ item }) => (
               <TouchableOpacity
                   style={styles.eventCard}
@@ -96,17 +107,6 @@ export default function Busqueda() {
           keyExtractor={(item) => item.id.toString()}
       />
   );
-
-  interface Event {
-    name: string;
-    date: Date;
-    latitude: Float;
-    longitude: Float;
-    description: string;
-    maxParticipants: number;
-    currentParticipants: number;
-    userId: number;
-};
 
   return (
         <KeyboardAvoidingView
@@ -194,10 +194,10 @@ export default function Busqueda() {
                         <MapView
                             style={styles.map}
                             initialRegion={{
-                                latitude: (eventDetails?.latitude ?? 0) + 0.001, // Offset latitude
-                                longitude: (eventDetails?.longitude ?? 0) + 0.001, // Offset longitude
-                                latitudeDelta: 0.05,
-                                longitudeDelta: 0.05,
+                                latitude: (eventDetails?.latitude ?? 0) + 0.004, // Offset latitude
+                                longitude: (eventDetails?.longitude ?? 0) + 0.004, // Offset longitude
+                                latitudeDelta: 0.015,
+                                longitudeDelta: 0.015,
                             }}
                         >
                           <Circle //cambiar a marker para que se vea el punto
