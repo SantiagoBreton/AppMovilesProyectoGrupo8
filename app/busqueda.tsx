@@ -112,27 +112,20 @@ interface User {
 };
 
   const renderEventResult = ({ item }: { item: Event }) => (
-      <FlatList
-          data={filteredEvents}
-          renderItem={({ item }) => (
-              <TouchableOpacity
-                  style={styles.eventCard}
-                  onPress={() => handleDetailsEvent(item)}
-              >
-                  <Text style={styles.eventName}>{item.name}</Text>
-                  <Text>
-                      {item.date ? new Date(item.date).toLocaleDateString() : 'Fecha no disponible'}
-                  </Text>
-                  <Text>{item.description}</Text>
+    <TouchableOpacity
+    style={styles.eventCard}
+    onPress={() => handleDetailsEvent(item)}
+>
+    <Text style={styles.eventName}>{item.name}</Text>
+    <Text>
+        {item.date ? new Date(item.date).toLocaleDateString() : 'Fecha no disponible'}
+    </Text>
+    <Text>{item.description}</Text>
 
-                  <View style={styles.detailButton}>
-                      <Button title="Detalles" onPress={() => handleDetailsEvent(item)} />
-                  </View>
-
-              </TouchableOpacity>
-          )}
-          keyExtractor={(item) => item.id.toString()}
-      />
+    <View style={styles.detailButton}>
+        <Button title="Detalles" onPress={() => handleDetailsEvent(item)} />
+    </View>
+</TouchableOpacity>
   );
 
   const renderUserResult = ({ item }: { item: User }) => (
