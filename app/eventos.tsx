@@ -280,7 +280,7 @@ export default function CreacionEvento() {
                 renderItem={({ item }) => (
                     <TouchableOpacity
                         style={styles.eventCard}
-                        onPress={() => handleEventPress(item)}
+                        
                     >
                         <Text style={styles.eventName}>{item.name}</Text>
                         <Text>

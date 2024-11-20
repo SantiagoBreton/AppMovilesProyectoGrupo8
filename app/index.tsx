@@ -226,21 +226,7 @@ export default function Index() {
             <View style={styles.filterModal}>
               <Text style={styles.modalTitle}>Filters</Text>
 
-              {/* Date Picker */}
-              <Button title="Select Date" onPress={() => setShowDatePicker(true)} />
-              {showDatePicker && (
-                <DateTimePicker
-                  value={selectedDate || new Date()}
-                  mode="date"
-                  display="default"
-                  onChange={handleDateChange}
-                />
-              )}
-              {selectedDate && (
-                <Text style={styles.selectedDateText}>
-                  Selected Date: {selectedDate.toDateString()}
-                </Text>
-              )}
+              
 
               {/* Name Filter */}
               <TextInput
@@ -258,6 +244,21 @@ export default function Index() {
                 onChangeText={(value) => setProximityFilter(Number(value))}
                 keyboardType="numeric"
               />
+              {/* Date Picker */}
+              <Button title="Select Date" onPress={() => setShowDatePicker(true)} />
+              {showDatePicker && (
+                <DateTimePicker
+                  value={selectedDate || new Date()}
+                  mode="date"
+                  display="default"
+                  onChange={handleDateChange}
+                />
+              )}
+              {selectedDate && (
+                <Text style={styles.selectedDateText}>
+                  Selected Date: {selectedDate.toDateString()}
+                </Text>
+              )}
 
               {/* Buttons */}
               <View style={styles.buttonGroup}>
