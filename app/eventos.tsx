@@ -45,7 +45,7 @@ export default function CreacionEvento() {
     const [subscribedUsers, setSubscribedUsers] = useState<{ id: number; name: string }[]>([]);
 
     const [isUpdateNameModalVisible, setIsNameModalVisible] = useState(false);
-    const [iUpdateDescriptionModalVisible, setIsDescriptionModalVisible] = useState(false);
+    const [isUpdateDescriptionModalVisible, setIsDescriptionModalVisible] = useState(false);
     const [newName, setNewName] = useState('');
     const [newDescription, setNewDescription] = useState('');
 
@@ -248,47 +248,52 @@ export default function CreacionEvento() {
                     <Button
                         title="Eventos a los que me Inscribí"
                         onPress={() => switchView('inscritos')}
-                        color={selectedView === 'inscritos' ? '#FF7F50' : '#000'}
+                        color={selectedView === 'inscritos' ? '#FF7F50' : '#A9A9A9'} // Naranja para seleccionado, gris claro para no seleccionado
                     />
                 </View>
                 <View style={styles.buttonWrapper}>
                     <Button
                         title="Mis Eventos Creados"
                         onPress={() => switchView('creados')}
-                        color={selectedView === 'creados' ? '#FF7F50' : '#000'}
+                        color={selectedView === 'creados' ? '#FF7F50' : '#A9A9A9'} // Naranja para seleccionado, gris claro para no seleccionado
                     />
                 </View>
             </View>
 
             {/* Lista de eventos */}
             <FlatList
-                data={eventsToDisplay}
-                renderItem={({ item }) => (
-                    <TouchableOpacity
-                        style={styles.eventCard}
-                        onPress={() => handleEventPress(item)}
-                    >
-                        <Text style={styles.eventName}>{item.name}</Text>
-                        <Text>
-                            {item.date ? new Date(item.date).toLocaleDateString() : 'Fecha no disponible'}
-                        </Text>
-                        <Text>{item.description}</Text>
+            data={eventsToDisplay}
+            renderItem={({ item }) => (
+                <TouchableOpacity
+                    style={styles.eventCard}
+                    onPress={() => handleEventPress(item)}
+                >
+                    <Text style={styles.eventName}>{item.name}</Text>
+                    <Text>
+                        {item.date ? new Date(item.date).toLocaleDateString() : 'Fecha no disponible'}
+                    </Text>
+                    <Text>{item.description}</Text>
 
-                        {userId !== null && item.userId === userId && (
-                            <View style={styles.actionButtons}>
-                                <Button title="Administar" onPress={() => { handleAdministrarEvent(item) }} />
-                                <Button title="Eliminar" onPress={() => handleDeleteEvent(item.id)} />
-                            </View>
-                        )}
-                        {userId !== null && item.userId != userId && (
-                            <View style={styles.detailButton}>
-                                <Button title="Detalles" onPress={() => handleDetailsEvent(item)} />
-                            </View>
-                        )}
-                    </TouchableOpacity>
-                )}
-                keyExtractor={(item) => item.id.toString()}
-            />
+                    {userId !== null && item.userId === userId && (
+                        <View style={styles.actionButtons}>
+                            <Button title="Administar" onPress={() => { handleAdministrarEvent(item) }} />
+                            <Button 
+                                title="Eliminar" 
+                                onPress={() => handleDeleteEvent(item.id)} 
+                                color="#f44336" // Red color
+                            />
+                        </View>
+                    )}
+                    {userId !== null && item.userId != userId && (
+                        <View style={styles.detailButton}>
+                            <Button title="Detalles" onPress={() => handleDetailsEvent(item)} />
+                        </View>
+                    )}
+                </TouchableOpacity>
+            )}
+            keyExtractor={(item) => item.id.toString()}
+        />
+
 
 
             {/* Botón para abrir el modal de creación de evento */}
@@ -361,8 +366,12 @@ export default function CreacionEvento() {
                     />
                     <Button title="Seleccionar en el mapa" onPress={() => setModalVisible(true)} color="#FF7F50" />
                 </View>
-                <Button title="Crear Evento" onPress={createNewEvent} color="#FF7F50" />
-                <Button title="cerrar" onPress={() => setIsModalVisible(false)} color="#FF7F50" />
+                
+                {/* Botones con marginTop para separación */}
+                <View style={styles.modalButtonContainer}>
+                    <Button title="Crear Evento" onPress={createNewEvent} color="#FF7F50" />
+                    <Button title="Cerrar" onPress={() => setIsModalVisible(false)} color="#FF7F50" />
+                </View>
 
                 <Modal visible={modalVisible} animationType="slide">
                     {location ? (
@@ -386,6 +395,7 @@ export default function CreacionEvento() {
                     <Button title="Cerrar" onPress={() => setModalVisible(false)} color="#FF7F50" />
                 </Modal>
             </Modal>
+
             <Modal
                 visible={isDetailsModalVisible}
                 transparent={true}
@@ -521,55 +531,79 @@ export default function CreacionEvento() {
                             onRequestClose={() => setIsNameModalVisible(false)}
                         >
                             <View style={styles.modalContainer}>
-                                <Text style={styles.modalTitle}>Cambiar Nombre</Text>
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="Nuevo Nombre"
-                                    value={newName}
-                                    onChangeText={setNewName}
-                                />
-                                <View style={styles.modalButtons}>
-                                    <TouchableOpacity style={styles.saveButton} onPress={() => setIsNameModalVisible(false)}>
-                                        <Text style={styles.saveButtonText}>Guardar</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity
-                                        style={styles.cancelButton}
-                                        onPress={() => { setIsNameModalVisible(false); setNewName(''); }}
-                                    >
-                                        <Text style={styles.cancelButtonText}>Cancelar</Text>
-                                    </TouchableOpacity>
+                                <View style={styles.modalContent}>
+                                    <Text style={styles.modalTitle}>Cambiar Nombre</Text>
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="Nuevo Nombre"
+                                        value={newName}
+                                        onChangeText={setNewName}
+                                    />
+                                    <View style={styles.modalButtons}>
+                                        <TouchableOpacity
+                                            style={styles.saveButton}
+                                            onPress={() => {
+                                                setIsNameModalVisible(false);
+                                                // Handle Save Logic
+                                            }}
+                                        >
+                                            <Text style={styles.saveButtonText}>Guardar</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity
+                                            style={styles.cancelButton}
+                                            onPress={() => {
+                                                setIsNameModalVisible(false);
+                                                setNewName(''); // Clear the input
+                                            }}
+                                        >
+                                            <Text style={styles.cancelButtonText}>Cancelar</Text>
+                                        </TouchableOpacity>
+                                    </View>
                                 </View>
                             </View>
                         </Modal>
 
+
                         {/* Modal for changing description */}
                         <Modal
-                            visible={iUpdateDescriptionModalVisible}
+                            visible={isUpdateDescriptionModalVisible}
                             transparent={true}
                             animationType="slide"
                             onRequestClose={() => setIsDescriptionModalVisible(false)}
                         >
                             <View style={styles.modalContainer}>
-                                <Text style={styles.modalTitle}>Cambiar Descripción</Text>
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="Nueva Descripción"
-                                    value={newDescription}
-                                    onChangeText={setNewDescription}
-                                />
-                                <View style={styles.modalButtons}>
-                                    <TouchableOpacity style={styles.saveButton} onPress={() => setIsDescriptionModalVisible(false)}>
-                                        <Text style={styles.saveButtonText}>Guardar</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity
-                                        style={styles.cancelButton}
-                                        onPress={() => { setIsDescriptionModalVisible(false); setNewDescription(''); }}
-                                    >
-                                        <Text style={styles.cancelButtonText}>Cancelar</Text>
-                                    </TouchableOpacity>
+                                <View style={styles.modalContent}>
+                                    <Text style={styles.modalTitle}>Cambiar Descripción</Text>
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="Nueva Descripción"
+                                        value={newDescription}
+                                        onChangeText={setNewDescription}
+                                    />
+                                    <View style={styles.modalButtons}>
+                                        <TouchableOpacity
+                                            style={styles.saveButton}
+                                            onPress={() => {
+                                                setIsDescriptionModalVisible(false);
+                                                // Handle Save Logic
+                                            }}
+                                        >
+                                            <Text style={styles.saveButtonText}>Guardar</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity
+                                            style={styles.cancelButton}
+                                            onPress={() => {
+                                                setIsDescriptionModalVisible(false);
+                                                setNewDescription(''); // Clear the input
+                                            }}
+                                        >
+                                            <Text style={styles.cancelButtonText}>Cancelar</Text>
+                                        </TouchableOpacity>
+                                    </View>
                                 </View>
                             </View>
                         </Modal>
+
 
                         {/* Lista de usuarios inscritos */}
                         <Text style={styles.sectionTitle}>Usuarios Inscritos:</Text>
@@ -623,6 +657,7 @@ const styles = StyleSheet.create({
     },
     section: {
         marginBottom: 20,
+        paddingHorizontal: 20, // Adds padding to the left and right
     },
 
     label: {
@@ -637,12 +672,13 @@ const styles = StyleSheet.create({
     },
     input: {
         height: 50,
-        borderColor: '#FF7F50',
+        borderColor: '#FF7F50', // Orange border
         borderWidth: 1,
-        borderRadius: 25,
+        borderRadius: 25, // Rounded edges
         paddingHorizontal: 16,
-        backgroundColor: '#ffffff',
-    },
+        backgroundColor: '#f9f9f9', // Light background
+        marginBottom: 20, // Margin below the input
+      },
     locationButton: {
         marginTop: 15,
         paddingVertical: 10,
@@ -706,30 +742,42 @@ const styles = StyleSheet.create({
     modalButtons: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        width: '60%',
+        gap: 10, // Add space between buttons
+        width: '100%', // Ensure the container takes full width
+        marginTop: 20,
     },
     saveButton: {
-        backgroundColor: '#4CAF50',
-        padding: 10,
-        borderRadius: 5,
-        marginHorizontal: 5,
+        backgroundColor: '#4CAF50', // Green for save button
+        paddingVertical: 12, // Adjust padding for better spacing
+        paddingHorizontal: 10, // Added padding for text alignment
+        borderRadius: 25, // Rounded edges
+        flex: 1, // Make both buttons equally wide
+        alignItems: 'center',
+        justifyContent: 'center', // Center content vertically
     },
     saveButtonText: {
         color: 'white',
-        textAlign: 'center',
         fontSize: 16,
+        fontWeight: 'bold',
+        textAlign: 'center', // Center text horizontally
     },
     cancelButton: {
-        backgroundColor: '#f44336',
-        padding: 10,
-        borderRadius: 5,
-        marginHorizontal: 5,
+        backgroundColor: '#f44336', // Red for cancel button
+        paddingVertical: 12,
+        paddingHorizontal: 10,
+        borderRadius: 25,
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     cancelButtonText: {
         color: 'white',
-        textAlign: 'center',
         fontSize: 16,
+        fontWeight: 'bold',
+        textAlign: 'center',
     },
+    
+      
     mapModalContainer: {
         flex: 1,
         justifyContent: 'center',
@@ -754,27 +802,26 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.7)', // Fondo semi-transparente
-    },
-    modalContent: {
-        width: '90%',
-        marginTop: 50,
-        backgroundColor: '#fff',
-        borderRadius: 10,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)', // Overlay for modal
+      },
+      modalContent: {
+        width: '80%', // Adjust width if needed
+        backgroundColor: '#ffffff', // White background
+        borderRadius: 15, // Rounded edges
         padding: 20,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.5,
+        shadowOpacity: 0.25,
         shadowRadius: 4,
-        elevation: 5,
-    },
-    modalTitle: {
-        fontSize: 20,
+        elevation: 5, // For Android shadow
+      },
+      modalTitle: {
+        fontSize: 22,
         fontWeight: 'bold',
-        color: '#FF7F50',
-        marginBottom: 20,
+        color: '#FF7F50', // Orange color for title
         textAlign: 'center',
-    },
+        marginBottom: 15,
+      },
     modalText: {
         fontSize: 16,
         color: '#333',
@@ -850,6 +897,13 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         fontWeight: 'bold',
     },
+    modalButtonContainer: {
+        flexDirection: 'column',  // Aseguramos que los botones estén uno encima del otro
+        marginTop: 20,  // Separa los botones entre sí
+        paddingHorizontal: 20, // Añadir espacio en los laterales
+    },
+
+    
 
 
 });

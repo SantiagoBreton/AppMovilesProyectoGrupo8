@@ -119,7 +119,12 @@ interface User {
     <Text>{item.description}</Text>
 
     <View style={styles.detailButton}>
-        <Button title="Detalles" onPress={() => handleDetailsEvent(item)} />
+    <Button
+        title="Detalles"
+        onPress={() => handleDetailsEvent(item)}
+        color="#FF7F50" // Change button color here
+    />
+
     </View>
 </TouchableOpacity>
   );
@@ -192,44 +197,54 @@ return (
         </ScrollView>
       )}
             <Modal
-                visible={isDetailsModalVisible}
-                transparent={true}
-                animationType="slide"
-                onRequestClose={() => setIsDetailsModalVisible(false)}
-            >
-                <View style={styles.modalContainer}>
-                    <View style={styles.modalContent}>
-                        {eventDetails && (
-                            <>
-                                <Text style={styles.modalTitle}>{eventDetails.name}</Text>
-                                <Text style={styles.modalText}>
-                                    Descripción: {eventDetails.description}
-                                </Text>
-                                <Text style={styles.modalText}>
-                                    Fecha: {new Date(eventDetails.date).toLocaleDateString()}
-                                </Text>
-                                <Text style={styles.modalText}>Ubicación: {eventLocation}</Text>
-                                <Text style={styles.modalText}>
-                                    Participantes: {eventDetails.currentParticipants}/
-                                    {eventDetails.maxParticipants}
-                                </Text>
-                                <TouchableOpacity
-                                    style={styles.locationButton}
-                                    onPress={handleShowMap}
-                                >
-                                    <Text style={styles.locationButtonText}>Ver en el Mapa</Text>
-                                </TouchableOpacity>
-                            </>
-                        )}
-                        <TouchableOpacity
-                            style={styles.closeButton}
-                            onPress={() => setIsDetailsModalVisible(false)}
-                        >
-                            <Text style={styles.closeButtonText}>Cerrar</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </Modal>
+  visible={isDetailsModalVisible}
+  transparent={true}
+  animationType="slide"
+  onRequestClose={() => setIsDetailsModalVisible(false)}
+>
+  <View style={styles.modalContainer}>
+    <View style={styles.modalContent}>
+      {eventDetails && (
+        <>
+          <Text style={styles.modalTitle}>{eventDetails.name}</Text>
+          <View style={styles.modalSection}>
+            <Text style={styles.modalLabel}>Descripción:</Text>
+            <Text style={styles.modalText}>{eventDetails.description}</Text>
+          </View>
+          <View style={styles.modalSection}>
+            <Text style={styles.modalLabel}>Fecha:</Text>
+            <Text style={styles.modalText}>
+              {new Date(eventDetails.date).toLocaleDateString()}
+            </Text>
+          </View>
+          <View style={styles.modalSection}>
+            <Text style={styles.modalLabel}>Ubicación:</Text>
+            <Text style={styles.modalText}>{eventLocation}</Text>
+          </View>
+          <View style={styles.modalSection}>
+            <Text style={styles.modalLabel}>Participantes:</Text>
+            <Text style={styles.modalText}>
+              {eventDetails.currentParticipants}/{eventDetails.maxParticipants}
+            </Text>
+          </View>
+          <TouchableOpacity
+            style={styles.modalActionButton}
+            onPress={handleShowMap}
+          >
+            <Text style={styles.modalActionButtonText}>Ver en el Mapa</Text>
+          </TouchableOpacity>
+        </>
+      )}
+      <TouchableOpacity
+        style={styles.closeButton}
+        onPress={() => setIsDetailsModalVisible(false)}
+      >
+        <Text style={styles.closeButtonText}>Cerrar</Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+</Modal>
+
 
             {/* Map Modal */}
             <Modal
@@ -280,6 +295,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#ffffff',
     padding: 16,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#FF7F50',
+    marginBottom: 10,
+    textAlign: 'center',
   },
   header: {
     fontSize: 24,
@@ -350,13 +372,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#808080',
   },
-  locationButton: {
-    marginTop: 15,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    backgroundColor: '#4CAF50',
-    borderRadius: 5,
-},
+
 buttonContainer: {
     flexDirection: 'row',        // Alineación de los botones en fila
     justifyContent: 'space-between', // Espaciado entre los botones
@@ -381,12 +397,7 @@ eventCard: {
     borderColor: '#FF7F50',
     borderWidth: 1,
 },
-locationButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    textAlign: 'center',
-    fontWeight: 'bold',
-},
+
 eventName: {
     fontSize: 18,
     fontWeight: 'bold',
@@ -443,18 +454,7 @@ modalContent: {
     shadowRadius: 4,
     elevation: 5,
 },
-modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#FF7F50',
-    marginBottom: 10,
-    textAlign: 'center',
-},
-modalText: {
-    fontSize: 16,
-    color: '#333',
-    marginBottom: 10,
-},
+
 closeButton: {
     marginTop: 20,
     alignSelf: 'center',
@@ -467,5 +467,35 @@ closeButtonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
-}
+},
+modalSection: {
+    marginBottom: 10,
+    paddingVertical: 5,
+    borderBottomWidth: 1,
+    borderBottomColor: '#FF7F50',
+  },
+  modalLabel: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#FF7F50',
+  },
+  modalText: {
+    fontSize: 14,
+    color: '#333',
+  },
+  modalActionButton: {
+    marginTop: 20,
+    alignSelf: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    backgroundColor: '#FF7F50',
+    borderRadius: 25,
+  },
+  modalActionButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  
 });
