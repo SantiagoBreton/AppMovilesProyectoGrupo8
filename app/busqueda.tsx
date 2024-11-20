@@ -534,6 +534,7 @@ const styles = StyleSheet.create({
         elevation: 5,
     },
     container2: {
+        marginTop: 30,
         flex: 1,
         backgroundColor: '#ffffff',
         padding: 16,

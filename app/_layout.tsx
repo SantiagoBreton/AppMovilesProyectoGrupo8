@@ -5,6 +5,7 @@ import { EventProvider } from "@/context/eventContext";
 import { AuthProvider, useAuthContext } from "@/context/userLoginContext";
 import InicioPerfil from './inicio_perfil';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { StatusBar } from 'react-native';
 
 function RootLayout() {
   const { isAuthenticated } = useAuthContext();  // Make sure this is within the AuthProvider
@@ -20,6 +21,11 @@ function RootLayout() {
 
   return (
     <EventProvider>
+      <StatusBar
+        barStyle="light-content" // Cambia el color del contenido (texto e íconos)
+        backgroundColor="#1C1C1C" // Cambia el fondo de la barra de notificaciones
+      />
+      {/* Resto de tu aplicación */}
       <Tabs
         screenOptions={{
           tabBarActiveTintColor: '#808080',
@@ -40,6 +46,7 @@ function RootLayout() {
         <Tabs.Screen
           name="index"
           options={{
+            headerShown: false,
             tabBarIcon: ({ color, size }) => (
               <FontAwesome5 name="map" size={size} color={color} />
             ),
@@ -49,6 +56,7 @@ function RootLayout() {
         <Tabs.Screen
           name="busqueda"
           options={{
+            headerShown: false,
             tabBarIcon: ({ color, size }) => (
               <FontAwesome5 name="search" size={size} color={color} />
             )
@@ -57,6 +65,7 @@ function RootLayout() {
         <Tabs.Screen
           name="inicio_perfil"
           options={{
+            headerShown: false,
             tabBarButton: () => null,
             tabBarIcon: ({ color, size }) => (
               <FontAwesome5 name="user-plus" size={size} color={color} />
@@ -67,6 +76,7 @@ function RootLayout() {
         <Tabs.Screen
           name="perfil"
           options={{
+            headerShown: false,
             tabBarIcon: ({ color, size }) => (
               <FontAwesome5 name="user-tie" size={size} color={color} />
             ),
@@ -76,6 +86,7 @@ function RootLayout() {
         <Tabs.Screen
           name="eventos"
           options={{
+            headerShown: false,
             tabBarIcon: ({ color, size }) => (
               <FontAwesome5 name="calendar" size={size} color={color} />
             ),

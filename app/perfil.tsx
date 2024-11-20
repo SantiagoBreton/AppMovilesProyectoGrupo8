@@ -127,6 +127,7 @@ export default function Perfil() {
 
 const styles = StyleSheet.create({
     container: {
+        marginTop: 30,
         flex: 1,
         backgroundColor: '#F9F9F9',
         paddingHorizontal: 16,
