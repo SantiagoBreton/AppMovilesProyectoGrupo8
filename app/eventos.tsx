@@ -340,10 +340,11 @@ export default function CreacionEvento() {
                     {userId !== null && item.userId === userId && (
                         <View style={styles.actionButtons}>
                             <Button title="Detalles" onPress={() => handleDetailsEvent(item)} />
-                                {/* <Button title="Calificaciones y comentarios" onPress={() => {
-                                handleReviewsEvent(item); 
-                                handleCommentsEvents(item);
-                                }} /> */}
+                            <Button
+                                title="Eliminar"
+                                onPress={() => handleDeleteEvent(item.id)}
+                                color="#f44336"
+                            />
                         </View>
                     )}
                     {userId !== null && item.userId !== userId && (
