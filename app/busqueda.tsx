@@ -19,10 +19,10 @@ import { Float } from 'react-native/Libraries/Types/CodegenTypes';
 import * as Location from 'expo-location';
 import { getEventByName } from '@/apiCalls/getEventByName';
 import { getUserByName } from '@/apiCalls/getUserByName';
+import { myEvents } from '@/apiCalls/myEvents';
 
 export default function Busqueda() {
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<Event[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isDetailsModalVisible, setIsDetailsModalVisible] = useState(false);
   const [eventDetails, setEventDetails] = useState<Event | null>(null);
@@ -56,12 +56,10 @@ interface User {
         setIsSearching(true);
         try {
             if (query.length === 0) {
-                setResults([]);
                 setFilteredEvents([]);
                 return;
             }
             const filteredResults = await getEventByName(query);
-            setResults(filteredResults.data);
             setFilteredEvents(filteredResults.data);
         } catch (error) {
             console.error('Error fetching events:', error);
@@ -75,12 +73,10 @@ interface User {
         setIsSearching(true);
         try {
             if (query.length === 0) {
-                setResults([]);
                 setFilteredUsers([]);
                 return;
             }
             const filteredResults = await getUserByName(query);
-            setResults(filteredResults.data);
             setFilteredUsers(filteredResults.data);
         } catch (error) {
             console.error('Error fetching users:', error);
@@ -134,6 +130,12 @@ interface User {
             <View>
                 <Text style={styles.resultTitle}>{item.name}</Text>
                 <Text style={styles.resultType}>{item.email}</Text>
+                <Button
+                    title="Ver Perfil"
+                    onPress={() => {
+                        const userEvents = myEvents(true);
+                        // Navigate to user profile
+                    }}></Button>
             </View>
         </View>);
 
