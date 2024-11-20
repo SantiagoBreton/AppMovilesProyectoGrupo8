@@ -100,7 +100,7 @@ export default function Busqueda() {
             const userEvents = await getAllEventsFromUser(user.id);
             setSpectatedUserEvents(userEvents.data);
             setIsSpectatedUserVisible(true);
-            console.log('User events:', userEvents);
+            
         } catch (error) {
             console.error('Error fetching user events:', error);
             Alert.alert('Error', 'Failed to fetch user events');
