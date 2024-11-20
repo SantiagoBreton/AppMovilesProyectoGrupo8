@@ -13,7 +13,7 @@ import { useEventContext } from '@/context/eventContext';
 import { createEvent } from '@/apiCalls/createEvent';
 import { getSubscribedEvents } from '@/apiCalls/getSubscribedEvents';
 import { getAllUsersSubscribedToAnEvent } from '@/apiCalls/getAllUsersSubscribedToAnEvent';
-
+import { updateEvent } from '@/apiCalls/updateEvent';
 
 
 export default function CreacionEvento() {
@@ -30,34 +30,39 @@ export default function CreacionEvento() {
     const [selectedLatitude, setLatitude] = useState<number | null>(null);
     const [selectedLongitude, setLongitude] = useState<number | null>(null);
     const [selectedView, setSelectedView] = useState('inscritos'); // 'inscritos' o 'creados'
-    const {refreshEvents} = useEventContext();
+    const { refreshEvents } = useEventContext();
     const { location, locationError } = useLocation();
     const [isDetailsModalVisible, setIsDetailsModalVisible] = useState(false);
     const [eventDetails, setEventDetails] = useState<Event | null>(null);
     const [eventLocation, setEventLocation] = useState<string | null>(null);
     const { trigger } = useEventContext();
     const [isMapVisible, setMapVisible] = useState(false);
-    const  allevents  = getSubscribedEvents(trigger);
-    const  myUserEvents = myEvents(trigger); // Call myEvents and store the result directly in the variable
+    const allevents = getSubscribedEvents(trigger);
+    const myUserEvents = myEvents(trigger); // Call myEvents and store the result directly in the variable
     const eventsToDisplay = selectedView === 'inscritos' ? allevents.events : myUserEvents.myEvents;
     const [isAdminModalVisible, setIsAdminModalVisible] = useState(false);
     const [adminEventDetails, setAdminEventDetails] = useState<EventWithId | null>(null);
     const [subscribedUsers, setSubscribedUsers] = useState<{ id: number; name: string }[]>([]);
-    const [updatedName, setUpdatedName] = useState('');
-    
+
+    const [isUpdateNameModalVisible, setIsNameModalVisible] = useState(false);
+    const [iUpdateDescriptionModalVisible, setIsDescriptionModalVisible] = useState(false);
+    const [newName, setNewName] = useState('');
+    const [newDescription, setNewDescription] = useState('');
+
+
 
     const [userId, setUserId] = useState<number | null>(null);
 
     useEffect(() => {
         const fetchUserId = async () => {
-        try {
-            const storedUserId = await AsyncStorage.getItem('userId');
-            if (storedUserId) {
-            setUserId(parseInt(storedUserId, 10)); // Convierte el ID de string a número
+            try {
+                const storedUserId = await AsyncStorage.getItem('userId');
+                if (storedUserId) {
+                    setUserId(parseInt(storedUserId, 10)); // Convierte el ID de string a número
+                }
+            } catch (error) {
+                console.error('Error fetching userId:', error);
             }
-        } catch (error) {
-            console.error('Error fetching userId:', error);
-        }
         };
 
         fetchUserId();
@@ -74,7 +79,7 @@ export default function CreacionEvento() {
         userId: number;
     };
     interface EventWithId {
-        id : number;
+        id: number;
         name: string;
         date: Date;
         latitude: Float;
@@ -89,18 +94,21 @@ export default function CreacionEvento() {
     const showDatePicker = () => {
         setDatePickerVisible(true);
     };
-    
+
     const handleShowMap = () => setMapVisible(true);
 
     const handleCloseMap = () => setMapVisible(false);
 
-    const handleDateChange = (event: any, selectedDate?: Date) => {
+    const handleDateChange = (event: any, date?: Date) => {
         setDatePickerVisible(false);
-        if (selectedDate) {
-            setSelectedDate(selectedDate);
-            setFecha(selectedDate.toLocaleDateString());
+
+        if (date) {
+            setSelectedDate(date);
+            setFecha(date.toLocaleDateString());
+
         }
     };
+
     const handleMapPress = (event: { nativeEvent: { coordinate: { latitude: number; longitude: number; }; }; }) => {
         const { latitude, longitude } = event.nativeEvent.coordinate;
         setSelectedLocation({ latitude, longitude });
@@ -121,12 +129,12 @@ export default function CreacionEvento() {
                 latitude: item.latitude,
                 longitude: item.longitude,
             });
-    
+
             const location =
                 addresses.length > 0
                     ? `${addresses[0].city}, ${addresses[0].region}, ${addresses[0].country}`
                     : 'Address not found';
-    
+
             setEventDetails(item);
             setEventLocation(location);
             setIsDetailsModalVisible(true);
@@ -135,10 +143,38 @@ export default function CreacionEvento() {
             Alert.alert('Error', 'Failed to fetch event details');
         }
     };
+
+    const handleEventUpdate = async () => {
+        try {
+            console.log(`newName: ${newName}, newDescription: ${newDescription}, selectedDate: ${selectedDate}`);
+    
+            // Fallback to default values if inputs are empty
+            const updatedName = newName || adminEventDetails?.name || '';
+            const updatedDescription = newDescription || adminEventDetails?.description || '';
+            const updatedDate = selectedDate || adminEventDetails?.date || new Date();
+    
+            console.log(`updatedName: ${updatedName}, updatedDescription: ${updatedDescription}, updatedDate: ${updatedDate}`);
+    
+            // Call the update function with the resolved values
+            await updateEvent(adminEventDetails?.id ?? 0, updatedName, updatedDescription, updatedDate);
+    
+            // Refresh and reset
+            refreshEvents();
+            setNewName('');
+            setNewDescription('');
+            setSelectedDate(new Date());
+            setIsAdminModalVisible(false); 
+    
+            Alert.alert('Éxito', 'El evento se actualizó.');
+        } catch (error) {
+            console.error('Error updating event:', error);
+            Alert.alert('Error', 'No se pudo actualizar el evento.');
+        }
+    };
     
 
     const createNewEvent = async function createNewEvent() {
-        try{
+        try {
             const currentUserId = await AsyncStorage.getItem('userId');
             const event: Event = {
                 name: titulo,
@@ -153,16 +189,16 @@ export default function CreacionEvento() {
             await createEvent(event);
             setIsModalVisible(false);
             refreshEvents();
-        }  catch (error) {
-        setIsModalVisible(false);
-        refreshEvents();
-        } 
+        } catch (error) {
+            setIsModalVisible(false);
+            refreshEvents();
+        }
     };
 
     const switchView = (view: string) => {
         setSelectedView(view);
     };
-    
+
     const handleEventPress = (event: EventWithId) => {
         // Aquí puedes navegar a la pantalla de detalles del evento
         Alert.alert('Detalles del Evento', `Nombre: ${event.name}\nDescripción: ${event.description}`);
@@ -177,9 +213,6 @@ export default function CreacionEvento() {
                 Alert.alert('Error', 'No se pudo cargar la información de los usuarios inscritos.');
             }
             setAdminEventDetails(event);
-            if (event) {
-                setUpdatedName(event.name);
-            }
             setIsAdminModalVisible(true);
         } catch (error) {
             Alert.alert('Error', 'No se pudo cargar la información del evento.');
@@ -190,25 +223,15 @@ export default function CreacionEvento() {
         try {
             await unsubscribeUserFromAnEvent(userId, eventId);
             Alert.alert('Éxito', 'Usuario eliminado del evento correctamente.');
+            setSubscribedUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
             refreshEvents();
         } catch (error) {
             Alert.alert('Error', 'No se pudo eliminar al usuario del evento.');
         }
     }
-    ;
+        ;
 
-    const handleUpdateEventName = async (idEvent: any) => {
-        try {
-            // Simulate API call to update event name
-            if (adminEventDetails) {
-                console.log(`Updating event ID ${idEvent} with name: ${updatedName}`);
-            }
-            Alert.alert('Éxito', 'El nombre del evento se actualizó correctamente.');
-            setIsAdminModalVisible(false);
-        } catch (error) {
-            Alert.alert('Error', 'No se pudo actualizar el nombre del evento.');
-        }
-    };
+   
     const handleDeleteEvent = (eventId: any) => {
         deleteEventById(eventId)
         refreshEvents();
@@ -217,64 +240,64 @@ export default function CreacionEvento() {
 
     return (
         <View style={styles.container}>
-              <Text style={styles.header}>Mis Eventos</Text>
+            <Text style={styles.header}>Mis Eventos</Text>
 
-                {/* Botones para cambiar la vista */}
-                <View style={styles.buttonContainer}>
-                    <View style={styles.buttonWrapper}>
-                        <Button
-                            title="Eventos a los que me Inscribí"
-                            onPress={() => switchView('inscritos')}
-                            color={selectedView === 'inscritos' ? '#FF7F50' : '#000'}
-                        />
-                    </View>
-                    <View style={styles.buttonWrapper}>
-                        <Button
-                            title="Mis Eventos Creados"
-                            onPress={() => switchView('creados')}
-                            color={selectedView === 'creados' ? '#FF7F50' : '#000'}
-                        />
-                    </View>
+            {/* Botones para cambiar la vista */}
+            <View style={styles.buttonContainer}>
+                <View style={styles.buttonWrapper}>
+                    <Button
+                        title="Eventos a los que me Inscribí"
+                        onPress={() => switchView('inscritos')}
+                        color={selectedView === 'inscritos' ? '#FF7F50' : '#000'}
+                    />
                 </View>
+                <View style={styles.buttonWrapper}>
+                    <Button
+                        title="Mis Eventos Creados"
+                        onPress={() => switchView('creados')}
+                        color={selectedView === 'creados' ? '#FF7F50' : '#000'}
+                    />
+                </View>
+            </View>
 
-                {/* Lista de eventos */}
-                <FlatList
-                    data={eventsToDisplay}
-                    renderItem={({ item }) => (
-                        <TouchableOpacity
-                            style={styles.eventCard}
-                            onPress={() => handleEventPress(item)}
-                        >
-                            <Text style={styles.eventName}>{item.name}</Text>
-                            <Text>
-                                {item.date ? new Date(item.date).toLocaleDateString() : 'Fecha no disponible'}
-                            </Text>
-                            <Text>{item.description}</Text>
+            {/* Lista de eventos */}
+            <FlatList
+                data={eventsToDisplay}
+                renderItem={({ item }) => (
+                    <TouchableOpacity
+                        style={styles.eventCard}
+                        onPress={() => handleEventPress(item)}
+                    >
+                        <Text style={styles.eventName}>{item.name}</Text>
+                        <Text>
+                            {item.date ? new Date(item.date).toLocaleDateString() : 'Fecha no disponible'}
+                        </Text>
+                        <Text>{item.description}</Text>
 
-                            {userId !== null && item.userId === userId &&  (
-                                <View style={styles.actionButtons}>
-                                    <Button title="Administar" onPress={() => {handleAdministrarEvent(item)}} />
-                                    <Button title="Eliminar" onPress={() => handleDeleteEvent(item.id)} />
-                                </View>
-                            )}
-                            {userId !== null && item.userId != userId && (
-                                <View style={styles.detailButton}>
-                                    <Button title="Detalles" onPress={() => handleDetailsEvent(item)} />
-                                </View>
-                            )}
-                        </TouchableOpacity>
-                    )}
-                    keyExtractor={(item) => item.id.toString()}
-                />
+                        {userId !== null && item.userId === userId && (
+                            <View style={styles.actionButtons}>
+                                <Button title="Administar" onPress={() => { handleAdministrarEvent(item) }} />
+                                <Button title="Eliminar" onPress={() => handleDeleteEvent(item.id)} />
+                            </View>
+                        )}
+                        {userId !== null && item.userId != userId && (
+                            <View style={styles.detailButton}>
+                                <Button title="Detalles" onPress={() => handleDetailsEvent(item)} />
+                            </View>
+                        )}
+                    </TouchableOpacity>
+                )}
+                keyExtractor={(item) => item.id.toString()}
+            />
 
 
-                {/* Botón para abrir el modal de creación de evento */}
-                <Button
-                    title="Crear Evento"
-                    onPress={() => setIsModalVisible(true)}
-                    color="#FF7F50"
-                />
-            <Modal visible={isModalVisible} animationType="slide">          
+            {/* Botón para abrir el modal de creación de evento */}
+            <Button
+                title="Crear Evento"
+                onPress={() => setIsModalVisible(true)}
+                color="#FF7F50"
+            />
+            <Modal visible={isModalVisible} animationType="slide">
                 <Text style={styles.title}>Crear Evento</Text>
                 <View style={styles.section}>
                     <Text style={styles.label}>Título del Evento</Text>
@@ -440,72 +463,147 @@ export default function CreacionEvento() {
                 </View>
             </Modal>
             <Modal
-    visible={isAdminModalVisible}
-    transparent={true}
-    animationType="slide"
-    onRequestClose={() => setIsAdminModalVisible(false)}
->
-    <View style={styles.modalContainer}>
-        <ScrollView contentContainerStyle={styles.modalContent}>
-            <Text style={styles.modalTitle}>Administrar Evento</Text>
-            
-            {/* Detalles del evento */}
-            {adminEventDetails && (
-                <>
-                    <Text style={styles.modalText}>Nombre: {adminEventDetails.name}</Text>
-                    <Text style={styles.modalText}>
-                        Fecha Actual: {new Date(adminEventDetails.date).toLocaleDateString()}
-                    </Text>
-                    <TouchableOpacity
-                        style={styles.dateChangeButton}
-                        onPress={() => setDatePickerVisible(true)}
-                    >
-                        <Text style={styles.dateChangeText}>Cambiar Fecha</Text>
-                    </TouchableOpacity>
-                    {datePickerVisible && (
-                        <DateTimePicker
-                            value={selectedDate}
-                            mode="date"
-                            display={Platform.OS === 'ios' ? 'inline' : 'default'}
-                            onChange={handleDateChange}
-                        />
-                    )}
-                </>
-            )}
+                visible={isAdminModalVisible}
+                transparent={true}
+                animationType="slide"
+                onRequestClose={() => setIsAdminModalVisible(false)}
+            >
+                <View style={styles.modalContainer}>
+                    <ScrollView contentContainerStyle={styles.modalContent}>
+                        <Text style={styles.modalTitle}>Administrar Evento</Text>
 
-            {/* Lista de usuarios inscritos */}
-            <Text style={styles.sectionTitle}>Usuarios Inscritos:</Text>
-            {subscribedUsers.map((user) => (
-                <View key={user.id} style={styles.userRow}>
-                    <Text style={styles.userName}>{user.name}</Text>
-                    <TouchableOpacity
-                        onPress={() =>handleEliminateUserFromEvent(user.id, adminEventDetails?.id ?? 0)}
-                        style={styles.deleteUserButton}
-                    >
-                        <Text style={styles.deleteUserText}>Eliminar</Text>
-                    </TouchableOpacity>
+                        {/* Detalles del evento */}
+                        {adminEventDetails && (
+                            <>
+                                <Text style={styles.modalText}>Nombre: {adminEventDetails.name}</Text>
+                                <Text style={styles.modalText}>
+                                    Descripcion: {adminEventDetails.description}
+                                </Text>
+                                <Text style={styles.modalText}>
+                                    Fecha Evento: {new Date(adminEventDetails.date).toLocaleDateString()}
+                                </Text>
+
+                                {/* Button to change name */}
+                                <TouchableOpacity
+                                    style={styles.dateChangeButton}
+                                    onPress={() => setIsNameModalVisible(true)}
+                                >
+                                    <Text style={styles.dateChangeText}>Cambiar Nombre</Text>
+                                </TouchableOpacity>
+
+                                {/* Button to change description */}
+                                <TouchableOpacity
+                                    style={styles.dateChangeButton}
+                                    onPress={() => setIsDescriptionModalVisible(true)}
+                                >
+                                    <Text style={styles.dateChangeText}>Cambiar Descripción</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    style={styles.dateChangeButton}
+                                    onPress={() => setDatePickerVisible(true)}
+                                >
+                                    <Text style={styles.dateChangeText}>Cambiar Fecha</Text>
+                                </TouchableOpacity>
+                                {datePickerVisible && (
+                                    <DateTimePicker
+                                        value={selectedDate}
+                                        mode="date"
+                                        display={Platform.OS === 'ios' ? 'inline' : 'default'}
+                                        onChange={handleDateChange}
+                                    />
+                                )}
+                            </>
+                        )}
+                        <Modal
+                            visible={isUpdateNameModalVisible}
+                            transparent={true}
+                            animationType="slide"
+                            onRequestClose={() => setIsNameModalVisible(false)}
+                        >
+                            <View style={styles.modalContainer}>
+                                <Text style={styles.modalTitle}>Cambiar Nombre</Text>
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder="Nuevo Nombre"
+                                    value={newName}
+                                    onChangeText={setNewName}
+                                />
+                                <View style={styles.modalButtons}>
+                                    <TouchableOpacity style={styles.saveButton} onPress={() => setIsNameModalVisible(false)}>
+                                        <Text style={styles.saveButtonText}>Guardar</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        style={styles.cancelButton}
+                                        onPress={() => { setIsNameModalVisible(false); setNewName(''); }}
+                                    >
+                                        <Text style={styles.cancelButtonText}>Cancelar</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                        </Modal>
+
+                        {/* Modal for changing description */}
+                        <Modal
+                            visible={iUpdateDescriptionModalVisible}
+                            transparent={true}
+                            animationType="slide"
+                            onRequestClose={() => setIsDescriptionModalVisible(false)}
+                        >
+                            <View style={styles.modalContainer}>
+                                <Text style={styles.modalTitle}>Cambiar Descripción</Text>
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder="Nueva Descripción"
+                                    value={newDescription}
+                                    onChangeText={setNewDescription}
+                                />
+                                <View style={styles.modalButtons}>
+                                    <TouchableOpacity style={styles.saveButton} onPress={() => setIsDescriptionModalVisible(false)}>
+                                        <Text style={styles.saveButtonText}>Guardar</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        style={styles.cancelButton}
+                                        onPress={() => { setIsDescriptionModalVisible(false); setNewDescription(''); }}
+                                    >
+                                        <Text style={styles.cancelButtonText}>Cancelar</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                        </Modal>
+
+                        {/* Lista de usuarios inscritos */}
+                        <Text style={styles.sectionTitle}>Usuarios Inscritos:</Text>
+                        {subscribedUsers.map((user) => (
+                            <View key={user.id} style={styles.userRow}>
+                                <Text style={styles.userName}>{user.name}</Text>
+                                <TouchableOpacity
+                                    onPress={() => handleEliminateUserFromEvent(user.id, adminEventDetails?.id ?? 0)}
+                                    style={styles.deleteUserButton}
+                                >
+                                    <Text style={styles.deleteUserText}>Eliminar</Text>
+                                </TouchableOpacity>
+                            </View>
+                        ))}
+
+                        {/* Botones de acción */}
+                        <View style={styles.actionButtons}>
+                            <TouchableOpacity
+                                style={styles.updateButton}
+                                onPress={() => adminEventDetails && handleEventUpdate()}
+                            >
+                                <Text style={styles.updateButtonText}>Guardar Cambios</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={styles.closeButton}
+                                onPress={() => setIsAdminModalVisible(false)}
+                            >
+                                <Text style={styles.closeButtonText}>Cerrar</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </ScrollView>
                 </View>
-            ))}
+            </Modal>
 
-            {/* Botones de acción */}
-            <View style={styles.actionButtons}>
-                <TouchableOpacity
-                    style={styles.updateButton}
-                    onPress={() => adminEventDetails && handleUpdateEventName(adminEventDetails.id)}
-                >
-                    <Text style={styles.updateButtonText}>Guardar Cambios</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={styles.closeButton}
-                    onPress={() => setIsAdminModalVisible(false)}
-                >
-                    <Text style={styles.closeButtonText}>Cerrar</Text>
-                </TouchableOpacity>
-            </View>
-        </ScrollView>
-    </View>
-</Modal>
-            
         </View>
     );
 }
@@ -604,6 +702,33 @@ const styles = StyleSheet.create({
     },
     buttonWrapper: {
         width: '45%',               // Controla el ancho de cada botón
+    },
+    modalButtons: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        width: '60%',
+    },
+    saveButton: {
+        backgroundColor: '#4CAF50',
+        padding: 10,
+        borderRadius: 5,
+        marginHorizontal: 5,
+    },
+    saveButtonText: {
+        color: 'white',
+        textAlign: 'center',
+        fontSize: 16,
+    },
+    cancelButton: {
+        backgroundColor: '#f44336',
+        padding: 10,
+        borderRadius: 5,
+        marginHorizontal: 5,
+    },
+    cancelButtonText: {
+        color: 'white',
+        textAlign: 'center',
+        fontSize: 16,
     },
     mapModalContainer: {
         flex: 1,
@@ -725,6 +850,6 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         fontWeight: 'bold',
     },
-    
+
 
 });
