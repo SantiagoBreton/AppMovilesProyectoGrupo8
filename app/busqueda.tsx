@@ -14,6 +14,7 @@ import {
     ScrollView,
     Image,
     TouchableWithoutFeedback,
+    Dimensions
 } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
 import MapView, { Circle, Marker } from 'react-native-maps';
@@ -24,6 +25,7 @@ import { getUserByName } from '@/apiCalls/getUserByName';
 import { getAllEventsFromUser } from '@/apiCalls/getAllEventsFromUser';
 import { subscribeToEvent } from '@/apiCalls/subscribeToAnEvent';
 import { useEventContext } from '@/context/eventContext';
+import { white } from 'react-native-paper/lib/typescript/styles/themes/v2/colors';
 
 export default function Busqueda() {
     const [query, setQuery] = useState('');
@@ -288,7 +290,7 @@ export default function Busqueda() {
                                     style={[styles.modalActionButton, styles.subscribeButton]}
                                     onPress={() => handleSubscribe(eventDetails.id)}
                                 >
-                                    <Text style={styles.modalActionButtonText}>Suscribirse</Text>
+                                    <Text style={styles.modalActionButtonText} numberOfLines={1}>Suscribirse</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity
                                     style={[styles.closeButton, styles.separatedButton]}
@@ -348,11 +350,14 @@ export default function Busqueda() {
                 </View>
             </Modal>
             <Modal visible={isSpectatedUserVisible}>
+                <View style={styles.header3}>
+                <Text style={styles.name}></Text>
+                <TouchableOpacity style={styles.closeButton2} onPress={() => setIsSpectatedUserVisible(false)}>
+                                <FontAwesome5 name="times" size={24} color="black" />
+                        </TouchableOpacity>
+                </View>
                 <ScrollView style={styles.container}>
                     <View style={styles.header}>
-                        <TouchableOpacity style={styles.closeButton2} onPress={() => setIsSpectatedUserVisible(false)}>
-                            <FontAwesome5 name="times" size={24} color="black" />
-                        </TouchableOpacity>
                         <Image source={{ uri: 'https://via.placeholder.com/150' }} style={styles.profileImage} />
                         <Text style={styles.name}>{spectatedUserName}</Text>
                     </View>
@@ -410,6 +415,8 @@ export default function Busqueda() {
         </KeyboardAvoidingView>
     );
 }
+
+const { width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
     modalTitle: {
@@ -640,7 +647,7 @@ const styles = StyleSheet.create({
     },
     modalActionButtonText: {
         color: '#fff',
-        fontSize: 16,
+        fontSize: width > 360 ? 16 : 14,
         fontWeight: 'bold',
         textAlign: 'center',
     },
@@ -660,7 +667,7 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#F9F9F9',
         paddingHorizontal: 16,
-        paddingVertical: 24,
+        paddingVertical: 10,
     },
     eventHeader: {
         flexDirection: 'row',
@@ -686,6 +693,11 @@ const styles = StyleSheet.create({
         backgroundColor: '#FF7F50',
         paddingVertical: 16,
         borderRadius: 16,
+    },
+    header3: {
+        alignItems: 'center',
+        paddingBottom: 5,
+        backgroundColor: '#F9F9F9',
     },
     profileImage: {
         width: 100,
