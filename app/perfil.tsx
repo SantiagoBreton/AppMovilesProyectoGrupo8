@@ -10,7 +10,7 @@ import { useAuthContext } from '@/context/userLoginContext';  // Updated import
 export default function Perfil() {
     const { nombre, email, dataError } = myData();
     const { trigger } = useEventContext();
-    const  myUserEvents = myEvents(trigger);
+    const myUserEvents = myEvents(trigger);
     const eventsToDisplay = myUserEvents.myEvents;
     const { logout } = useAuthContext();
 
@@ -18,14 +18,14 @@ export default function Perfil() {
 
     useEffect(() => {
         const fetchUserId = async () => {
-        try {
-            const storedUserId = await AsyncStorage.getItem('userId');
-            if (storedUserId) {
-            setUserId(parseInt(storedUserId, 10)); // Convierte el ID de string a número
+            try {
+                const storedUserId = await AsyncStorage.getItem('userId');
+                if (storedUserId) {
+                    setUserId(parseInt(storedUserId, 10)); // Convierte el ID de string a número
+                }
+            } catch (error) {
+                console.error('Error fetching userId:', error);
             }
-        } catch (error) {
-            console.error('Error fetching userId:', error);
-        }
         };
 
         fetchUserId();
@@ -55,7 +55,7 @@ export default function Perfil() {
         logout();
     }
 
-    const handleDetailsEvent= (item: Event) => {
+    const handleDetailsEvent = (item: Event) => {
         Alert.alert('Detalles del Evento', `Nombre: ${item.name}\nDescripción: ${item.description}\nFecha: ${item.date}\nUbicación: ${item.latitude}, ${item.longitude}\nParticipantes: ${item.currentParticipants}/${item.maxParticipants}`);
     };
 
@@ -73,99 +73,166 @@ export default function Perfil() {
                 <Text style={styles.label}>Email:</Text>
                 <Text style={styles.input}>{email}</Text>
             </View>
-            {/* <Button title="Guardar" onPress={handleSave} color="#FF7F50" /> */}
-            <Button title="Cerrar Sesion" onPress={handleLogout} color="#FF7F50" />
-            
+
+            <View style={styles.logoutContainer}>
+                <Button title="Cerrar Sesión" onPress={handleLogout} color="#FF7F50" />
+            </View>
+
             <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Eventos Creados</Text>
-                <FlatList
-                    data={eventsToDisplay}
-                    renderItem={({ item }) => (
-                        <TouchableOpacity
-                            style={styles.eventCard}
-                            onPress={() => handleEventPress(item)}
-                        >
-                            <Text style={styles.eventName}>{item.name}</Text>
-                            <Text>
-                                {item.date ? new Date(item.date).toLocaleDateString() : 'Fecha no disponible'}
-                            </Text>
-                            <Text>{item.description}</Text>
-
-                            {userId !== null && item.userId != userId &&  (
-                                <View style={styles.detailButton}>
-                                    <Button  title="Detalles" onPress={() => handleDetailsEvent(item.id)} />
+                {eventsToDisplay.length > 0 ? (
+                    <FlatList
+                        data={eventsToDisplay}
+                        scrollEnabled={false}
+                        renderItem={({ item }) => (
+                            <TouchableOpacity
+                                style={styles.eventCard}
+                                onPress={() => handleEventPress(item)}
+                            >
+                                <View style={styles.eventHeader}>
+                                    <Text style={styles.eventName}>{item.name}</Text>
+                                    <Text style={styles.eventDate}>
+                                        {item.date
+                                            ? new Date(item.date).toLocaleDateString()
+                                            : 'Fecha no disponible'}
+                                    </Text>
                                 </View>
-                            )}
-                        </TouchableOpacity>
-                    )}
-                    keyExtractor={(item) => item.id.toString()}
-                    scrollEnabled={false} 
-                />
+                                <Text style={styles.eventDescription}>{item.description}</Text>
+                                {userId !== null && item.userId !== userId && (
+                                    <View style={styles.detailButtonContainer}>
+                                        <Button
+                                            title="Detalles"
+                                            onPress={() => handleDetailsEvent(item.id)}
+                                            color="#FF7F50"
+                                        />
+                                    </View>
+                                )}
+                            </TouchableOpacity>
+                        )}
+                        keyExtractor={(item) => item.id.toString()}
+                        ListFooterComponent={
+                            <Text style={styles.footerText}>
+                                {`Total de eventos: ${eventsToDisplay.length}`}
+                            </Text>
+                        }
+                    />
+                ) : (
+                    <Text style={styles.noEventsText}>No se han creado eventos aún.</Text>
+                )}
             </View>
-            
         </ScrollView>
+
     );
 };
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 20,
-        backgroundColor: '#ffffff',
+        backgroundColor: '#F9F9F9',
+        paddingHorizontal: 16,
+        paddingVertical: 24,
+    },
+    eventHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    footerText: {
+        marginTop: 16,
+        textAlign: 'center',
+        fontSize: 14,
+        color: '#666',
+    },
+    noEventsText: {
+        textAlign: 'center',
+        fontSize: 16,
+        color: '#999',
+        marginTop: 16,
     },
     header: {
         alignItems: 'center',
-        marginBottom: 20,
+        marginBottom: 24,
+        backgroundColor: '#FF7F50',
+        paddingVertical: 16,
+        borderRadius: 16,
     },
     profileImage: {
-        width: 150,
-        height: 150,
-        borderRadius: 75,
+        width: 100,
+        height: 100,
+        borderRadius: 50,
+        borderWidth: 2,
+        borderColor: '#fff',
+        marginBottom: 8,
     },
     name: {
         fontSize: 24,
         fontWeight: 'bold',
-        marginTop: 10,
-        color: '#FF7F50',
+        color: '#fff',
     },
     section: {
-        marginBottom: 20,
+        backgroundColor: '#fff',
+        padding: 16,
+        marginVertical: 12,
+        borderRadius: 12,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 6,
+        elevation: 4,
     },
     label: {
-        fontSize: 18,
-        marginBottom: 5,
+        fontSize: 16,
+        fontWeight: 'bold',
         color: '#FF7F50',
+        marginBottom: 4,
     },
     input: {
-        borderWidth: 1,
-        borderColor: '#FF7F50',
-        padding: 10,
-        borderRadius: 25,
-        backgroundColor: '#ffffff',
+        fontSize: 16,
+        color: '#333',
+        marginBottom: 8,
+    },
+    logoutContainer: {
+        marginVertical: 16,
+        alignItems: 'center',
     },
     sectionTitle: {
         fontSize: 20,
         fontWeight: 'bold',
-        marginBottom: 10,
-        color: 'black', 
+        color: '#FF7F50',
+        marginBottom: 16,
+        textAlign: 'center',
     },
     eventCard: {
-        padding: 15,
-        backgroundColor: '#f9f9f9',
-        borderRadius: 8,
-        marginBottom: 10,
-        borderColor: '#FF7F50',
-        borderWidth: 1,
-    },
-    detailButton: {
-        marginTop: 10,
-        flexDirection: 'row',
-        width: '100%', // Make the button container take full width of the card
-        justifyContent: 'center', // Center the button within the container
+        backgroundColor: '#fef6f2',
+        borderRadius: 12,
+        padding: 16,
+        marginBottom: 12,
+        borderLeftWidth: 4,
+        borderLeftColor: '#FF7F50',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.15,
+        shadowRadius: 4,
+        elevation: 3,
     },
     eventName: {
         fontSize: 18,
         fontWeight: 'bold',
         color: '#FF7F50',
-    }
+    },
+    eventDate: {
+        fontSize: 14,
+        color: '#666',
+        fontStyle: 'italic',
+    },
+    eventDescription: {
+        fontSize: 14,
+        color: '#333',
+        marginBottom: 8,
+    },
+    detailButtonContainer: {
+        alignSelf: 'flex-end',
+        marginTop: 8,
+    },
 });

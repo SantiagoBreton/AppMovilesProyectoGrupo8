@@ -151,21 +151,22 @@ export default function Busqueda() {
             style={styles.eventCard}
             onPress={() => handleDetailsEvent(item)}
         >
-            <Text style={styles.eventName}>{item.name}</Text>
-            <Text>
-                {item.date ? new Date(item.date).toLocaleDateString() : 'Fecha no disponible'}
-            </Text>
-            <Text>{item.description}</Text>
-
-            <View style={styles.detailButton}>
+            <View style={styles.cardContent}>
+                <Text style={styles.eventName}>{item.name}</Text>
+                <Text style={styles.eventDate}>
+                    {item.date ? new Date(item.date).toLocaleDateString() : 'Fecha no disponible'}
+                </Text>
+                <Text style={styles.eventDescription}>{item.description}</Text>
+            </View>
+            <View style={styles.detailButtonContainer}>
                 <Button
                     title="Detalles"
                     onPress={() => handleDetailsEvent(item)}
-                    color="#FF7F50" // Change button color here
+                    color="#FF7F50"
                 />
-
             </View>
         </TouchableOpacity>
+
     );
 
     const renderUserResult = ({ item }: { item: User }) => (
@@ -492,18 +493,25 @@ const styles = StyleSheet.create({
         justifyContent: 'center', // Center the button within the container
     },
     eventCard: {
-        padding: 15,
-        backgroundColor: '#f9f9f9',
-        borderRadius: 8,
-        marginBottom: 10,
-        borderColor: '#FF7F50',
-        borderWidth: 1,
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        padding: 16,
+        marginVertical: 8,
+        marginHorizontal: 16,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 5,
+        flexDirection: 'row',
+        alignItems: 'center',
     },
 
     eventName: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#FF7F50',
+        color: '#333',
+        marginBottom: 4,
     },
     closeMapButton: {
         position: 'absolute',
@@ -512,6 +520,19 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         backgroundColor: '#f44336',
         borderRadius: 5,
+    },
+    eventDate: {
+        fontSize: 14,
+        color: '#888',
+        marginBottom: 8,
+    },
+    eventDescription: {
+        fontSize: 14,
+        color: '#555',
+        marginBottom: 12,
+    },
+    detailButtonContainer: {
+        marginLeft: 16,
     },
     closeMapButtonText: {
         color: '#fff',
@@ -676,6 +697,9 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         marginRight: 16,
+    },
+    cardContent: {
+        flex: 1,
     },
 
 });
