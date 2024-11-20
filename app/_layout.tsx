@@ -77,7 +77,7 @@ function RootLayout() {
           name="eventos"
           options={{
             tabBarIcon: ({ color, size }) => (
-              <FontAwesome5 name="plus" size={size} color={color} />
+              <FontAwesome5 name="calendar" size={size} color={color} />
             ),
             title: 'Eventos',
           }}

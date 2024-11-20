@@ -213,10 +213,6 @@ export default function CreacionEvento() {
 
     };
 
-    const handleEventPress = (event: EventWithId) => {
-        // Aquí puedes navegar a la pantalla de detalles del evento
-        Alert.alert('Detalles del Evento', `Nombre: ${event.name}\nDescripción: ${event.description}`);
-    };
     const handleAdministrarEvent = async (event: EventWithId) => {
         try {
             const allSubscribedUser = await getAllUsersSubscribedToAnEvent(event.id);
@@ -276,43 +272,46 @@ export default function CreacionEvento() {
 
             {/* Lista de eventos */}
             <FlatList
-                data={eventsToDisplay}
-                renderItem={({ item }) => (
-                    <TouchableOpacity
-                        style={styles.eventCard}
-                        
-                    >
+            data={eventsToDisplay}
+            renderItem={({ item }) => (
+                <TouchableOpacity
+                    style={styles.eventCard}
+                    activeOpacity={0.8}
+                >
+                    <View style={styles.cardHeader}>
                         <Text style={styles.eventName}>{item.name}</Text>
-                        <Text>
+                        <Text style={styles.eventDate}>
                             {item.date ? new Date(item.date).toLocaleDateString() : 'Fecha no disponible'}
                         </Text>
-                        <Text>{item.description}</Text>
+                    </View>
+                    <Text style={styles.eventDescription}>{item.description}</Text>
 
-                        {userId !== null && item.userId === userId && (
-                            <View style={styles.actionButtons}>
-                                <Button title="Administar" onPress={() => { handleAdministrarEvent(item) }} />
-                                <Button
-                                    title="Eliminar"
-                                    onPress={() => handleDeleteEvent(item.id)}
-                                    color="#f44336" // Red color
-                                />
-                            </View>
-                        )}
-                        {userId !== null && item.userId != userId && (
-                            <View style={styles.actionButtons}>
-                                <Button title="Detalles" onPress={() => handleDetailsEvent(item)} />
-                                <Button
-                                    title="Desuscribirse"
-                                    onPress={() => handleUnsubscribe(item.id)}
-                                    color="#f44336" // Red color
-                                />
-                            </View>
+                    <View style={styles.divider} />
 
-                        )}
-                    </TouchableOpacity>
-                )}
-                keyExtractor={(item) => item.id.toString()}
-            />
+                    {userId !== null && item.userId === userId && (
+                        <View style={styles.actionButtons}>
+                            <Button title="Administar" onPress={() => handleAdministrarEvent(item)} />
+                            <Button
+                                title="Eliminar"
+                                onPress={() => handleDeleteEvent(item.id)}
+                                color="#f44336"
+                            />
+                        </View>
+                    )}
+                    {userId !== null && item.userId !== userId && (
+                        <View style={styles.actionButtons}>
+                            <Button title="Detalles" onPress={() => handleDetailsEvent(item)} />
+                            <Button
+                                title="Desuscribirse"
+                                onPress={() => handleUnsubscribe(item.id)}
+                                color="#f44336"
+                            />
+                        </View>
+                    )}
+                </TouchableOpacity>
+            )}
+            keyExtractor={(item) => item.id.toString()}
+        />
 
 
 
@@ -728,18 +727,26 @@ const styles = StyleSheet.create({
         justifyContent: 'center', // Center the button within the container
     },
     eventCard: {
-        padding: 15,
-        backgroundColor: '#f9f9f9',
-        borderRadius: 8,
-        marginBottom: 10,
-        borderColor: '#FF7F50',
-        borderWidth: 1,
+        backgroundColor: '#ffffff',
+        borderRadius: 10,
+        padding: 16,
+        marginVertical: 8,
+        marginHorizontal: 16,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 5,
     },
     modalSection: {
         marginBottom: 10,
         paddingVertical: 5,
         borderBottomWidth: 1,
         borderBottomColor: '#FF7F50',
+    },
+    eventDate: {
+        fontSize: 14,
+        color: '#666',
     },
     modalLabel: {
         fontSize: 16,
@@ -784,6 +791,11 @@ const styles = StyleSheet.create({
     },
     buttonWrapper: {
         width: '45%',               // Controla el ancho de cada botón
+    },
+    eventDescription: {
+        fontSize: 16,
+        color: '#555',
+        marginBottom: 12,
     },
     modalButtons: {
         flexDirection: 'row',
@@ -926,11 +938,22 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         fontWeight: 'bold',
     },
+    cardHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
     closeButton: {
         backgroundColor: '#f44336',
         padding: 10,
         borderRadius: 5,
         width: '45%',
+    },
+    divider: {
+        height: 1,
+        backgroundColor: '#ddd',
+        marginVertical: 8,
     },
     closeButtonText: {
         color: '#fff',
