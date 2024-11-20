@@ -192,12 +192,12 @@ export default function Busqueda() {
     return (
         <KeyboardAvoidingView
             behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-            style={styles.container}
+            style={styles.container2}
         >
-            <Text style={styles.header}>Buscar Eventos o Usuarios</Text>
+            <Text style={styles.header2}>Buscar Eventos o Usuarios</Text>
             <View style={styles.searchContainer}>
                 <TextInput
-                    style={styles.input}
+                    style={styles.input2}
                     placeholder="Escribe el nombre del evento o usuario..."
                     placeholderTextColor="#A9A9A9"
                     value={query}
@@ -340,51 +340,63 @@ export default function Busqueda() {
                 </View>
             </Modal>
             <Modal visible={isSpectatedUserVisible}>
-                <ScrollView style={styles.container2}>
-                    <View style={styles.header2}>
-                        <Image source={{ uri: 'https://via.placeholder.com/150' }} style={styles.profileImage} />
-                        <Text style={styles.name}>{spectatedUserName}</Text>
+                <ScrollView style={styles.container}>
+                    <View style={styles.header}>
                         <TouchableOpacity style={styles.closeButton2} onPress={() => setIsSpectatedUserVisible(false)}>
                             <FontAwesome5 name="times" size={24} color="black" />
                         </TouchableOpacity>
+                        <Image source={{ uri: 'https://via.placeholder.com/150' }} style={styles.profileImage} />
+                        <Text style={styles.name}>{spectatedUserName}</Text>
                     </View>
                     <View style={styles.section}>
                         <Text style={styles.label}>Nombre:</Text>
-                        <Text style={styles.input2}>{spectatedUserName}</Text>
+                        <Text style={styles.input}>{spectatedUserName}</Text>
                     </View>
                     <View style={styles.section}>
                         <Text style={styles.label}>Email:</Text>
-                        <Text style={styles.input2}>{spectatedUserEmail}</Text>
+                        <Text style={styles.input}>{spectatedUserEmail}</Text>
                     </View>
-                    {/* <Button title="Guardar" onPress={handleSave} color="#FF7F50" /> */}
 
                     <View style={styles.section}>
                         <Text style={styles.sectionTitle}>Eventos Creados</Text>
-                        <FlatList
-                            data={spectatedUserEvents}
-                            renderItem={({ item }) => (
-                                <TouchableOpacity
-                                    style={styles.eventCard2}
-                                    onPress={() => handleEventPress(item)}
-                                >
-                                    <Text style={styles.eventName2}>{item.name}</Text>
-                                    <Text>
-                                        {item.date ? new Date(item.date).toLocaleDateString() : 'Fecha no disponible'}
+                        {spectatedUserEvents.length > 0 ? (
+                            <FlatList
+                                data={spectatedUserEvents}
+                                scrollEnabled={false}
+                                renderItem={({ item }) => (
+                                    <TouchableOpacity
+                                        style={styles.eventCard}
+                                        onPress={() => handleEventPress(item)}
+                                    >
+                                        <View style={styles.eventHeader}>
+                                            <Text style={styles.eventName}>{item.name}</Text>
+                                            <Text style={styles.eventDate}>
+                                                {item.date
+                                                    ? new Date(item.date).toLocaleDateString()
+                                                    : 'Fecha no disponible'}
+                                            </Text>
+                                        </View>
+                                        <Text style={styles.eventDescription}>{item.description}</Text>
+                                            <View style={styles.detailButtonContainer}>
+                                                <Button
+                                                    title="Detalles"
+                                                    onPress={() => handleDetailsEvent(item)}
+                                                    color="#FF7F50"
+                                                />
+                                            </View>
+                                    </TouchableOpacity>
+                                )}
+                                keyExtractor={(item) => item.id.toString()}
+                                ListFooterComponent={
+                                    <Text style={styles.footerText}>
+                                        {`Total de eventos: ${spectatedUserEvents.length}`}
                                     </Text>
-                                    <Text>{item.description}</Text>
-
-
-                                    <View style={styles.detailButton}>
-                                        <Button title="Detalles" onPress={() => handleDetailsEvent(item)} />
-                                    </View>
-
-                                </TouchableOpacity>
-                            )}
-                            keyExtractor={(item) => item.id.toString()}
-                            scrollEnabled={false}
-                        />
+                                }
+                            />
+                        ) : (
+                            <Text style={styles.noEventsText}>No se han creado eventos aún.</Text>
+                        )}
                     </View>
-
                 </ScrollView>
             </Modal>
         </KeyboardAvoidingView>
@@ -392,24 +404,12 @@ export default function Busqueda() {
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#ffffff',
-        padding: 16,
-    },
     modalTitle: {
         fontSize: 20,
         fontWeight: 'bold',
         color: '#FF7F50',
         marginBottom: 10,
         textAlign: 'center',
-    },
-    header: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: '#FF7F50',
-        textAlign: 'center',
-        marginBottom: 20,
     },
     sectionHeader: {
         fontSize: 20,
@@ -422,16 +422,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         marginBottom: 20,
-    },
-    input: {
-        flex: 1,
-        height: 50,
-        borderWidth: 1,
-        borderColor: '#FF7F50',
-        borderRadius: 25,
-        paddingHorizontal: 16,
-        fontSize: 16,
-        backgroundColor: '#ffffff',
     },
     searchButton: {
         marginLeft: 10,
@@ -492,27 +482,6 @@ const styles = StyleSheet.create({
         width: '100%', // Make the button container take full width of the card
         justifyContent: 'center', // Center the button within the container
     },
-    eventCard: {
-        backgroundColor: '#fff',
-        borderRadius: 12,
-        padding: 16,
-        marginVertical: 8,
-        marginHorizontal: 16,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
-        elevation: 5,
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-
-    eventName: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#333',
-        marginBottom: 4,
-    },
     closeMapButton: {
         position: 'absolute',
         bottom: 10,
@@ -520,19 +489,6 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         backgroundColor: '#f44336',
         borderRadius: 5,
-    },
-    eventDate: {
-        fontSize: 14,
-        color: '#888',
-        marginBottom: 8,
-    },
-    eventDescription: {
-        fontSize: 14,
-        color: '#555',
-        marginBottom: 12,
-    },
-    detailButtonContainer: {
-        marginLeft: 16,
     },
     closeMapButtonText: {
         color: '#fff',
@@ -579,47 +535,28 @@ const styles = StyleSheet.create({
     },
     container2: {
         flex: 1,
-        padding: 20,
         backgroundColor: '#ffffff',
+        padding: 16,
     },
     header2: {
-        alignItems: 'center',
-        marginBottom: 20,
-    },
-    profileImage: {
-        width: 150,
-        height: 150,
-        borderRadius: 75,
-    },
-    name: {
         fontSize: 24,
         fontWeight: 'bold',
-        marginTop: 10,
         color: '#FF7F50',
-    },
-    section: {
+        textAlign: 'center',
         marginBottom: 20,
     },
-    label: {
-        fontSize: 18,
-        marginBottom: 5,
-        color: '#FF7F50',
-    },
     input2: {
+        flex: 1,
+        height: 50,
         borderWidth: 1,
         borderColor: '#FF7F50',
-        padding: 10,
         borderRadius: 25,
+        paddingHorizontal: 16,
+        fontSize: 16,
         backgroundColor: '#ffffff',
     },
     userInfo: {
         flex: 1,
-    },
-    sectionTitle: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        marginBottom: 10,
-        color: 'black',
     },
     eventCard2: {
         padding: 15,
@@ -701,5 +638,113 @@ const styles = StyleSheet.create({
     cardContent: {
         flex: 1,
     },
-
+    container: {
+        flex: 1,
+        backgroundColor: '#F9F9F9',
+        paddingHorizontal: 16,
+        paddingVertical: 24,
+    },
+    eventHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    footerText: {
+        marginTop: 16,
+        textAlign: 'center',
+        fontSize: 14,
+        color: '#666',
+    },
+    noEventsText: {
+        textAlign: 'center',
+        fontSize: 16,
+        color: '#999',
+        marginTop: 16,
+    },
+    header: {
+        alignItems: 'center',
+        marginBottom: 24,
+        backgroundColor: '#FF7F50',
+        paddingVertical: 16,
+        borderRadius: 16,
+    },
+    profileImage: {
+        width: 100,
+        height: 100,
+        borderRadius: 50,
+        borderWidth: 2,
+        borderColor: '#fff',
+        marginBottom: 8,
+    },
+    name: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        color: '#fff',
+    },
+    section: {
+        backgroundColor: '#fff',
+        padding: 16,
+        marginVertical: 12,
+        borderRadius: 12,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 6,
+        elevation: 4,
+    },
+    label: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#FF7F50',
+        marginBottom: 4,
+    },
+    input: {
+        fontSize: 16,
+        color: '#333',
+        marginBottom: 8,
+    },
+    logoutContainer: {
+        marginVertical: 16,
+        alignItems: 'center',
+    },
+    sectionTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#FF7F50',
+        marginBottom: 16,
+        textAlign: 'center',
+    },
+    eventCard: {
+        backgroundColor: '#fef6f2',
+        borderRadius: 12,
+        padding: 16,
+        marginBottom: 12,
+        borderLeftWidth: 4,
+        borderLeftColor: '#FF7F50',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.15,
+        shadowRadius: 4,
+        elevation: 3,
+    },
+    eventName: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#FF7F50',
+    },
+    eventDate: {
+        fontSize: 14,
+        color: '#666',
+        fontStyle: 'italic',
+    },
+    eventDescription: {
+        fontSize: 14,
+        color: '#333',
+        marginBottom: 8,
+    },
+    detailButtonContainer: {
+        alignSelf: 'flex-end',
+        marginTop: 8,
+    },
 });
