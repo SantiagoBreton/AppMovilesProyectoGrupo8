@@ -12,6 +12,7 @@ export default function Index() {
   const { location, locationError } = useLocation();
   const { trigger } = useEventContext();
   const { events, loading, eventsError } = allEvents(trigger);
+  const activeEvents = events.filter((event) => event.date > new Date().toISOString());
   const [errorMessage, setErrorMessage] = useState<string | null>(null); // Mensaje de error
   const {refreshEvents} = useEventContext();
   const [modalVisible, setModalVisible] = useState(false); // Modal visibility state
@@ -62,7 +63,7 @@ export default function Index() {
     return R * c;
   };
 
-  const filteredEvents = events.filter((event) => {
+  const filteredEvents = activeEvents.filter((event : any) => {
     const matchesDate =
       selectedDate === null ||
       new Date(event.date).toDateString() === selectedDate.toDateString();
@@ -118,7 +119,7 @@ export default function Index() {
             longitudeDelta: 0.0421,
           }}
         >
-          {filteredEvents.map((event) => (
+          {filteredEvents.map((event : any) => (
             <React.Fragment key={event.id}>
               <Marker
                 coordinate={{

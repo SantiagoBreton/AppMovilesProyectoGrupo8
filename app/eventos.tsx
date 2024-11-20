@@ -248,6 +248,8 @@ export default function CreacionEvento() {
         Alert.alert('Eliminar Evento', `Eliminar el evento con id: ${eventId}`);
     };
 
+    
+
     return (
         <View style={styles.container}>
             <Text style={styles.header}>Mis Eventos</Text>
@@ -269,10 +271,13 @@ export default function CreacionEvento() {
                     />
                 </View>
             </View>
+            <Text style={styles.subHeader}>Eventos Activos</Text>
+            <ScrollView>
 
-            {/* Lista de eventos */}
+            {/* Lista de eventos activos */}
             <FlatList
-            data={eventsToDisplay}
+            data={eventsToDisplay.filter(event => new Date(event.date) >= new Date())}
+            scrollEnabled={false}
             renderItem={({ item }) => (
                 <TouchableOpacity
                     style={styles.eventCard}
@@ -312,6 +317,50 @@ export default function CreacionEvento() {
             )}
             keyExtractor={(item) => item.id.toString()}
         />
+        <Text style={styles.subHeader}>Eventos Finalizados</Text>
+        {/* Lista de eventos finalizados */}
+        <FlatList
+            data={eventsToDisplay.filter(event => new Date(event.date) < new Date())}
+            scrollEnabled={false}
+            renderItem={({ item }) => (
+                <TouchableOpacity
+                    style={styles.eventCard}
+                    activeOpacity={0.8}
+                >
+                    <View style={styles.cardHeader}>
+                        <Text style={styles.eventName}>{item.name}</Text>
+                        <Text style={styles.eventDate}>
+                            {item.date ? new Date(item.date).toLocaleDateString() : 'Fecha no disponible'}
+                        </Text>
+                    </View>
+                    <Text style={styles.eventDescription}>{item.description}</Text>
+
+                    <View style={styles.divider} />
+
+                    {userId !== null && item.userId === userId && (
+                        <View style={styles.actionButtons}>
+                            <Button title="Detalles" onPress={() => handleDetailsEvent(item)} />
+                                {/* <Button title="Calificaciones y comentarios" onPress={() => {
+                                handleReviewsEvent(item); 
+                                handleCommentsEvents(item);
+                                }} /> */}
+                        </View>
+                    )}
+                    {userId !== null && item.userId !== userId && (
+                        <View style={styles.actionButtons}>
+                            <Button title="Detalles" onPress={() => handleDetailsEvent(item)} />
+                            {/* <Button title="Calificaciones y comentarios" onPress={() => {
+                                handleReviewsEvent(item); 
+                                handleCommentsEvents(item);
+                                }} /> */}
+                        </View>
+                    )}
+                </TouchableOpacity>
+            )}
+            keyExtractor={(item) => item.id.toString()}
+        />
+
+        </ScrollView>
 
 
 
@@ -683,6 +732,13 @@ const styles = StyleSheet.create({
         color: '#FF7F50',
         textAlign: 'center',
         marginBottom: 20,
+    },
+    subHeader: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#333',
+        marginTop: 20,
+        marginBottom: 10,
     },
     section: {
         marginBottom: 20,
