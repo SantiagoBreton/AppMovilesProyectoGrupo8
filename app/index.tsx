@@ -63,7 +63,7 @@ export default function Index() {
     return R * c;
   };
 
-  const filteredEvents = events.filter((event : any) => {
+  const filteredEvents = events.filter((event) => {
     const matchesDate =
       selectedDate === null ||
       new Date(event.date).toDateString() === selectedDate.toDateString();
@@ -119,7 +119,7 @@ export default function Index() {
             longitudeDelta: 0.0421,
           }}
         >
-          { (filteredEvents).map((event : any) => (
+          {filteredEvents.map((event) => (
             <React.Fragment key={event.id}>
               <Marker
                 coordinate={{
