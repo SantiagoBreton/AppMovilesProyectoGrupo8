@@ -147,31 +147,31 @@ export default function CreacionEvento() {
     const handleEventUpdate = async () => {
         try {
             console.log(`newName: ${newName}, newDescription: ${newDescription}, selectedDate: ${selectedDate}`);
-    
+
             // Fallback to default values if inputs are empty
             const updatedName = newName || adminEventDetails?.name || '';
             const updatedDescription = newDescription || adminEventDetails?.description || '';
             const updatedDate = selectedDate || adminEventDetails?.date || new Date();
-    
+
             console.log(`updatedName: ${updatedName}, updatedDescription: ${updatedDescription}, updatedDate: ${updatedDate}`);
-    
+
             // Call the update function with the resolved values
             await updateEvent(adminEventDetails?.id ?? 0, updatedName, updatedDescription, updatedDate);
-    
+
             // Refresh and reset
             refreshEvents();
             setNewName('');
             setNewDescription('');
             setSelectedDate(new Date());
-            setIsAdminModalVisible(false); 
-    
+            setIsAdminModalVisible(false);
+
             Alert.alert('Éxito', 'El evento se actualizó.');
         } catch (error) {
             console.error('Error updating event:', error);
             Alert.alert('Error', 'No se pudo actualizar el evento.');
         }
     };
-    
+
 
     const createNewEvent = async function createNewEvent() {
         try {
@@ -211,7 +211,7 @@ export default function CreacionEvento() {
             Alert.alert('Error', 'No se pudo cancelar la inscripción.');
         }
 
-    } ;
+    };
 
     const handleEventPress = (event: EventWithId) => {
         // Aquí puedes navegar a la pantalla de detalles del evento
@@ -245,7 +245,7 @@ export default function CreacionEvento() {
     }
         ;
 
-   
+
     const handleDeleteEvent = (eventId: any) => {
         deleteEventById(eventId)
         refreshEvents();
@@ -276,43 +276,43 @@ export default function CreacionEvento() {
 
             {/* Lista de eventos */}
             <FlatList
-            data={eventsToDisplay}
-            renderItem={({ item }) => (
-                <TouchableOpacity
-                    style={styles.eventCard}
-                    onPress={() => handleEventPress(item)}
-                >
-                    <Text style={styles.eventName}>{item.name}</Text>
-                    <Text>
-                        {item.date ? new Date(item.date).toLocaleDateString() : 'Fecha no disponible'}
-                    </Text>
-                    <Text>{item.description}</Text>
+                data={eventsToDisplay}
+                renderItem={({ item }) => (
+                    <TouchableOpacity
+                        style={styles.eventCard}
+                        onPress={() => handleEventPress(item)}
+                    >
+                        <Text style={styles.eventName}>{item.name}</Text>
+                        <Text>
+                            {item.date ? new Date(item.date).toLocaleDateString() : 'Fecha no disponible'}
+                        </Text>
+                        <Text>{item.description}</Text>
 
-                    {userId !== null && item.userId === userId && (
-                        <View style={styles.actionButtons}>
-                            <Button title="Administar" onPress={() => { handleAdministrarEvent(item) }} />
-                            <Button 
-                                title="Eliminar" 
-                                onPress={() => handleDeleteEvent(item.id)} 
-                                color="#f44336" // Red color
-                            />
-                        </View>
-                    )}
-                    {userId !== null && item.userId != userId && (
-                        <View style={styles.actionButtons}>
-                            <Button title="Detalles" onPress={() => handleDetailsEvent(item)} />
-                            <Button 
-                                title="Desuscribirse" 
-                                onPress={() => handleUnsubscribe(item.id)} 
-                                color="#f44336" // Red color
-                            />
-                        </View>
-                        
-                    )}
-                </TouchableOpacity>
-            )}
-            keyExtractor={(item) => item.id.toString()}
-        />
+                        {userId !== null && item.userId === userId && (
+                            <View style={styles.actionButtons}>
+                                <Button title="Administar" onPress={() => { handleAdministrarEvent(item) }} />
+                                <Button
+                                    title="Eliminar"
+                                    onPress={() => handleDeleteEvent(item.id)}
+                                    color="#f44336" // Red color
+                                />
+                            </View>
+                        )}
+                        {userId !== null && item.userId != userId && (
+                            <View style={styles.actionButtons}>
+                                <Button title="Detalles" onPress={() => handleDetailsEvent(item)} />
+                                <Button
+                                    title="Desuscribirse"
+                                    onPress={() => handleUnsubscribe(item.id)}
+                                    color="#f44336" // Red color
+                                />
+                            </View>
+
+                        )}
+                    </TouchableOpacity>
+                )}
+                keyExtractor={(item) => item.id.toString()}
+            />
 
 
 
@@ -386,7 +386,7 @@ export default function CreacionEvento() {
                     />
                     <Button title="Seleccionar en el mapa" onPress={() => setModalVisible(true)} color="#FF7F50" />
                 </View>
-                
+
                 {/* Botones con marginTop para separación */}
                 <View style={styles.modalButtonContainer}>
                     <Button title="Crear Evento" onPress={createNewEvent} color="#FF7F50" />
@@ -427,27 +427,36 @@ export default function CreacionEvento() {
                         {eventDetails && (
                             <>
                                 <Text style={styles.modalTitle}>{eventDetails.name}</Text>
-                                <Text style={styles.modalText}>
-                                    Descripción: {eventDetails.description}
-                                </Text>
-                                <Text style={styles.modalText}>
-                                    Fecha: {new Date(eventDetails.date).toLocaleDateString()}
-                                </Text>
-                                <Text style={styles.modalText}>Ubicación: {eventLocation}</Text>
-                                <Text style={styles.modalText}>
-                                    Participantes: {eventDetails.currentParticipants}/
-                                    {eventDetails.maxParticipants}
-                                </Text>
+                                <View style={styles.modalSection}>
+                                    <Text style={styles.modalLabel}>Descripción:</Text>
+                                    <Text style={styles.modalText}>{eventDetails.description}</Text>
+                                </View>
+                                <View style={styles.modalSection}>
+                                    <Text style={styles.modalLabel}>Fecha:</Text>
+                                    <Text style={styles.modalText}>
+                                        {new Date(eventDetails.date).toLocaleDateString()}
+                                    </Text>
+                                </View>
+                                <View style={styles.modalSection}>
+                                    <Text style={styles.modalLabel}>Ubicación:</Text>
+                                    <Text style={styles.modalText}>{eventLocation}</Text>
+                                </View>
+                                <View style={styles.modalSection}>
+                                    <Text style={styles.modalLabel}>Participantes:</Text>
+                                    <Text style={styles.modalText}>
+                                        {eventDetails.currentParticipants}/{eventDetails.maxParticipants}
+                                    </Text>
+                                </View>
                                 <TouchableOpacity
-                                    style={styles.locationButton}
+                                    style={styles.modalActionButton}
                                     onPress={handleShowMap}
                                 >
-                                    <Text style={styles.locationButtonText}>Ver en el Mapa</Text>
+                                    <Text style={styles.modalActionButtonText}>Ver en el Mapa</Text>
                                 </TouchableOpacity>
                             </>
                         )}
                         <TouchableOpacity
-                            style={styles.closeButton}
+                            style={[styles.modalActionButton, { backgroundColor: 'red' }]}
                             onPress={() => setIsDetailsModalVisible(false)}
                         >
                             <Text style={styles.closeButtonText}>Cerrar</Text>
@@ -698,14 +707,8 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         backgroundColor: '#f9f9f9', // Light background
         marginBottom: 20, // Margin below the input
-      },
-    locationButton: {
-        marginTop: 15,
-        paddingVertical: 10,
-        paddingHorizontal: 20,
-        backgroundColor: '#4CAF50',
-        borderRadius: 5,
     },
+
     buttonContainer: {
         flexDirection: 'row',        // Alineación de los botones en fila
         justifyContent: 'space-between', // Espaciado entre los botones
@@ -732,11 +735,34 @@ const styles = StyleSheet.create({
         borderColor: '#FF7F50',
         borderWidth: 1,
     },
-    locationButtonText: {
+    modalSection: {
+        marginBottom: 10,
+        paddingVertical: 5,
+        borderBottomWidth: 1,
+        borderBottomColor: '#FF7F50',
+    },
+    modalLabel: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#FF7F50',
+    },
+    modalText: {
+        fontSize: 14,
+        color: '#333',
+    },
+    modalActionButton: {
+        marginTop: 20,
+        alignSelf: 'center',
+        paddingVertical: 12,
+        paddingHorizontal: 30,
+        backgroundColor: '#FF7F50',
+        borderRadius: 25,
+    },
+    modalActionButtonText: {
         color: '#fff',
         fontSize: 16,
-        textAlign: 'center',
         fontWeight: 'bold',
+        textAlign: 'center',
     },
     eventName: {
         fontSize: 18,
@@ -796,8 +822,8 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         textAlign: 'center',
     },
-    
-      
+
+
     mapModalContainer: {
         flex: 1,
         justifyContent: 'center',
@@ -823,8 +849,8 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: 'rgba(0, 0, 0, 0.5)', // Overlay for modal
-      },
-      modalContent: {
+    },
+    modalContent: {
         width: '80%', // Adjust width if needed
         backgroundColor: '#ffffff', // White background
         borderRadius: 15, // Rounded edges
@@ -834,18 +860,13 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.25,
         shadowRadius: 4,
         elevation: 5, // For Android shadow
-      },
-      modalTitle: {
+    },
+    modalTitle: {
         fontSize: 22,
         fontWeight: 'bold',
         color: '#FF7F50', // Orange color for title
         textAlign: 'center',
         marginBottom: 15,
-      },
-    modalText: {
-        fontSize: 16,
-        color: '#333',
-        marginBottom: 10,
     },
     sectionTitle: {
         fontSize: 18,
@@ -923,7 +944,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20, // Añadir espacio en los laterales
     },
 
-    
+
 
 
 });
