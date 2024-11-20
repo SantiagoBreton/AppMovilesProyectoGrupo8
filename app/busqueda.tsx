@@ -33,9 +33,9 @@ export default function Busqueda() {
     const [isMapVisible, setMapVisible] = useState(false);
     const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
     const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
-    const [spectatedUserName,setSpectatedUserName] = useState('');
-    const [spectatedUserEmail,setSpectatedUserEmail] = useState('');
-    const [spectatedUserEvents,setSpectatedUserEvents] = useState<Event[]>([]);
+    const [spectatedUserName, setSpectatedUserName] = useState('');
+    const [spectatedUserEmail, setSpectatedUserEmail] = useState('');
+    const [spectatedUserEvents, setSpectatedUserEvents] = useState<Event[]>([]);
     const [isSpectatedUserVisible, setIsSpectatedUserVisible] = useState(false);
     const { refreshEvents } = useEventContext();
 
@@ -86,7 +86,7 @@ export default function Busqueda() {
             }
             const filteredResults = await getUserByName(query);
             setFilteredUsers(filteredResults.data);
-            
+
         } catch (error) {
             console.error('Error fetching users:', error);
             Alert.alert('Error', 'Failed to fetch users');
@@ -102,7 +102,7 @@ export default function Busqueda() {
             const userEvents = await getAllEventsFromUser(user.id);
             setSpectatedUserEvents(userEvents.data);
             setIsSpectatedUserVisible(true);
-            
+
         } catch (error) {
             console.error('Error fetching user events:', error);
             Alert.alert('Error', 'Failed to fetch user events');
@@ -118,7 +118,7 @@ export default function Busqueda() {
             Alert.alert('Error subscribing to event:', error.message);
         }
     };
-        const handleEventPress = (event: { name: any; description: any; }) => {
+    const handleEventPress = (event: { name: any; description: any; }) => {
         // Aquí puedes navegar a la pantalla de detalles del evento
         Alert.alert('Detalles del Evento', `Nombre: ${event.name}\nDescripción: ${event.description}`);
 
@@ -170,15 +170,21 @@ export default function Busqueda() {
 
     const renderUserResult = ({ item }: { item: User }) => (
         <View style={styles.resultCard}>
-            <FontAwesome5 name="user" size={24} color="#FF7F50" style={styles.resultIcon} />
-            <View>
+            <View style={styles.iconContainer}>
+                <FontAwesome5 name="user" size={30} color="#FF7F50" />
+            </View>
+            <View style={styles.userInfo}>
                 <Text style={styles.resultTitle}>{item.name}</Text>
                 <Text style={styles.resultType}>{item.email}</Text>
+            </View>
+            <View style={styles.buttonContainer}>
                 <Button
                     title="Ver Perfil"
+                    color="#FF7F50"
                     onPress={() => {
                         handleSeeUser(item);
-                    }}></Button>
+                    }}
+                />
             </View>
         </View>);
 
@@ -338,8 +344,8 @@ export default function Busqueda() {
                         <Image source={{ uri: 'https://via.placeholder.com/150' }} style={styles.profileImage} />
                         <Text style={styles.name}>{spectatedUserName}</Text>
                         <TouchableOpacity style={styles.closeButton2} onPress={() => setIsSpectatedUserVisible(false)}>
-                        <FontAwesome5 name="times" size={24} color="black" />
-                    </TouchableOpacity>
+                            <FontAwesome5 name="times" size={24} color="black" />
+                        </TouchableOpacity>
                     </View>
                     <View style={styles.section}>
                         <Text style={styles.label}>Nombre:</Text>
@@ -366,11 +372,11 @@ export default function Busqueda() {
                                     </Text>
                                     <Text>{item.description}</Text>
 
-                                    
-                                        <View style={styles.detailButton}>
-                                            <Button title="Detalles" onPress={() => handleDetailsEvent(item)} />
-                                        </View>
-                                    
+
+                                    <View style={styles.detailButton}>
+                                        <Button title="Detalles" onPress={() => handleDetailsEvent(item)} />
+                                    </View>
+
                                 </TouchableOpacity>
                             )}
                             keyExtractor={(item) => item.id.toString()}
@@ -447,12 +453,16 @@ const styles = StyleSheet.create({
     resultCard: {
         flexDirection: 'row',
         alignItems: 'center',
+        backgroundColor: '#fff',
+        borderRadius: 12,
         padding: 16,
-        borderRadius: 8,
-        backgroundColor: '#f9f9f9',
-        marginBottom: 10,
-        borderWidth: 1,
-        borderColor: '#FF7F50',
+        marginVertical: 8,
+        marginHorizontal: 16,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 5,
     },
     resultIcon: {
         marginRight: 16,
@@ -460,17 +470,15 @@ const styles = StyleSheet.create({
     resultTitle: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#FF7F50',
+        color: '#333',
+        marginBottom: 4,
     },
     resultType: {
         fontSize: 14,
-        color: '#808080',
+        color: '#666',
     },
-
     buttonContainer: {
-        flexDirection: 'row',        // Alineación de los botones en fila
-        justifyContent: 'space-between', // Espaciado entre los botones
-        marginBottom: 20,            // Margen abajo para separar de la lista
+        marginLeft: 16,
     },
     actionButtons: {
         marginTop: 10,
@@ -583,11 +591,14 @@ const styles = StyleSheet.create({
         borderRadius: 25,
         backgroundColor: '#ffffff',
     },
+    userInfo: {
+        flex: 1,
+    },
     sectionTitle: {
         fontSize: 20,
         fontWeight: 'bold',
         marginBottom: 10,
-        color: 'black', 
+        color: 'black',
     },
     eventCard2: {
         padding: 15,
@@ -656,6 +667,15 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: 'bold',
         textAlign: 'center',
+    },
+    iconContainer: {
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        backgroundColor: '#FFEBE5',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 16,
     },
 
 });
