@@ -13,6 +13,7 @@ import {
     Button,
     ScrollView,
     Image,
+    TouchableWithoutFeedback,
 } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
 import MapView, { Circle, Marker } from 'react-native-maps';
@@ -244,59 +245,66 @@ export default function Busqueda() {
                 </ScrollView>
             )}
             <Modal
-                visible={isDetailsModalVisible}
-                transparent={true}
-                animationType="slide"
-                onRequestClose={() => setIsDetailsModalVisible(false)}
-            >
-                <View style={styles.modalContainer}>
-                    <View style={styles.modalContent}>
-                        {eventDetails && (
-                            <>
-                                <Text style={styles.modalTitle}>{eventDetails.name}</Text>
-                                <View style={styles.modalSection}>
-                                    <Text style={styles.modalLabel}>Descripción:</Text>
-                                    <Text style={styles.modalText}>{eventDetails.description}</Text>
-                                </View>
-                                <View style={styles.modalSection}>
-                                    <Text style={styles.modalLabel}>Fecha:</Text>
-                                    <Text style={styles.modalText}>
-                                        {new Date(eventDetails.date).toLocaleDateString()}
-                                    </Text>
-                                </View>
-                                <View style={styles.modalSection}>
-                                    <Text style={styles.modalLabel}>Ubicación:</Text>
-                                    <Text style={styles.modalText}>{eventLocation}</Text>
-                                </View>
-                                <View style={styles.modalSection}>
-                                    <Text style={styles.modalLabel}>Participantes:</Text>
-                                    <Text style={styles.modalText}>
-                                        {eventDetails.currentParticipants}/{eventDetails.maxParticipants}
-                                    </Text>
-                                </View>
+    visible={isDetailsModalVisible}
+    transparent={true}
+    animationType="slide"
+    onRequestClose={() => setIsDetailsModalVisible(false)}
+>
+    <TouchableWithoutFeedback onPress={() => setIsDetailsModalVisible(false)}>
+        <View style={styles.modalContainer}>
+            <TouchableWithoutFeedback>
+                <View style={styles.modalContent}>
+                    {eventDetails && (
+                        <>
+                            <Text style={styles.modalTitle}>{eventDetails.name}</Text>
+                            <View style={styles.modalSection}>
+                                <Text style={styles.modalLabel}>Descripción:</Text>
+                                <Text style={styles.modalText}>{eventDetails.description}</Text>
+                            </View>
+                            <View style={styles.modalSection}>
+                                <Text style={styles.modalLabel}>Fecha:</Text>
+                                <Text style={styles.modalText}>
+                                    {new Date(eventDetails.date).toLocaleDateString()}
+                                </Text>
+                            </View>
+                            <View style={styles.modalSection}>
+                                <Text style={styles.modalLabel}>Ubicación:</Text>
+                                <Text style={styles.modalText}>{eventLocation}</Text>
+                            </View>
+                            <View style={styles.modalSection}>
+                                <Text style={styles.modalLabel}>Participantes:</Text>
+                                <Text style={styles.modalText}>
+                                    {eventDetails.currentParticipants}/{eventDetails.maxParticipants}
+                                </Text>
+                            </View>
+                            <TouchableOpacity
+                                style={[styles.modalActionButton, styles.largeButton]}
+                                onPress={handleShowMap}
+                            >
+                                <Text style={styles.modalActionButtonText}>Ver en el Mapa</Text>
+                            </TouchableOpacity>
+                            <View style={styles.buttonRow}>
                                 <TouchableOpacity
-                                    style={styles.modalActionButton}
-                                    onPress={handleShowMap}
-                                >
-                                    <Text style={styles.modalActionButtonText}>Ver en el Mapa</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity
-                                    style={[styles.modalActionButton, { backgroundColor: 'green' }]}
+                                    style={[styles.modalActionButton, styles.subscribeButton]}
                                     onPress={() => handleSubscribe(eventDetails.id)}
                                 >
                                     <Text style={styles.modalActionButtonText}>Suscribirse</Text>
                                 </TouchableOpacity>
-                            </>
-                        )}
-                        <TouchableOpacity
-                            style={[styles.closeButton, { backgroundColor: 'red' }]}
-                            onPress={() => setIsDetailsModalVisible(false)}
-                        >
-                            <Text style={[styles.closeButtonText]}>Cerrar</Text>
-                        </TouchableOpacity>
-                    </View>
+                                <TouchableOpacity
+                                    style={[styles.closeButton, styles.separatedButton]}
+                                    onPress={() => setIsDetailsModalVisible(false)}
+                                >
+                                    <Text style={styles.closeButtonText}>Cerrar</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </>
+                    )}
                 </View>
-            </Modal>
+            </TouchableWithoutFeedback>
+        </View>
+    </TouchableWithoutFeedback>
+</Modal>
+
 
 
             {/* Map Modal */}
@@ -520,7 +528,7 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent background
+        backgroundColor: 'rgba(0, 0, 0, 0.5)', // Fondo semi-transparente
     },
     modalContent: {
         width: '80%',
@@ -584,19 +592,19 @@ const styles = StyleSheet.create({
         right: 8,
         padding: 8,
     },
-
     closeButton: {
-        marginTop: 20,
+        marginTop: 10,
         alignSelf: 'center',
-        paddingVertical: 10,
+        paddingVertical: 11.6,
         paddingHorizontal: 20,
         backgroundColor: '#FF7F50',
-        borderRadius: 5,
+        borderRadius: 25,
     },
     closeButtonText: {
         color: '#fff',
         fontSize: 16,
         fontWeight: 'bold',
+        textAlign: 'center',
     },
     modalSection: {
         marginBottom: 10,
@@ -614,12 +622,21 @@ const styles = StyleSheet.create({
         color: '#333',
     },
     modalActionButton: {
-        marginTop: 20,
+        marginTop: 10, // Reducido el espacio
         alignSelf: 'center',
         paddingVertical: 12,
         paddingHorizontal: 30,
         backgroundColor: '#FF7F50',
         borderRadius: 25,
+    },
+    largeButton: {
+        paddingVertical: 20, // Botón más grande
+        width: '100%', // Ocupa todo el ancho del contenedor
+    },
+    buttonRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginTop: 10, // Reducido el espacio
     },
     modalActionButtonText: {
         color: '#fff',
@@ -747,5 +764,17 @@ const styles = StyleSheet.create({
     detailButtonContainer: {
         alignSelf: 'flex-end',
         marginTop: 8,
+    },
+    subscribeButton: {
+        flex: 1,
+        marginRight: 10, // Separación entre botones
+        backgroundColor: 'green',
+        borderRadius: 25,
+    },
+    separatedButton: {
+        flex: 1,
+        marginLeft: 10, // Separación entre botones
+        backgroundColor: 'red',
+        borderRadius: 25,
     },
 });
