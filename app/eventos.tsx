@@ -43,7 +43,7 @@ export default function CreacionEvento() {
     const [isAdminModalVisible, setIsAdminModalVisible] = useState(false);
     const [adminEventDetails, setAdminEventDetails] = useState<EventWithId | null>(null);
     const [subscribedUsers, setSubscribedUsers] = useState<{ id: number; name: string }[]>([]);
-
+    const [eventAssLocation, setEventAssLocation] = useState<string | null>(null);
     const [isUpdateNameModalVisible, setIsNameModalVisible] = useState(false);
     const [isUpdateDescriptionModalVisible, setIsDescriptionModalVisible] = useState(false);
     const [newName, setNewName] = useState('');
@@ -109,13 +109,27 @@ export default function CreacionEvento() {
         }
     };
 
-    const handleMapPress = (event: { nativeEvent: { coordinate: { latitude: number; longitude: number; }; }; }) => {
+    const handleMapPress = async (event: { nativeEvent: { coordinate: { latitude: number; longitude: number; }; }; }) => {
         const { latitude, longitude } = event.nativeEvent.coordinate;
         setSelectedLocation({ latitude, longitude });
         setLatitude(latitude);
         setLongitude(longitude);
         setUbicacion(`${latitude},${longitude}`);
         setModalVisible(false);
+        const addresses = await Location.reverseGeocodeAsync({
+            latitude: latitude,
+            longitude: longitude,
+        });
+
+        const location =
+            addresses.length > 0
+                ? `${addresses[0].city}, ${addresses[0].region}, ${addresses[0].country}`
+                : 'Address not found';
+        
+        setEventAssLocation(location);
+
+
+
     };
 
     const handleMaxParticipantsChange = (text: string) => {
@@ -188,6 +202,8 @@ export default function CreacionEvento() {
             };
             await createEvent(event);
             setIsModalVisible(false);
+            resetEvetCreaionInfo();
+
             refreshEvents();
         } catch (error) {
             setIsModalVisible(false);
@@ -197,6 +213,18 @@ export default function CreacionEvento() {
 
     const switchView = (view: string) => {
         setSelectedView(view);
+    };
+
+    const resetEvetCreaionInfo = () => {
+        setTitulo('');
+        setDescripcion('');
+        setFecha('');
+        setUbicacion('');
+        setMaxParticipants(0);
+        setSelectedLocation(null);
+        setLatitude(null);
+        setLongitude(null);
+        setEventAssLocation(null);
     };
 
     const handleUnsubscribe = async (eventId: number) => {
@@ -372,6 +400,7 @@ export default function CreacionEvento() {
                 color="#FF7F50"
             />
             <Modal visible={isModalVisible} animationType="slide">
+            <ScrollView contentContainerStyle={styles.scrollContainer}>
                 <Text style={styles.title}>Crear Evento</Text>
                 <View style={styles.section}>
                     <Text style={styles.label}>Título del Evento</Text>
@@ -428,7 +457,7 @@ export default function CreacionEvento() {
                     <Text style={styles.label}>Ubicación</Text>
                     <TextInput
                         style={styles.input}
-                        value={ubicacion}
+                        value={eventAssLocation ?? ''}
                         onChangeText={setUbicacion}
                         placeholder="Ingrese la ubicación del evento"
                         placeholderTextColor="#A9A9A9"
@@ -439,7 +468,7 @@ export default function CreacionEvento() {
                 {/* Botones con marginTop para separación */}
                 <View style={styles.modalButtonContainer}>
                     <Button title="Crear Evento" onPress={createNewEvent} color="#FF7F50" />
-                    <Button title="Cerrar" onPress={() => setIsModalVisible(false)} color="#FF7F50" />
+                    <Button title="Cerrar" onPress={() => {setIsModalVisible(false);resetEvetCreaionInfo()}} color="#FF7F50" />
                 </View>
 
                 <Modal visible={modalVisible} animationType="slide">
@@ -463,6 +492,7 @@ export default function CreacionEvento() {
                     )}
                     <Button title="Cerrar" onPress={() => setModalVisible(false)} color="#FF7F50" />
                 </Modal>
+            </ScrollView>
             </Modal>
 
             <Modal
@@ -961,6 +991,10 @@ const styles = StyleSheet.create({
         paddingVertical: 5,
         paddingHorizontal: 10,
         borderRadius: 5,
+    },
+    scrollContainer: {
+        flexGrow: 1, // Ensures the content stretches vertically
+        paddingBottom: 20, // Optional: Add bottom padding for better spacing when scrolling
     },
     deleteUserText: {
         color: '#fff',
