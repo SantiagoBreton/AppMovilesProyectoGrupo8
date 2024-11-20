@@ -1,6 +1,6 @@
 import { SERVER_IP } from "@env";
 
-export const getEventsByUserId = async (userId: number) => {
+export const getAllEventsFromUser = async (userId: number) => {
     try {
         const response = await fetch(`http://${SERVER_IP}:3000/getEventsByUserId/${userId}`);
         if (!response.ok) {
