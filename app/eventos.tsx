@@ -43,7 +43,7 @@ export default function CreacionEvento() {
     const [isAdminModalVisible, setIsAdminModalVisible] = useState(false);
     const [adminEventDetails, setAdminEventDetails] = useState<EventWithId | null>(null);
     const [subscribedUsers, setSubscribedUsers] = useState<{ id: number; name: string }[]>([]);
-
+    const [eventAssLocation, setEventAssLocation] = useState<string | null>(null);
     const [isUpdateNameModalVisible, setIsNameModalVisible] = useState(false);
     const [isUpdateDescriptionModalVisible, setIsDescriptionModalVisible] = useState(false);
     const [newName, setNewName] = useState('');
@@ -109,13 +109,27 @@ export default function CreacionEvento() {
         }
     };
 
-    const handleMapPress = (event: { nativeEvent: { coordinate: { latitude: number; longitude: number; }; }; }) => {
+    const handleMapPress = async (event: { nativeEvent: { coordinate: { latitude: number; longitude: number; }; }; }) => {
         const { latitude, longitude } = event.nativeEvent.coordinate;
         setSelectedLocation({ latitude, longitude });
         setLatitude(latitude);
         setLongitude(longitude);
         setUbicacion(`${latitude},${longitude}`);
         setModalVisible(false);
+        const addresses = await Location.reverseGeocodeAsync({
+            latitude: latitude,
+            longitude: longitude,
+        });
+
+        const location =
+            addresses.length > 0
+                ? `${addresses[0].city}, ${addresses[0].region}, ${addresses[0].country}`
+                : 'Address not found';
+        
+        setEventAssLocation(location);
+
+
+
     };
 
     const handleMaxParticipantsChange = (text: string) => {
@@ -188,6 +202,8 @@ export default function CreacionEvento() {
             };
             await createEvent(event);
             setIsModalVisible(false);
+            resetEvetCreaionInfo();
+
             refreshEvents();
         } catch (error) {
             setIsModalVisible(false);
@@ -197,6 +213,18 @@ export default function CreacionEvento() {
 
     const switchView = (view: string) => {
         setSelectedView(view);
+    };
+
+    const resetEvetCreaionInfo = () => {
+        setTitulo('');
+        setDescripcion('');
+        setFecha('');
+        setUbicacion('');
+        setMaxParticipants(0);
+        setSelectedLocation(null);
+        setLatitude(null);
+        setLongitude(null);
+        setEventAssLocation(null);
     };
 
     const handleUnsubscribe = async (eventId: number) => {
@@ -248,6 +276,8 @@ export default function CreacionEvento() {
         Alert.alert('Eliminar Evento', `Eliminar el evento con id: ${eventId}`);
     };
 
+    
+
     return (
         <View style={styles.container}>
             <Text style={styles.header}>Mis Eventos</Text>
@@ -269,10 +299,13 @@ export default function CreacionEvento() {
                     />
                 </View>
             </View>
+            <Text style={styles.subHeader}>Eventos Activos</Text>
+            <ScrollView>
 
-            {/* Lista de eventos */}
+            {/* Lista de eventos activos */}
             <FlatList
-            data={eventsToDisplay}
+            data={eventsToDisplay.filter(event => new Date(event.date) >= new Date())}
+            scrollEnabled={false}
             renderItem={({ item }) => (
                 <TouchableOpacity
                     style={styles.eventCard}
@@ -312,6 +345,51 @@ export default function CreacionEvento() {
             )}
             keyExtractor={(item) => item.id.toString()}
         />
+        <Text style={styles.subHeader}>Eventos Finalizados</Text>
+        {/* Lista de eventos finalizados */}
+        <FlatList
+            data={eventsToDisplay.filter(event => new Date(event.date) < new Date())}
+            scrollEnabled={false}
+            renderItem={({ item }) => (
+                <TouchableOpacity
+                    style={styles.eventCard}
+                    activeOpacity={0.8}
+                >
+                    <View style={styles.cardHeader}>
+                        <Text style={styles.eventName}>{item.name}</Text>
+                        <Text style={styles.eventDate}>
+                            {item.date ? new Date(item.date).toLocaleDateString() : 'Fecha no disponible'}
+                        </Text>
+                    </View>
+                    <Text style={styles.eventDescription}>{item.description}</Text>
+
+                    <View style={styles.divider} />
+
+                    {userId !== null && item.userId === userId && (
+                        <View style={styles.actionButtons}>
+                            <Button title="Detalles" onPress={() => handleDetailsEvent(item)} />
+                            <Button
+                                title="Eliminar"
+                                onPress={() => handleDeleteEvent(item.id)}
+                                color="#f44336"
+                            />
+                        </View>
+                    )}
+                    {userId !== null && item.userId !== userId && (
+                        <View style={styles.actionButtons}>
+                            <Button title="Detalles" onPress={() => handleDetailsEvent(item)} />
+                            {/* <Button title="Calificaciones y comentarios" onPress={() => {
+                                handleReviewsEvent(item); 
+                                handleCommentsEvents(item);
+                                }} /> */}
+                        </View>
+                    )}
+                </TouchableOpacity>
+            )}
+            keyExtractor={(item) => item.id.toString()}
+        />
+
+        </ScrollView>
 
 
 
@@ -322,6 +400,7 @@ export default function CreacionEvento() {
                 color="#FF7F50"
             />
             <Modal visible={isModalVisible} animationType="slide">
+            <ScrollView contentContainerStyle={styles.scrollContainer}>
                 <Text style={styles.title}>Crear Evento</Text>
                 <View style={styles.section}>
                     <Text style={styles.label}>Título del Evento</Text>
@@ -378,7 +457,7 @@ export default function CreacionEvento() {
                     <Text style={styles.label}>Ubicación</Text>
                     <TextInput
                         style={styles.input}
-                        value={ubicacion}
+                        value={eventAssLocation ?? ''}
                         onChangeText={setUbicacion}
                         placeholder="Ingrese la ubicación del evento"
                         placeholderTextColor="#A9A9A9"
@@ -389,7 +468,7 @@ export default function CreacionEvento() {
                 {/* Botones con marginTop para separación */}
                 <View style={styles.modalButtonContainer}>
                     <Button title="Crear Evento" onPress={createNewEvent} color="#FF7F50" />
-                    <Button title="Cerrar" onPress={() => setIsModalVisible(false)} color="#FF7F50" />
+                    <Button title="Cerrar" onPress={() => {setIsModalVisible(false);resetEvetCreaionInfo()}} color="#FF7F50" />
                 </View>
 
                 <Modal visible={modalVisible} animationType="slide">
@@ -413,6 +492,7 @@ export default function CreacionEvento() {
                     )}
                     <Button title="Cerrar" onPress={() => setModalVisible(false)} color="#FF7F50" />
                 </Modal>
+            </ScrollView>
             </Modal>
 
             <Modal
@@ -684,6 +764,13 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginBottom: 20,
     },
+    subHeader: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#333',
+        marginTop: 20,
+        marginBottom: 10,
+    },
     section: {
         marginBottom: 20,
         paddingHorizontal: 20, // Adds padding to the left and right
@@ -904,6 +991,10 @@ const styles = StyleSheet.create({
         paddingVertical: 5,
         paddingHorizontal: 10,
         borderRadius: 5,
+    },
+    scrollContainer: {
+        flexGrow: 1, // Ensures the content stretches vertically
+        paddingBottom: 20, // Optional: Add bottom padding for better spacing when scrolling
     },
     deleteUserText: {
         color: '#fff',
