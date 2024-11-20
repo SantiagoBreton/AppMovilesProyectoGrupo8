@@ -188,6 +188,10 @@ export default function CreacionEvento() {
 
 
     const createNewEvent = async function createNewEvent() {
+        if (!titulo || !descripcion || !selectedDate || !selectedLocation || maxParticipants == 0) {
+            Alert.alert('Error', 'Por favor, complete todos los campos.');
+            return;
+        }
         try {
             const currentUserId = await AsyncStorage.getItem('userId');
             const event: Event = {
