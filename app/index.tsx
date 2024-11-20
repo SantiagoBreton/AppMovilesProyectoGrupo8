@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, ActivityIndicator, Button, Modal, TouchableOpacity, TextInput } from 'react-native';
+import { StyleSheet, View, Text, ActivityIndicator, Button, Modal, TouchableOpacity, TextInput, TouchableWithoutFeedback } from 'react-native';
 import MapView, { Marker, Circle } from 'react-native-maps';
 import { useLocation } from '../hooks/useLocation';
 import { allEvents } from '@/apiCalls/getAllEvents';
@@ -215,63 +215,60 @@ export default function Index() {
 
       {/* Filter Modal */}
       <Modal
-        transparent={true}
-        visible={filterModalVisible}
-        animationType="slide"
-        onRequestClose={() => setFilterModalVisible(false)}
-      >
+      transparent={true}
+      visible={filterModalVisible}
+      animationType="slide"
+      onRequestClose={() => setFilterModalVisible(false)}
+    >
+      <TouchableWithoutFeedback onPress={() => setFilterModalVisible(false)}>
         <View style={styles.filterModalContainer}>
-          <View style={styles.filterModal}>
-            <Text style={styles.modalTitle}>Filters</Text>
+          <TouchableWithoutFeedback>
+            <View style={styles.filterModal}>
+              <Text style={styles.modalTitle}>Filters</Text>
 
-            {/* Date Picker */}
-            <Button title="Select Date" onPress={() => setShowDatePicker(true)} />
-            {showDatePicker && (
-              <DateTimePicker
-                value={selectedDate || new Date()}
-                mode="date"
-                display="default"
-                onChange={handleDateChange}
+              {/* Date Picker */}
+              <Button title="Select Date" onPress={() => setShowDatePicker(true)} />
+              {showDatePicker && (
+                <DateTimePicker
+                  value={selectedDate || new Date()}
+                  mode="date"
+                  display="default"
+                  onChange={handleDateChange}
+                />
+              )}
+              {selectedDate && (
+                <Text style={styles.selectedDateText}>
+                  Selected Date: {selectedDate.toDateString()}
+                </Text>
+              )}
+
+              {/* Name Filter */}
+              <TextInput
+                style={styles.input}
+                placeholder="Filter by Name"
+                value={nameFilter}
+                onChangeText={setNameFilter}
               />
-            )}
-            {selectedDate && (
-              <Text style={styles.selectedDateText}>
-                Selected Date: {selectedDate.toDateString()}
-              </Text>
-            )}
 
-            {/* Name Filter */}
-            <TextInput
-              style={styles.input}
-              placeholder="Filter by Name"
-              value={nameFilter}
-              onChangeText={setNameFilter}
-            />
-
-            {/* Proximity Filter */}
-            <TextInput
-              style={styles.input}
-              placeholder="Proximity (km)"
-              value={String(proximityFilter)}
-              onChangeText={(value) => setProximityFilter(Number(value))}
-              keyboardType="numeric"
-            />
-
-            {/* Buttons */}
-            <View style={styles.buttonGroup}>
-              <Button
-                title="Apply Filters"
-                onPress={() => setFilterModalVisible(false)}
+              {/* Proximity Filter */}
+              <TextInput
+                style={styles.input}
+                placeholder="Proximity (km)"
+                value={String(proximityFilter)}
+                onChangeText={(value) => setProximityFilter(Number(value))}
+                keyboardType="numeric"
               />
-              <Button
-                title="Clear Filters"
-                color="red"
-                onPress={handleClearFilters}
-              />
+
+              {/* Buttons */}
+              <View style={styles.buttonGroup}>
+                <Button title="Apply Filters" onPress={() => setFilterModalVisible(false)} />
+                <Button title="Clear Filters" color="red" onPress={handleClearFilters} />
+              </View>
             </View>
-          </View>
+          </TouchableWithoutFeedback>
         </View>
-      </Modal>
+      </TouchableWithoutFeedback>
+    </Modal>
     </View>
   );
 }
