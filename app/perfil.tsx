@@ -99,6 +99,7 @@ export default function Perfil() {
                         </TouchableOpacity>
                     )}
                     keyExtractor={(item) => item.id.toString()}
+                    scrollEnabled={false} 
                 />
             </View>
             

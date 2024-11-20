@@ -199,6 +199,20 @@ export default function CreacionEvento() {
         setSelectedView(view);
     };
 
+    const handleUnsubscribe = async (eventId: number) => {
+        try {
+            const currentUserId = await AsyncStorage.getItem('userId');
+            if (currentUserId) {
+                await unsubscribeUserFromAnEvent(parseInt(currentUserId), eventId);
+                refreshEvents();
+            }
+        } catch (error) {
+            console.error('Error unsubscribing:', error);
+            Alert.alert('Error', 'No se pudo cancelar la inscripción.');
+        }
+
+    } ;
+
     const handleEventPress = (event: EventWithId) => {
         // Aquí puedes navegar a la pantalla de detalles del evento
         Alert.alert('Detalles del Evento', `Nombre: ${event.name}\nDescripción: ${event.description}`);
@@ -285,9 +299,15 @@ export default function CreacionEvento() {
                         </View>
                     )}
                     {userId !== null && item.userId != userId && (
-                        <View style={styles.detailButton}>
+                        <View style={styles.actionButtons}>
                             <Button title="Detalles" onPress={() => handleDetailsEvent(item)} />
+                            <Button 
+                                title="Desuscribirse" 
+                                onPress={() => handleUnsubscribe(item.id)} 
+                                color="#f44336" // Red color
+                            />
                         </View>
+                        
                     )}
                 </TouchableOpacity>
             )}

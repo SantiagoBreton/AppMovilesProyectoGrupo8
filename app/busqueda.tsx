@@ -184,6 +184,7 @@ return (
             renderItem={renderEventResult}
             keyExtractor={(item) => item.id.toString()}
             ListEmptyComponent={<Text style={styles.noResultsText}>No se encontraron eventos.</Text>}
+            scrollEnabled={false} 
           />
 
           {/* Users Section */}
@@ -193,6 +194,7 @@ return (
             renderItem={renderUserResult}
             keyExtractor={(item) => item.id.toString()}
             ListEmptyComponent={<Text style={styles.noResultsText}>No se encontraron usuarios.</Text>}
+            scrollEnabled={false} 
           />
         </ScrollView>
       )}
