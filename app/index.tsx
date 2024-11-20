@@ -145,34 +145,44 @@ export default function Index() {
 
       {selectedEvent && (
         <Modal
-          transparent={true}
-          visible={modalVisible}
-          animationType="slide"
-          onRequestClose={handleCloseModal}
-        >
-          <View style={styles.modalContainer}>
-            <View style={styles.modalCard}>
-              <Text style={styles.cardTitle}>{selectedEvent.name}</Text>
-              <Text style={styles.cardDescription}>{selectedEvent.description}</Text>
-              <Text style={styles.cardDetails}>Date: {new Date(selectedEvent.date).toLocaleDateString()}</Text>
-              <Text style={styles.cardDetails}>
-                Participants: {selectedEvent.currentParticipants}/{selectedEvent.maxParticipants}
+        transparent={true}
+        visible={modalVisible}
+        animationType="slide"
+        onRequestClose={handleCloseModal}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalEventName}>{selectedEvent.name}</Text>
+            <Text style={styles.modalEventDescription}>{selectedEvent.description}</Text>
+            <View style={styles.modalDetails}>
+              <Ionicons name="calendar" size={16} color="#FF7F50" />
+              <Text style={styles.modalDetailText}>
+                {new Date(selectedEvent.date).toLocaleDateString()}
               </Text>
-              <View style={styles.buttonContainer}>
-                <Button
-                  title="Subscribe"
-                  color="#FF7F50"
-                  onPress={() => handleSubscribe(Number(selectedEvent.id))} // Log subscription
-                />
-                <Button
-                  title="Close"
-                  color="#FF6347"
-                  onPress={handleCloseModal} // Close the modal
-                />
-              </View>
+            </View>
+            <View style={styles.modalDetails}>
+              <Ionicons name="people" size={16} color="#FF7F50" />
+              <Text style={styles.modalDetailText}>
+                {selectedEvent.currentParticipants}/{selectedEvent.maxParticipants} participants
+              </Text>
+            </View>
+            <View style={styles.modalButtonContainer}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.subscribeButton]}
+                onPress={() => handleSubscribe(Number(selectedEvent.id))}
+              >
+                <Text style={styles.buttonText}>Subscribe</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.closeButton]}
+                onPress={handleCloseModal}
+              >
+                <Text style={styles.buttonText}>Close</Text>
+              </TouchableOpacity>
             </View>
           </View>
-        </Modal>
+        </View>
+      </Modal>
       )}
       {errorMessage && (
     <Modal
@@ -283,31 +293,17 @@ const styles = StyleSheet.create({
   },
   modalCard: {
     backgroundColor: '#fff',
-    borderRadius: 10,
+    borderRadius: 20, // Adjusted for a softer, rounded look
     padding: 20,
-    width: 250,
+    width: '90%', // Use relative width for responsiveness
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2, // Reduced shadow for a modern look
+    shadowRadius: 5,
+    elevation: 10, // Elevation for Android shadow
   },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 5,
-    color: '#333',
-  },
-  cardDescription: {
-    fontSize: 14,
-    marginBottom: 10,
-    color: '#555',
-  },
-  cardDetails: {
-    fontSize: 12,
-    color: '#777',
-    marginBottom: 5,
-  },
-  buttonContainer: {
-    marginTop: 10,
-    width: '100%',
-  },
+  
   filterModalContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -369,6 +365,52 @@ const styles = StyleSheet.create({
     top: 50,
     right: 20,
     zIndex: 1000,
+  },
+  modalEventName: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#FF7F50',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  modalEventDescription: {
+    fontSize: 14,
+    color: '#555',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  modalDetails: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 5,
+  },
+  modalDetailText: {
+    fontSize: 14,
+    color: '#333',
+    marginLeft: 5,
+  },
+  modalButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 20,
+  },
+  modalButton: {
+    flex: 1,
+    padding: 10,
+    borderRadius: 20,
+    marginHorizontal: 5,
+    alignItems: 'center',
+  },
+  subscribeButton: {
+    backgroundColor: '#FF7F50',
+  },
+  closeButton: {
+    backgroundColor: '#FF6347',
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   
 });
