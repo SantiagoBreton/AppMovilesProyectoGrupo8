@@ -22,6 +22,7 @@ import { getEventByName } from '@/apiCalls/getEventByName';
 import { getUserByName } from '@/apiCalls/getUserByName';
 import { getAllEventsFromUser } from '@/apiCalls/getAllEventsFromUser';
 import { subscribeToEvent } from '@/apiCalls/subscribeToAnEvent';
+import { useEventContext } from '@/context/eventContext';
 
 export default function Busqueda() {
     const [query, setQuery] = useState('');
@@ -36,6 +37,7 @@ export default function Busqueda() {
     const [spectatedUserEmail,setSpectatedUserEmail] = useState('');
     const [spectatedUserEvents,setSpectatedUserEvents] = useState<Event[]>([]);
     const [isSpectatedUserVisible, setIsSpectatedUserVisible] = useState(false);
+    const { refreshEvents } = useEventContext();
 
     interface Event {
         id: number;
@@ -109,7 +111,9 @@ export default function Busqueda() {
     const handleSubscribe = async (eventId: number) => {
         try {
             await subscribeToEvent(eventId);
-            console.log('Successfully subscribed to event:', eventId);
+            Alert.alert('Subscribed', 'You have successfully subscribed to the event');
+            setIsDetailsModalVisible(false);
+            refreshEvents();
         } catch (error: any) {
             Alert.alert('Error subscribing to event:', error.message);
         }
