@@ -63,7 +63,7 @@ export default function Index() {
     return R * c;
   };
 
-  const filteredEvents = events.filter((event) => {
+  const filteredEvents = (events.filter((event) => event.date > new Date().toISOString())).filter((event) => {
     const matchesDate =
       selectedDate === null ||
       new Date(event.date).toDateString() === selectedDate.toDateString();
