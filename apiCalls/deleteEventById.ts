@@ -1,4 +1,5 @@
 import { SERVER_IP } from "@env";
+import { router } from "expo-router";
 
 // Function to delete event by id
 export const deleteEventById = async (id: number) => {
@@ -10,7 +11,7 @@ export const deleteEventById = async (id: number) => {
       if (response.ok) {
         const data = await response.json();
         console.log('Event deleted successfully:', data);
-        // Return the response data for any further handling
+        router.push('/eventos')
         return data;
       } else {
         throw new Error('Failed to delete event');
