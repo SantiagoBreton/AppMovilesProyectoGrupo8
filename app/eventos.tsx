@@ -102,7 +102,7 @@ export default function CreacionEvento() {
     const handleDateChange = (event: any, date?: Date) => {
         setDatePickerVisible(false);
 
-        if (date) {
+        if (date && date >= new Date()) {
             setSelectedDate(date);
             setFecha(date.toLocaleDateString());
 
@@ -125,7 +125,7 @@ export default function CreacionEvento() {
             addresses.length > 0
                 ? `${addresses[0].city}, ${addresses[0].region}, ${addresses[0].country}`
                 : 'Address not found';
-        
+
         setEventAssLocation(location);
 
 
@@ -188,7 +188,7 @@ export default function CreacionEvento() {
 
 
     const createNewEvent = async function createNewEvent() {
-        if (!titulo || !descripcion || !selectedDate || !selectedLocation || maxParticipants == 0) {
+        if (!titulo || !descripcion || !selectedDate || !selectedLocation || maxParticipants <= 0) {
             Alert.alert('Error', 'Por favor, complete todos los campos.');
             return;
         }
@@ -280,7 +280,7 @@ export default function CreacionEvento() {
         Alert.alert('Eliminar Evento', `Eliminar el evento con id: ${eventId}`);
     };
 
-    
+
 
     return (
         <View style={styles.container}>
@@ -306,94 +306,94 @@ export default function CreacionEvento() {
             <Text style={styles.subHeader}>Eventos Activos</Text>
             <ScrollView>
 
-            {/* Lista de eventos activos */}
-            <FlatList
-            data={eventsToDisplay.filter(event => new Date(event.date) >= new Date())}
-            scrollEnabled={false}
-            renderItem={({ item }) => (
-                <TouchableOpacity
-                    style={styles.eventCard}
-                    activeOpacity={0.8}
-                >
-                    <View style={styles.cardHeader}>
-                        <Text style={styles.eventName}>{item.name}</Text>
-                        <Text style={styles.eventDate}>
-                            {item.date ? new Date(item.date).toLocaleDateString() : 'Fecha no disponible'}
-                        </Text>
-                    </View>
-                    <Text style={styles.eventDescription}>{item.description}</Text>
+                {/* Lista de eventos activos */}
+                <FlatList
+                    data={eventsToDisplay.filter(event => new Date(event.date) >= new Date())}
+                    scrollEnabled={false}
+                    renderItem={({ item }) => (
+                        <TouchableOpacity
+                            style={styles.eventCard}
+                            activeOpacity={0.8}
+                        >
+                            <View style={styles.cardHeader}>
+                                <Text style={styles.eventName}>{item.name}</Text>
+                                <Text style={styles.eventDate}>
+                                    {item.date ? new Date(item.date).toLocaleDateString() : 'Fecha no disponible'}
+                                </Text>
+                            </View>
+                            <Text style={styles.eventDescription}>{item.description}</Text>
 
-                    <View style={styles.divider} />
+                            <View style={styles.divider} />
 
-                    {userId !== null && item.userId === userId && (
-                        <View style={styles.actionButtons}>
-                            <Button title="Administar" onPress={() => handleAdministrarEvent(item)} />
-                            <Button
-                                title="Eliminar"
-                                onPress={() => handleDeleteEvent(item.id)}
-                                color="#f44336"
-                            />
-                        </View>
+                            {userId !== null && item.userId === userId && (
+                                <View style={styles.actionButtons}>
+                                    <Button title="Administar" onPress={() => handleAdministrarEvent(item)} />
+                                    <Button
+                                        title="Eliminar"
+                                        onPress={() => handleDeleteEvent(item.id)}
+                                        color="#f44336"
+                                    />
+                                </View>
+                            )}
+                            {userId !== null && item.userId !== userId && (
+                                <View style={styles.actionButtons}>
+                                    <Button title="Detalles" onPress={() => handleDetailsEvent(item)} />
+                                    <Button
+                                        title="Desuscribirse"
+                                        onPress={() => handleUnsubscribe(item.id)}
+                                        color="#f44336"
+                                    />
+                                </View>
+                            )}
+                        </TouchableOpacity>
                     )}
-                    {userId !== null && item.userId !== userId && (
-                        <View style={styles.actionButtons}>
-                            <Button title="Detalles" onPress={() => handleDetailsEvent(item)} />
-                            <Button
-                                title="Desuscribirse"
-                                onPress={() => handleUnsubscribe(item.id)}
-                                color="#f44336"
-                            />
-                        </View>
-                    )}
-                </TouchableOpacity>
-            )}
-            keyExtractor={(item) => item.id.toString()}
-        />
-        <Text style={styles.subHeader}>Eventos Finalizados</Text>
-        {/* Lista de eventos finalizados */}
-        <FlatList
-            data={eventsToDisplay.filter(event => new Date(event.date) < new Date())}
-            scrollEnabled={false}
-            renderItem={({ item }) => (
-                <TouchableOpacity
-                    style={styles.eventCard}
-                    activeOpacity={0.8}
-                >
-                    <View style={styles.cardHeader}>
-                        <Text style={styles.eventName}>{item.name}</Text>
-                        <Text style={styles.eventDate}>
-                            {item.date ? new Date(item.date).toLocaleDateString() : 'Fecha no disponible'}
-                        </Text>
-                    </View>
-                    <Text style={styles.eventDescription}>{item.description}</Text>
+                    keyExtractor={(item) => item.id.toString()}
+                />
+                <Text style={styles.subHeader}>Eventos Finalizados</Text>
+                {/* Lista de eventos finalizados */}
+                <FlatList
+                    data={eventsToDisplay.filter(event => new Date(event.date) < new Date())}
+                    scrollEnabled={false}
+                    renderItem={({ item }) => (
+                        <TouchableOpacity
+                            style={styles.eventCard}
+                            activeOpacity={0.8}
+                        >
+                            <View style={styles.cardHeader}>
+                                <Text style={styles.eventName}>{item.name}</Text>
+                                <Text style={styles.eventDate}>
+                                    {item.date ? new Date(item.date).toLocaleDateString() : 'Fecha no disponible'}
+                                </Text>
+                            </View>
+                            <Text style={styles.eventDescription}>{item.description}</Text>
 
-                    <View style={styles.divider} />
+                            <View style={styles.divider} />
 
-                    {userId !== null && item.userId === userId && (
-                        <View style={styles.actionButtons}>
-                            <Button title="Detalles" onPress={() => handleDetailsEvent(item)} />
-                            <Button
-                                title="Eliminar"
-                                onPress={() => handleDeleteEvent(item.id)}
-                                color="#f44336"
-                            />
-                        </View>
-                    )}
-                    {userId !== null && item.userId !== userId && (
-                        <View style={styles.actionButtons}>
-                            <Button title="Detalles" onPress={() => handleDetailsEvent(item)} />
-                            {/* <Button title="Calificaciones y comentarios" onPress={() => {
+                            {userId !== null && item.userId === userId && (
+                                <View style={styles.actionButtons}>
+                                    <Button title="Detalles" onPress={() => handleDetailsEvent(item)} />
+                                    <Button
+                                        title="Eliminar"
+                                        onPress={() => handleDeleteEvent(item.id)}
+                                        color="#f44336"
+                                    />
+                                </View>
+                            )}
+                            {userId !== null && item.userId !== userId && (
+                                <View style={styles.actionButtons}>
+                                    <Button title="Detalles" onPress={() => handleDetailsEvent(item)} />
+                                    {/* <Button title="Calificaciones y comentarios" onPress={() => {
                                 handleReviewsEvent(item); 
                                 handleCommentsEvents(item);
                                 }} /> */}
-                        </View>
+                                </View>
+                            )}
+                        </TouchableOpacity>
                     )}
-                </TouchableOpacity>
-            )}
-            keyExtractor={(item) => item.id.toString()}
-        />
+                    keyExtractor={(item) => item.id.toString()}
+                />
 
-        </ScrollView>
+            </ScrollView>
 
 
 
@@ -404,100 +404,133 @@ export default function CreacionEvento() {
                 color="#FF7F50"
             />
             <Modal visible={isModalVisible} animationType="slide">
-            <ScrollView contentContainerStyle={styles.scrollContainer}>
-                <Text style={styles.title}>Crear Evento</Text>
-                <View style={styles.section}>
-                    <Text style={styles.label}>Título del Evento</Text>
-                    <TextInput
-                        style={styles.input}
-                        value={titulo}
-                        onChangeText={setTitulo}
-                        placeholder="Ingrese el título del evento"
-                        placeholderTextColor="#A9A9A9"
-                    />
-                </View>
-                <View style={styles.section}>
-                    <Text style={styles.label}>Descripción</Text>
-                    <TextInput
-                        style={styles.input}
-                        value={descripcion}
-                        onChangeText={setDescripcion}
-                        placeholder="Ingrese la descripción del evento"
-                        placeholderTextColor="#A9A9A9"
-                    />
-                </View>
-                <View style={styles.section}>
-                    <Text style={styles.label}>Numero Maximo De Participantes</Text>
-                    <TextInput
-                        style={styles.input}
-                        value={maxParticipants.toString()} // Convert the number to a string for TextInput
-                        onChangeText={handleMaxParticipantsChange}
-                        placeholder="Ingrese el número máximo de participantes"
-                        placeholderTextColor="#A9A9A9"
-                        keyboardType="numeric" // This shows a numeric keyboard for input
-                    />
-                </View>
-                <View style={styles.section}>
-                    <Text style={styles.label}>Fecha</Text>
-                    <TouchableOpacity onPress={showDatePicker}>
+                <ScrollView contentContainerStyle={styles.scrollContainer}>
+                    <Text style={styles.title}>Crear Evento</Text>
+                    <View style={styles.section}>
+                        <Text style={styles.label}>Título del Evento</Text>
                         <TextInput
                             style={styles.input}
-                            value={fecha}
-                            placeholder="Ingrese la fecha del evento"
+                            value={titulo}
+                            onChangeText={setTitulo}
+                            placeholder="Ingrese el título del evento"
                             placeholderTextColor="#A9A9A9"
-                            editable={false} // Disable manual editing
                         />
-                    </TouchableOpacity>
-                    {datePickerVisible && (
-                        <DateTimePicker
-                            value={selectedDate}
-                            mode="date"
-                            display={Platform.OS === 'ios' ? 'inline' : 'default'}
-                            onChange={handleDateChange}
+                    </View>
+                    <View style={styles.section}>
+                        <Text style={styles.label}>Descripción</Text>
+                        <TextInput
+                            style={styles.input}
+                            value={descripcion}
+                            onChangeText={setDescripcion}
+                            placeholder="Ingrese la descripción del evento"
+                            placeholderTextColor="#A9A9A9"
                         />
-                    )}
-                </View>
-                <View style={styles.section}>
-                    <Text style={styles.label}>Ubicación</Text>
-                    <TextInput
-                        style={styles.input}
-                        value={eventAssLocation ?? ''}
-                        onChangeText={setUbicacion}
-                        placeholder="Ingrese la ubicación del evento"
-                        placeholderTextColor="#A9A9A9"
-                    />
-                    <Button title="Seleccionar en el mapa" onPress={() => setModalVisible(true)} color="#FF7F50" />
-                </View>
+                    </View>
+                    <View style={styles.section}>
+                        <Text style={styles.label}>Número Máximo De Participantes</Text>
+                        <TextInput
+                            style={styles.input}
+                            value={maxParticipants.toString()} // Convert the number to a string for TextInput
+                            onChangeText={handleMaxParticipantsChange}
+                            placeholder="Ingrese el número máximo de participantes"
+                            placeholderTextColor="#A9A9A9"
+                            keyboardType="numeric" // This shows a numeric keyboard for input
+                        />
+                    </View>
+                    <View style={styles.section}>
+                        <Text style={styles.label}>Fecha</Text>
+                        <TouchableOpacity onPress={showDatePicker}>
+                            <TextInput
+                                style={styles.input}
+                                value={fecha}
+                                placeholder="Ingrese la fecha del evento"
+                                placeholderTextColor="#A9A9A9"
+                                editable={false} // Disable manual editing
+                            />
+                        </TouchableOpacity>
+                        {datePickerVisible && Platform.OS === 'ios' && (
+                            <Modal transparent animationType="slide" visible={datePickerVisible}>
+                                <View style={styles.datePickerContainer}>
+                                    <View style={styles.datePicker}>
+                                        <DateTimePicker
+                                            value={selectedDate}
+                                            mode="date"
+                                            display="inline"
+                                            onChange={handleDateChange}
+                                        />
+                                        <Button
+                                            title="Confirmar"
+                                            onPress={() => setDatePickerVisible(false)}
+                                            color="#FF7F50"
+                                        />
+                                    </View>
+                                </View>
+                            </Modal>
+                        )}
+                        {datePickerVisible && Platform.OS !== 'ios' && (
+                            <DateTimePicker
+                                value={selectedDate}
+                                mode="date"
+                                display="default"
+                                onChange={handleDateChange}
+                            />
+                        )}
+                    </View>
+                    <View style={styles.section}>
+                        <Text style={styles.label}>Ubicación</Text>
+                        <TextInput
+                            style={styles.input}
+                            value={eventAssLocation ?? ''}
+                            onChangeText={setUbicacion}
+                            placeholder="Ingrese la ubicación del evento"
+                            placeholderTextColor="#A9A9A9"
+                        />
+                        <Button
+                            title="Seleccionar en el mapa"
+                            onPress={() => setModalVisible(true)}
+                            color="#FF7F50"
+                        />
+                    </View>
 
-                {/* Botones con marginTop para separación */}
-                <View style={styles.modalButtonContainer}>
-                    <Button title="Crear Evento" onPress={createNewEvent} color="#FF7F50" />
-                    <Button title="Cerrar" onPress={() => {setIsModalVisible(false);resetEvetCreaionInfo()}} color="#FF7F50" />
-                </View>
-
-                <Modal visible={modalVisible} animationType="slide">
-                    {location ? (
-                        <MapView
-                            style={styles.map}
-                            initialRegion={{
-                                latitude: location.coords.latitude,
-                                longitude: location.coords.longitude,
-                                latitudeDelta: 0.01,
-                                longitudeDelta: 0.01,
+                    {/* Botones con marginTop para separación */}
+                    <View style={styles.modalButtonContainer}>
+                        <Button title="Crear Evento" onPress={createNewEvent} color="#FF7F50" />
+                        <Button
+                            title="Cerrar"
+                            onPress={() => {
+                                setIsModalVisible(false);
+                                resetEvetCreaionInfo();
                             }}
-                            onPress={handleMapPress}
-                        >
-                            {selectedLocation && (
-                                <Marker coordinate={selectedLocation} />
-                            )}
-                        </MapView>
-                    ) : (
-                        <Text>Cargando mapa...</Text>
-                    )}
-                    <Button title="Cerrar" onPress={() => setModalVisible(false)} color="#FF7F50" />
-                </Modal>
-            </ScrollView>
+                            color="#FF7F50"
+                        />
+                    </View>
+
+                    <Modal visible={modalVisible} animationType="slide">
+                        {location ? (
+                            <MapView
+                                style={styles.map}
+                                initialRegion={{
+                                    latitude: location.coords.latitude,
+                                    longitude: location.coords.longitude,
+                                    latitudeDelta: 0.01,
+                                    longitudeDelta: 0.01,
+                                }}
+                                onPress={handleMapPress}
+                            >
+                                {selectedLocation && <Marker coordinate={selectedLocation} />}
+                            </MapView>
+                        ) : (
+                            <Text>Cargando mapa...</Text>
+                        )}
+                        <Button
+                            title="Cerrar"
+                            onPress={() => setModalVisible(false)}
+                            color="#FF7F50"
+                        />
+                    </Modal>
+                </ScrollView>
             </Modal>
+
 
             <Modal
                 visible={isDetailsModalVisible}
@@ -1062,8 +1095,16 @@ const styles = StyleSheet.create({
         marginTop: 20,  // Separa los botones entre sí
         paddingHorizontal: 20, // Añadir espacio en los laterales
     },
-
-
-
-
+    datePickerContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)', // Dim background
+      },
+      datePicker: {
+        backgroundColor: 'white',
+        borderRadius: 10,
+        padding: 20,
+        width: '90%',
+      }
 });

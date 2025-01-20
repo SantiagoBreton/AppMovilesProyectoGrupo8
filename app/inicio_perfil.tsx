@@ -22,19 +22,40 @@ export default function InicioPerfil() {
   }
   const createUser = async () => {
     const user = { email, password, name: userName };
-    try {
-      const res = await createNewUser(user);
-  
-      // Check if user creation was successful before calling login
-      if (res) {
-        login();  // Only call login if the user creation was successful
-      } else {
+    if (validateUser(user)) {
+      try {
+        const res = await createNewUser(user);
+
+        // Check if user creation was successful before calling login
+        if (res) {
+          login();  // Only call login if the user creation was successful
+        } else {
+          setErrorMessage('Error al crear el usuario, por favor inténtalo de nuevo.');
+        }
+      } catch (error) {
         setErrorMessage('Error al crear el usuario, por favor inténtalo de nuevo.');
       }
-    } catch (error) {
-      setErrorMessage('Error al crear el usuario, por favor inténtalo de nuevo.');
-      console.error('Error creating user:', error);
     }
+  };
+
+  const validateUser = (user: { email: string; password: string; name: string; }) => {
+    if (!user.email || !user.password || !user.name) {
+      setErrorMessage('Por favor, rellena todos los campos');
+      return false;
+    }
+    if (!user.email.includes('@')) {
+      setErrorMessage('Por favor, introduce un correo electrónico válido');
+      return false;
+    }
+    if (user.password.length < 6) {
+      setErrorMessage('La contraseña debe tener al menos 6 caracteres');
+      return false;
+    }
+    if (user.password.length > 10) {
+      setErrorMessage('La contraseña debe tener como maximo 10 caracteres');
+      return false;
+    }
+    return true;
   };
   
   const loginNewUser = async () => {

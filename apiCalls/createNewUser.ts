@@ -6,10 +6,6 @@ interface User {
     name: string;
 }
 export const createNewUser = async (user: User) => {
-    if (!user.email || !user.password || !user.name) {
-        setErrorMessage('Todos los campos son obligatorios. Por favor, completa todos los campos.');
-        return; // Stop execution if any field is empty
-      }
     try {
       const response = await fetch(`http://${process.env.EXPO_PUBLIC_SERVER_IP}:3000/auth/register`, {
         method: 'POST',
@@ -39,4 +35,3 @@ export const createNewUser = async (user: User) => {
 function setErrorMessage(arg0: string) {
     throw new Error('Function not implemented.');
 }
-  
