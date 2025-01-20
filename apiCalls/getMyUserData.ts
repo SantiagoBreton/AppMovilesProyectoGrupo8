@@ -11,7 +11,7 @@ export const myData = () => {
     const getData = async () => {
       try {
         const id = await AsyncStorage.getItem('userId');
-        const response = await fetch(`http://${process.env.SERVER_IP}:3000/getUserData/${id}`);
+        const response = await fetch(`http://${process.env.EXPO_PUBLIC_SERVER_IP}:3000/getUserData/${id}`);
         const responseText = await response.text(); // Get the response text
 
         if (response.ok) {

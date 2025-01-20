@@ -14,7 +14,7 @@ export const myEvents = (trigger: boolean) => {
           if (!id) {
             throw new Error('User ID not found');
           }
-          const response = await fetch(`http://${process.env.SERVER_IP}:3000/getEventsByUserId/${id}`);
+          const response = await fetch(`http://${process.env.EXPO_PUBLIC_SERVER_IP}:3000/getEventsByUserId/${id}`);
           if (response.ok) {
             const data = await response.json();
             setMyEvents(data);

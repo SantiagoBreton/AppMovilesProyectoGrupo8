@@ -11,7 +11,7 @@ export const createNewUser = async (user: User) => {
         return; // Stop execution if any field is empty
       }
     try {
-      const response = await fetch(`http://${process.env.SERVER_IP}:3000/auth/register`, {
+      const response = await fetch(`http://${process.env.EXPO_PUBLIC_SERVER_IP}:3000/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

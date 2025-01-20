@@ -14,7 +14,7 @@ export const getSubscribedEvents = (trigger: boolean) => {
         if (userIdInt === null) {
           throw new Error('User ID is null');
         }
-        const response = await fetch(`http://${process.env.SERVER_IP}:3000/getSubscribedEvents/${userIdInt}`);
+        const response = await fetch(`http://${process.env.EXPO_PUBLIC_SERVER_IP}:3000/getSubscribedEvents/${userIdInt}`);
 
         if (!response.ok) {
           throw new Error('Failed to get events');

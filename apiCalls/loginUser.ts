@@ -16,7 +16,8 @@ interface LoginErrorResponse {
 
 export const loginUser = async (user: User): Promise<LoginSuccessResponse | LoginErrorResponse> => {
   try {
-    const response = await fetch(`http://${process.env.SERVER_IP}:3000/userLogin`, {
+    console.log(process.env.EXPO_PUBLIC_SERVER_IP);
+    const response = await fetch(`http://${process.env.EXPO_PUBLIC_SERVER_IP}:3000/userLogin`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

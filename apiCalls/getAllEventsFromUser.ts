@@ -2,7 +2,7 @@
 
 export const getAllEventsFromUser = async (userId: number) => {
     try {
-        const response = await fetch(`http://${process.env.SERVER_IP}:3000/getEventsByUserId/${userId}`);
+        const response = await fetch(`http://${process.env.EXPO_PUBLIC_SERVER_IP}:3000/getEventsByUserId/${userId}`);
         if (!response.ok) {
             throw new Error("Failed to fetch user events");
         }

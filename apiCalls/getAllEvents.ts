@@ -11,7 +11,7 @@ export const allEvents = (trigger: boolean) => {
     React.useCallback(() => {
       const fetchEvents = async () => {
         try {
-          const response = await fetch(`http://${process.env.SERVER_IP}:3000/getEvents`, {
+          const response = await fetch(`http://${process.env.EXPO_PUBLIC_SERVER_IP}:3000/getEvents`, {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
@@ -25,8 +25,8 @@ export const allEvents = (trigger: boolean) => {
           const fetchedEvents = await response.json();
           setEvents(fetchedEvents); // Set the fetched events to state
         } catch (error) {
-          setEventsError('Error fetching events');
-          console.error('Error fetching events:', error);
+          setEventsError('Error fetching eventsdasda');
+          console.error('Error fetching eventsdasd:', error);
         } finally {
           setLoading(false);
         }

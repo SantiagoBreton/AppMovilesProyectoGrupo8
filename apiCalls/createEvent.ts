@@ -16,7 +16,7 @@ interface Event {
 
 export const createEvent = async function createEvent(event: Event) {
     try {
-        const response = await fetch(`http://${process.env.SERVER_IP}:3000/createEvent`, {
+        const response = await fetch(`http://${process.env.EXPO_PUBLIC_SERVER_IP}:3000/createEvent`, {
             method: 'POST',
             headers: {
             'Content-Type': 'application/json',

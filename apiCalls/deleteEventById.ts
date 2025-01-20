@@ -4,7 +4,7 @@ import { router } from "expo-router";
 // Function to delete event by id
 export const deleteEventById = async (id: number) => {
     try {
-      const response = await fetch(`http://${process.env.SERVER_IP}:3000/deleteEventById/${id}`, {
+      const response = await fetch(`http://${process.env.EXPO_PUBLIC_SERVER_IP}:3000/deleteEventById/${id}`, {
         method: 'DELETE', // Ensure you are using DELETE HTTP method
       });
   

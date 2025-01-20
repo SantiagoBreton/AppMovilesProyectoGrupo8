@@ -17,7 +17,7 @@ export const subscribeToEvent = async (eventId: number) => {
     };
     console.log('userIdInt:', userIdInt);
     console.log('eventId:', eventId);
-    const response = await fetch(`http://${process.env.SERVER_IP}:3000/subscribeToEvent`, {
+    const response = await fetch(`http://${process.env.EXPO_PUBLIC_SERVER_IP}:3000/subscribeToEvent`, {
       method: 'POST', // POST request to create a subscription
       headers: {
         'Content-Type': 'application/json',
