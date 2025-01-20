@@ -1,8 +1,8 @@
-import { SERVER_IP } from "@env";
+
 
 export const getEventByName = async (eventName: string) => {
     try {
-        const response = await fetch(`http://${SERVER_IP}:3000/getEventByPartialName/${eventName}`);
+        const response = await fetch(`http://${process.env.SERVER_IP}:3000/getEventByPartialName/${eventName}`);
         if (!response.ok) {
             throw new Error("Failed to fetch event");
         }

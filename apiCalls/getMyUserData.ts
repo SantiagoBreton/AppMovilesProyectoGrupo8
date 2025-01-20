@@ -1,4 +1,4 @@
-import { SERVER_IP } from "@env";
+
 import { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -11,7 +11,7 @@ export const myData = () => {
     const getData = async () => {
       try {
         const id = await AsyncStorage.getItem('userId');
-        const response = await fetch(`http://${SERVER_IP}:3000/getUserData/${id}`);
+        const response = await fetch(`http://${process.env.SERVER_IP}:3000/getUserData/${id}`);
         const responseText = await response.text(); // Get the response text
 
         if (response.ok) {

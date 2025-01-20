@@ -1,4 +1,4 @@
-import { SERVER_IP } from "@env";
+
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Float } from "react-native/Libraries/Types/CodegenTypes";
 
@@ -16,7 +16,7 @@ interface Event {
 
 export const createEvent = async function createEvent(event: Event) {
     try {
-        const response = await fetch(`http://${SERVER_IP}:3000/createEvent`, {
+        const response = await fetch(`http://${process.env.SERVER_IP}:3000/createEvent`, {
             method: 'POST',
             headers: {
             'Content-Type': 'application/json',

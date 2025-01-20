@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { SERVER_IP } from '@env';
+
 
 interface User {
   email: string;
@@ -16,7 +16,7 @@ interface LoginErrorResponse {
 
 export const loginUser = async (user: User): Promise<LoginSuccessResponse | LoginErrorResponse> => {
   try {
-    const response = await fetch(`http://${SERVER_IP}:3000/userLogin`, {
+    const response = await fetch(`http://${process.env.SERVER_IP}:3000/userLogin`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

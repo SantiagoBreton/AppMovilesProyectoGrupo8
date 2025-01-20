@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
-import { SERVER_IP } from '@env';
+
 
 export const allEvents = (trigger: boolean) => {
   const [events, setEvents] = useState<any[]>([]);
@@ -11,7 +11,7 @@ export const allEvents = (trigger: boolean) => {
     React.useCallback(() => {
       const fetchEvents = async () => {
         try {
-          const response = await fetch(`http://${SERVER_IP}:3000/getEvents`, {
+          const response = await fetch(`http://${process.env.SERVER_IP}:3000/getEvents`, {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
@@ -40,7 +40,7 @@ export const allEvents = (trigger: boolean) => {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await fetch(`http://${SERVER_IP}:3000/getEvents`, {
+        const response = await fetch(`http://${process.env.SERVER_IP}:3000/getEvents`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',

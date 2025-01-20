@@ -1,8 +1,8 @@
-import { SERVER_IP } from "@env";
+
 
 export const getUserByName = async (userName: string) => {
     try {
-        const response = await fetch(`http://${SERVER_IP}:3000/getUserByPartialName/${userName}`);
+        const response = await fetch(`http://${process.env.SERVER_IP}:3000/getUserByPartialName/${userName}`);
         if (!response.ok) {
             throw new Error("Failed to fetch user");
         }
