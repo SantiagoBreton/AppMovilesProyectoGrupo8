@@ -2,36 +2,25 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, Button, StyleSheet, FlatList, Modal, TextInput, ScrollView, TouchableOpacity, Alert, Platform, Pressable, Image } from 'react-native';
 import * as Location from 'expo-location';
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import MapView, { Marker, Region } from 'react-native-maps';
+import MapView, { Marker } from 'react-native-maps';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Float } from 'react-native/Libraries/Types/CodegenTypes';
-import { useLocation } from '../hooks/useLocation';
 import { unsubscribeUserFromAnEvent } from '@/apiCalls/unsubscribeUserFromEvent';
 import { myEvents } from '@/apiCalls/myEvents';
 import { deleteEventById } from '@/apiCalls/deleteEventById';
 import { useEventContext } from '@/context/eventContext';
-import { createEvent } from '@/apiCalls/createEvent';
 import { getSubscribedEvents } from '@/apiCalls/getSubscribedEvents';
 import { getAllUsersSubscribedToAnEvent } from '@/apiCalls/getAllUsersSubscribedToAnEvent';
 import { updateEvent } from '@/apiCalls/updateEvent';
+import SpectatedUserModal from '@/components/SpectatedUserModal';
+import EventCreationModal from '@/components/EventCreationModal';
+import AdminEventModal from '@/components/AdminEventModal';
 
 
 export default function CreacionEvento() {
     const [isModalVisible, setIsModalVisible] = useState(false);
-    const [titulo, setTitulo] = useState('');
-    const [descripcion, setDescripcion] = useState('');
-    const [fecha, setFecha] = useState('');
-    const [ubicacion, setUbicacion] = useState('');
-    const [datePickerVisible, setDatePickerVisible] = useState(false);
-    const [modalVisible, setModalVisible] = useState(false);
-    const [selectedLocation, setSelectedLocation] = useState<{ latitude: number; longitude: number } | null>(null);
-    const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-    const [maxParticipants, setMaxParticipants] = useState(0);
-    const [selectedLatitude, setLatitude] = useState<number | null>(null);
-    const [selectedLongitude, setLongitude] = useState<number | null>(null);
     const [selectedView, setSelectedView] = useState('inscriptos'); // 'inscriptos' o 'creados'
     const { refreshEvents } = useEventContext();
-    const { location, locationError } = useLocation();
     const [isDetailsModalVisible, setIsDetailsModalVisible] = useState(false);
     const [isConfirmaDeletionModalVisible, setIsConfirmaDeletionModalVisible] = useState(false);
     const [eventDetails, setEventDetails] = useState<Event | null>(null);
@@ -43,14 +32,10 @@ export default function CreacionEvento() {
     const eventsToDisplay = selectedView === 'inscriptos' ? allevents.events : myUserEvents.myEvents;
     const [isAdminModalVisible, setIsAdminModalVisible] = useState(false);
     const [adminEventDetails, setAdminEventDetails] = useState<EventWithId | null>(null);
-    const [subscribedUsers, setSubscribedUsers] = useState<{ id: number; name: string }[]>([]);
-    const [eventAssLocation, setEventAssLocation] = useState<string | null>(null);
-    const [isUpdateNameModalVisible, setIsNameModalVisible] = useState(false);
-    const [isUpdateDescriptionModalVisible, setIsDescriptionModalVisible] = useState(false);
-    const [newName, setNewName] = useState('');
-    const [newDescription, setNewDescription] = useState('');
+    const [subscribedUsers, setSubscribedUsers] = useState<User[]>([]);
     const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
     const [userId, setUserId] = useState<number | null>(null);
+
 
     useEffect(() => {
         const fetchUserId = async () => {
@@ -89,55 +74,17 @@ export default function CreacionEvento() {
         userId: number;
     };
 
-
-    const showDatePicker = () => {
-        setDatePickerVisible(true);
+    interface User {
+        id: number;
+        name: string;
+        email: string;
     };
 
     const handleShowMap = () => setMapVisible(true);
 
     const handleCloseMap = () => setMapVisible(false);
 
-    const handleDateChange = (event: any, date?: Date) => {
-        setDatePickerVisible(false);
-
-        if (date && date >= new Date()) {
-            setSelectedDate(date);
-            setFecha(date.toLocaleDateString());
-        }
-        else {
-            setSelectedDate(null);
-            Alert.alert('Error', 'Por favor, seleccione una fecha válida.');
-        }
-    };
-
-    const handleMapPress = async (event: { nativeEvent: { coordinate: { latitude: number; longitude: number; }; }; }) => {
-        const { latitude, longitude } = event.nativeEvent.coordinate;
-        setSelectedLocation({ latitude, longitude });
-        setLatitude(latitude);
-        setLongitude(longitude);
-        setUbicacion(`${latitude},${longitude}`);
-        setModalVisible(false);
-        const addresses = await Location.reverseGeocodeAsync({
-            latitude: latitude,
-            longitude: longitude,
-        });
-
-        const location =
-            addresses.length > 0
-                ? `${addresses[0].city}, ${addresses[0].region}, ${addresses[0].country}`
-                : 'Address not found';
-
-        setEventAssLocation(location);
-
-
-
-    };
-
-    const handleMaxParticipantsChange = (text: string) => {
-        const numericValue = parseInt(text, 10);
-        setMaxParticipants(isNaN(numericValue) ? 0 : numericValue);
-    };
+    
 
     const handleDetailsEvent = async (item: Event) => {
         try {
@@ -160,90 +107,11 @@ export default function CreacionEvento() {
         }
     };
 
-    const handleEventUpdate = async () => {
-        if ((!newName && !newDescription && !selectedDate)) {
-            Alert.alert('Error', 'Por favor, complete al menos un campo para actualizar.');
-            return;
-        }
-        if (selectedDate && selectedDate <= new Date()) {
-            setSelectedDate(adminEventDetails?.date ?? null);
-        }
-        try {
-            console.log(`newName: ${newName}, newDescription: ${newDescription}, selectedDate: ${selectedDate}`);
 
-            // Fallback to default values if inputs are empty
-            const updatedName = newName || adminEventDetails?.name || '';
-            const updatedDescription = newDescription || adminEventDetails?.description || '';
-            const updatedDate = selectedDate || adminEventDetails?.date || new Date();
-
-            console.log(`updatedName: ${updatedName}, updatedDescription: ${updatedDescription}, updatedDate: ${updatedDate}`);
-
-            // Call the update function with the resolved values
-            await updateEvent(adminEventDetails?.id ?? 0, updatedName, updatedDescription, updatedDate);
-
-            // Refresh and reset
-            refreshEvents();
-            setNewName('');
-            setNewDescription('');
-            setSelectedDate(new Date());
-            setIsAdminModalVisible(false);
-
-            Alert.alert('Éxito', 'El evento se actualizó.');
-        } catch (error) {
-            console.error('Error updating event:', error);
-            Alert.alert('Error', 'No se pudo actualizar el evento.');
-        }
-    };
-
-
-    const createNewEvent = async function createNewEvent() {
-        if (!titulo || !descripcion || !selectedDate || !selectedLocation || maxParticipants <= 0) {
-            Alert.alert('Error', 'Por favor, complete todos los campos.');
-            return;
-        }
-        try {
-            const currentUserId = await AsyncStorage.getItem('userId');
-            const event: Event = {
-                name: titulo,
-                date: selectedDate,
-                latitude: selectedLatitude ?? 0,
-                longitude: selectedLongitude ?? 0,
-                description: descripcion,
-                maxParticipants: maxParticipants,
-                currentParticipants: 0,
-                userId: currentUserId ? parseInt(currentUserId, 10) : 0,
-            };
-            await createEvent(event);
-            setIsModalVisible(false);
-            resetEvetCreationInfo();
-
-            refreshEvents();
-        } catch (error) {
-            setIsModalVisible(false);
-            refreshEvents();
-        }
-    };
 
     const switchView = (view: string) => {
         setSelectedView(view);
     };
-
-    const resetEvetCreationInfo = () => {
-        setTitulo('');
-        setDescripcion('');
-        setFecha('');
-        setUbicacion('');
-        setMaxParticipants(0);
-        setSelectedLocation(null);
-        setLatitude(null);
-        setLongitude(null);
-        setEventAssLocation(null);
-        setSelectedDate(null);
-    };
-    const alertUserProfile = (user: { id?: number; name: any; email?: any; signupDate?: any; }) => {
-        // You can replace this with a more complex profile modal in the future.
-        alert(`Perfil de ${user.name}\n\nCorreo: ${user.email}\nFecha de inscripción: ${new Date(user.signupDate).toLocaleDateString()}`);
-    }
 
     const handleUnsubscribe = async (eventId: number) => {
         try {
@@ -275,16 +143,7 @@ export default function CreacionEvento() {
         }
     };
 
-    const handleEliminateUserFromEvent = async (userId: number, eventId: number) => {
-        try {
-            await unsubscribeUserFromAnEvent(userId, eventId);
-            Alert.alert('Éxito', 'Usuario eliminado del evento correctamente.');
-            setSubscribedUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
-            refreshEvents();
-        } catch (error) {
-            Alert.alert('Error', 'No se pudo eliminar al usuario del evento.');
-        }
-    };
+    
 
     const handleDeleteEvent = async (eventId: number) => {
         try {
@@ -313,6 +172,8 @@ export default function CreacionEvento() {
         setSelectedEventId(null);
         setIsConfirmaDeletionModalVisible(false);
     };
+
+   
 
     return (
         <View style={styles.container}>
@@ -349,7 +210,7 @@ export default function CreacionEvento() {
                         >
                             {/* Name and Date Section */}
                             <View style={styles.headerSection}>
-                                <Text style={styles.eventName}>{item.name}</Text>
+                                <Text style={styles.eventName} numberOfLines={2} >{item.name}</Text>
 
                                 {/* Date */}
                                 <Text style={styles.eventDate}>
@@ -447,7 +308,7 @@ export default function CreacionEvento() {
                             activeOpacity={0.8}
                         >
                             <View style={styles.cardHeader}>
-                                <Text style={styles.eventName}>{item.name}</Text>
+                                <Text style={styles.eventName} numberOfLines={2}>{item.name}</Text>
                                 <Text style={styles.eventDate}>
                                     {item.date ? new Date(item.date).toLocaleDateString() : 'Fecha no disponible'}
                                 </Text>
@@ -482,141 +343,18 @@ export default function CreacionEvento() {
 
             </ScrollView>
 
-
-
             {/* Botón para abrir el modal de creación de evento */}
             <Button
                 title="Crear Evento"
                 onPress={() => setIsModalVisible(true)}
                 color="#FF7F50"
             />
-            <Modal visible={isModalVisible} animationType="slide">
-                <ScrollView contentContainerStyle={styles.scrollContainer}>
-                    <Text style={styles.title}>Crear Evento</Text>
-                    <View style={styles.section}>
-                        <Text style={styles.label}>Título del Evento</Text>
-                        <TextInput
-                            style={styles.input}
-                            value={titulo}
-                            onChangeText={setTitulo}
-                            placeholder="Ingrese el título del evento"
-                            placeholderTextColor="#A9A9A9"
-                        />
-                    </View>
-                    <View style={styles.section}>
-                        <Text style={styles.label}>Descripción</Text>
-                        <TextInput
-                            style={styles.input}
-                            value={descripcion}
-                            onChangeText={setDescripcion}
-                            placeholder="Ingrese la descripción del evento"
-                            placeholderTextColor="#A9A9A9"
-                        />
-                    </View>
-                    <View style={styles.section}>
-                        <Text style={styles.label}>Número Máximo De Participantes</Text>
-                        <TextInput
-                            style={styles.input}
-                            value={maxParticipants.toString()} // Convert the number to a string for TextInput
-                            onChangeText={handleMaxParticipantsChange}
-                            placeholder="Ingrese el número máximo de participantes"
-                            placeholderTextColor="#A9A9A9"
-                            keyboardType="numeric" // This shows a numeric keyboard for input
-                        />
-                    </View>
-                    <View style={styles.section}>
-                        <Text style={styles.label}>Fecha</Text>
-                        <TouchableOpacity onPress={showDatePicker}>
-                            <TextInput
-                                style={styles.input}
-                                value={fecha}
-                                placeholder="Ingrese la fecha del evento"
-                                placeholderTextColor="#A9A9A9"
-                                editable={false} // Disable manual editing
-                            />
-                        </TouchableOpacity>
-                        {datePickerVisible && Platform.OS === 'ios' && (
-                            <Modal transparent animationType="slide" visible={datePickerVisible}>
-                                <View style={styles.datePickerContainer}>
-                                    <View style={styles.datePicker}>
-                                        <DateTimePicker
-                                            value={selectedDate || new Date()}
-                                            mode="date"
-                                            display="inline"
-                                            onChange={handleDateChange}
-                                        />
-                                        <Button
-                                            title="Confirmar"
-                                            onPress={() => setDatePickerVisible(false)}
-                                            color="#FF7F50"
-                                        />
-                                    </View>
-                                </View>
-                            </Modal>
-                        )}
-                        {datePickerVisible && Platform.OS !== 'ios' && (
-                            <DateTimePicker
-                                value={selectedDate || new Date()}
-                                mode="date"
-                                display="default"
-                                onChange={handleDateChange}
-                            />
-                        )}
-                    </View>
-                    <View style={styles.section}>
-                        <Text style={styles.label}>Ubicación</Text>
-                        <TextInput
-                            style={styles.input}
-                            value={eventAssLocation ?? ''}
-                            onChangeText={setUbicacion}
-                            placeholder="Ingrese la ubicación del evento"
-                            placeholderTextColor="#A9A9A9"
-                        />
-                        <Button
-                            title="Seleccionar en el mapa"
-                            onPress={() => setModalVisible(true)}
-                            color="#FF7F50"
-                        />
-                    </View>
-
-                    {/* Botones con marginTop para separación */}
-                    <View style={styles.modalButtonContainer}>
-                        <Button title="Crear Evento" onPress={createNewEvent} color="#FF7F50" />
-                        <Button
-                            title="Cerrar"
-                            onPress={() => {
-                                setIsModalVisible(false);
-                                resetEvetCreationInfo();
-                            }}
-                            color="#FF7F50"
-                        />
-                    </View>
-
-                    <Modal visible={modalVisible} animationType="slide">
-                        {location ? (
-                            <MapView
-                                style={styles.map}
-                                initialRegion={{
-                                    latitude: location.coords.latitude,
-                                    longitude: location.coords.longitude,
-                                    latitudeDelta: 0.01,
-                                    longitudeDelta: 0.01,
-                                }}
-                                onPress={handleMapPress}
-                            >
-                                {selectedLocation && <Marker coordinate={selectedLocation} />}
-                            </MapView>
-                        ) : (
-                            <Text>Cargando mapa...</Text>
-                        )}
-                        <Button
-                            title="Cerrar"
-                            onPress={() => setModalVisible(false)}
-                            color="#FF7F50"
-                        />
-                    </Modal>
-                </ScrollView>
-            </Modal>
+            
+            {/* Modal para crear un evento */}
+            <EventCreationModal
+                isModalVisible={isModalVisible}
+                onClose={() => setIsModalVisible(false)}
+            />
 
 
             <Modal
@@ -629,9 +367,9 @@ export default function CreacionEvento() {
                     <View style={styles.modalContent}>
                         {eventDetails && (
                             <>
-                                <Text style={styles.modalTitle}>{eventDetails.name}</Text>
+                                <Text style={styles.modalTitle} numberOfLines={2}>{eventDetails.name}</Text>
                                 <View style={styles.modalSection}>
-                                    <Text style={styles.modalLabel}>Descripción:</Text>
+                                    <Text style={styles.modalLabel } numberOfLines={4}>Descripción:</Text>
                                     <Text style={styles.modalText}>{eventDetails.description}</Text>
                                 </View>
                                 <View style={styles.modalSection}>
@@ -704,240 +442,16 @@ export default function CreacionEvento() {
                     </View>
                 </View>
             </Modal>
-            <Modal
-                visible={isAdminModalVisible}
-                transparent={true}
-                animationType="slide"
-                onRequestClose={() => setIsAdminModalVisible(false)}
-            >
-                <View style={styles.modalContainer2}>
-                    <ScrollView contentContainerStyle={styles.modalContent2}>
-                        <Text style={styles.modalTitle1}>Administrar Evento</Text>
-                        <View style={styles.titleSeparator} />
+            
+            {/* Modal para administrar eventos */}
 
-                        {/* Detalles del evento */}
-                        {adminEventDetails && (
-                            <>
-                                <Text style={styles.detailsSectionTitle}>Detalles del Evento</Text>
-                                <View style={styles.elegantDetailsContainer}>
-                                    {/* Nombre del Evento */}
-                                    <View style={styles.detailBlock}>
-                                        <Text style={styles.detailLabel}>📛 Nombre:</Text>
-                                        <Text style={styles.detailValue}>{adminEventDetails.name}</Text>
-                                    </View>
+            <AdminEventModal
+                isVisible={isAdminModalVisible}
+                adminEventDetails={adminEventDetails}
+                subscribedUsers={subscribedUsers}
+                onClose={() => setIsAdminModalVisible(false)}
+            />
 
-                                    {/* Descripción del Evento */}
-                                    <View style={styles.detailBlock}>
-                                        <Text style={styles.detailLabel}>📄 Descripción:</Text>
-                                        <Text style={styles.detailValue}>{adminEventDetails.description}</Text>
-                                    </View>
-
-                                    {/* Fecha del Evento */}
-                                    <View style={styles.detailBlock}>
-                                        <Text style={styles.detailLabel}>📅 Fecha:</Text>
-                                        <Text style={styles.detailValue}>
-                                            {new Date(adminEventDetails.date).toLocaleDateString('es-ES', {
-                                                weekday: 'long',
-                                                year: 'numeric',
-                                                month: 'long',
-                                                day: 'numeric',
-                                            })}
-                                        </Text>
-                                    </View>
-                                </View>
-
-                                <View style={styles.titleSeparator} />
-
-                                <View style={styles.actionCardsContainer}>
-                                    {/* Cambiar Nombre */}
-                                    <Pressable
-                                        style={({ pressed }) => [
-                                            styles.actionCard,
-                                            pressed && styles.actionCardPressed,
-                                        ]}
-                                        onPress={() => setIsNameModalVisible(true)}
-                                    >
-                                        <View style={styles.cardIconContainer}>
-                                            <Text style={styles.cardIcon}>✏️</Text>
-                                        </View>
-                                        <Text style={styles.cardTitle}>Cambiar Nombre</Text>
-                                    </Pressable>
-
-                                    {/* Cambiar Descripción */}
-                                    <Pressable
-                                        style={({ pressed }) => [
-                                            styles.actionCard,
-                                            pressed && styles.actionCardPressed,
-                                        ]}
-                                        onPress={() => setIsDescriptionModalVisible(true)}
-                                    >
-                                        <View style={styles.cardIconContainer}>
-                                            <Text style={styles.cardIcon}>📝</Text>
-                                        </View>
-                                        <Text style={styles.cardTitle}>Cambiar Descripción</Text>
-                                    </Pressable>
-
-                                    {/* Cambiar Fecha */}
-                                    <Pressable
-                                        style={({ pressed }) => [
-                                            styles.actionCard,
-                                            pressed && styles.actionCardPressed,
-                                        ]}
-                                        onPress={() => setDatePickerVisible(true)}
-                                    >
-                                        <View style={styles.cardIconContainer}>
-                                            <Text style={styles.cardIcon}>📅</Text>
-                                        </View>
-                                        <Text style={styles.cardTitle}>Cambiar Fecha</Text>
-                                    </Pressable>
-                                </View>
-
-
-
-                                {datePickerVisible && (
-                                    <DateTimePicker
-                                        value={selectedDate || new Date()}
-                                        mode="date"
-                                        display={Platform.OS === 'ios' ? 'inline' : 'default'}
-                                        onChange={handleDateChange}
-                                    />
-                                )}
-
-
-                            </>
-                        )}
-                        <Modal
-                            visible={isUpdateNameModalVisible}
-                            transparent={true}
-                            animationType="slide"
-                            onRequestClose={() => setIsNameModalVisible(false)}
-                        >
-                            <View style={styles.modalContainer2}>
-                                <View style={styles.modalContent2}>
-                                    <Text style={styles.modalTitle2}>Cambiar Nombre</Text>
-                                    <TextInput
-                                        style={styles.input}
-                                        placeholder="Nuevo Nombre"
-                                        value={newName}
-                                        onChangeText={setNewName}
-                                    />
-                                    <View style={styles.modalButtons}>
-                                        <TouchableOpacity
-                                            style={styles.saveButton}
-                                            onPress={() => {
-                                                setIsNameModalVisible(false);
-                                                // Handle Save Logic
-                                            }}
-                                        >
-                                            <Text style={styles.saveButtonText}>Guardar</Text>
-                                        </TouchableOpacity>
-                                        <TouchableOpacity
-                                            style={styles.cancelButton}
-                                            onPress={() => {
-                                                setIsNameModalVisible(false);
-                                                setNewName(''); // Clear the input
-                                            }}
-                                        >
-                                            <Text style={styles.cancelButtonText}>Cancelar</Text>
-                                        </TouchableOpacity>
-                                    </View>
-                                </View>
-                            </View>
-                        </Modal>
-
-
-                        {/* Modal for changing description */}
-                        <Modal
-                            visible={isUpdateDescriptionModalVisible}
-                            transparent={true}
-                            animationType="slide"
-                            onRequestClose={() => setIsDescriptionModalVisible(false)}
-                        >
-                            <View style={styles.modalContainer2}>
-                                <View style={styles.modalContent2}>
-                                    <Text style={styles.modalTitle2}>Cambiar Descripción</Text>
-                                    <TextInput
-                                        style={styles.input}
-                                        placeholder="Nueva Descripción"
-                                        value={newDescription}
-                                        onChangeText={setNewDescription}
-                                    />
-                                    <View style={styles.modalButtons}>
-                                        <TouchableOpacity
-                                            style={styles.saveButton}
-                                            onPress={() => {
-                                                setIsDescriptionModalVisible(false);
-                                                // Handle Save Logic
-                                            }}
-                                        >
-                                            <Text style={styles.saveButtonText}>Guardar</Text>
-                                        </TouchableOpacity>
-                                        <TouchableOpacity
-                                            style={styles.cancelButton}
-                                            onPress={() => {
-                                                setIsDescriptionModalVisible(false);
-                                                setNewDescription(''); // Clear the input
-                                            }}
-                                        >
-                                            <Text style={styles.cancelButtonText}>Cancelar</Text>
-                                        </TouchableOpacity>
-                                    </View>
-                                </View>
-                            </View>
-                        </Modal>
-                        <View style={styles.titleSeparator} />
-
-                        {/* Lista de usuarios inscriptos */}
-                        <Text style={styles.sectionTitle}>Usuarios Inscriptos:</Text>
-
-                        {subscribedUsers.map((user) => (
-                            <View key={user.id} style={styles.userCard}>
-                                {/* Profile Picture */}
-                                <TouchableOpacity onPress={() => alertUserProfile(user)}>
-                                    <Image
-                                        source={{ uri: 'https://www.gravatar.com/avatar/2c7d99fe281ecd3bcd65ab915bac6dd5?s=250' }} // Use default image if no profile picture
-                                        style={styles.profilePicture}
-                                    />
-                                </TouchableOpacity>
-
-                                {/* User Info (Name and Eliminate Button) */}
-                                <View style={styles.userInfo}>
-                                    {/* User Name */}
-                                    <TouchableOpacity onPress={() => alertUserProfile(user)}>
-                                        <Text style={styles.userName} numberOfLines={1}>
-                                            {user.name}
-                                        </Text>
-                                    </TouchableOpacity>
-
-                                    {/* Eliminate Button */}
-                                    <TouchableOpacity
-                                        onPress={() => handleEliminateUserFromEvent(user.id, adminEventDetails?.id ?? 0)}
-                                        style={styles.deleteUserButton}
-                                    >
-                                        <Text style={styles.deleteUserText}>Eliminar</Text>
-                                    </TouchableOpacity>
-                                </View>
-                            </View>
-                        ))}
-                        <View style={styles.titleSeparator} />
-                        {/* Botones de acción */}
-                        <View style={styles.actionButtons2}>
-                            <TouchableOpacity
-                                style={styles.updateButton}
-                                onPress={() => adminEventDetails && handleEventUpdate()}
-                            >
-                                <Text style={styles.updateButtonText}>Guardar Cambios</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                style={styles.closeButton}
-                                onPress={() => setIsAdminModalVisible(false)}
-                            >
-                                <Text style={styles.closeButtonText}>Cerrar</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </ScrollView>
-                </View>
-            </Modal>
 
         </View>
     );
@@ -950,34 +464,12 @@ const styles = StyleSheet.create({
         padding: 16,
         backgroundColor: '#ffffff',
     },
-    title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: '#FF7F50',
-        textAlign: 'center',
-        marginBottom: 20,
-    },
     subHeader: {
         fontSize: 18,
         fontWeight: 'bold',
         color: '#333',
         marginTop: 20,
         marginBottom: 10,
-    },
-    section: {
-        marginBottom: 20,
-        paddingHorizontal: 20, // Adds padding to the left and right
-    },
-
-    label: {
-        fontSize: 16,
-        marginBottom: 8,
-        color: '#FF7F50',
-    },
-    buttonGroup: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        marginTop: 20,
     },
     input: {
         height: 50,
@@ -988,7 +480,6 @@ const styles = StyleSheet.create({
         backgroundColor: '#f9f9f9', // Light background
         marginBottom: 20, // Margin below the input
     },
-
     buttonContainer: {
         flexDirection: 'row',        // Alineación de los botones en fila
         justifyContent: 'space-between', // Espaciado entre los botones
@@ -1000,21 +491,12 @@ const styles = StyleSheet.create({
         marginBottom: 20,
         color: '#FF7F50',
     },
-
-    detailButton: {
-        marginTop: 10,
-        flexDirection: 'row',
-        width: '100%', // Make the button container take full width of the card
-        justifyContent: 'center', // Center the button within the container
-    },
-
     modalSection: {
         marginBottom: 10,
         paddingVertical: 5,
         borderBottomWidth: 1,
         borderBottomColor: '#FF7F50',
     },
-
     modalLabel: {
         fontSize: 16,
         fontWeight: 'bold',
@@ -1038,7 +520,6 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         textAlign: 'center',
     },
-
     closeMapButton: {
         position: 'absolute',
         bottom: 10,
@@ -1055,7 +536,6 @@ const styles = StyleSheet.create({
     buttonWrapper: {
         width: '45%',               // Controla el ancho de cada botón
     },
-
     modalButtons: {
         flexDirection: 'row',
         justifyContent: 'space-around',
@@ -1091,8 +571,6 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: 'bold',
     },
-
-
     mapModalContainer: {
         flex: 1,
         justifyContent: 'center',
@@ -1111,8 +589,6 @@ const styles = StyleSheet.create({
         width: '100%',
         height: '100%',
     },
-
-
     modalContainer: {
         flex: 1,
         justifyContent: 'center',
@@ -1142,14 +618,6 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#FF7F50',
     },
-    userRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingVertical: 10,
-        borderBottomColor: '#ddd',
-        borderBottomWidth: 1,
-    },
     userName: {
         fontSize: 18,
         color: '#333',
@@ -1163,33 +631,11 @@ const styles = StyleSheet.create({
         paddingHorizontal: 15,
         borderRadius: 5,
     },
-
-
-    scrollContainer: {
-        flexGrow: 1, // Ensures the content stretches vertically
-        paddingBottom: 20, // Optional: Add bottom padding for better spacing when scrolling
-    },
     deleteUserText: {
         color: '#fff',
         fontSize: 14,
         fontWeight: 'bold',
     },
-    dateChangeButton: {
-        backgroundColor: '#6C63FF', // Azul moderno
-        paddingVertical: 12,
-        paddingHorizontal: 15,
-        borderRadius: 30, // Botón redondeado
-        marginVertical: 10,
-        alignItems: 'center',
-        justifyContent: 'center',
-        elevation: 5, // Sombra para profundidad
-    },
-    dateChangeText: {
-        color: '#fff',
-        fontSize: 16,
-        fontWeight: '600',
-    },
-
     updateButton: {
         backgroundColor: '#007E33', // Verde oscuro
         padding: 12,
@@ -1216,30 +662,11 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         flex: 1,
     },
-
     closeButtonText: {
         color: '#fff',
         fontSize: 16,
         fontWeight: 'bold',
     },
-    modalButtonContainer: {
-        flexDirection: 'column',  // Aseguramos que los botones estén uno encima del otro
-        marginTop: 20,  // Separa los botones entre sí
-        paddingHorizontal: 20, // Añadir espacio en los laterales
-    },
-    datePickerContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)', // Dim background
-    },
-    datePicker: {
-        backgroundColor: 'white',
-        borderRadius: 10,
-        padding: 20,
-        width: '90%',
-    },
-
     modalContainer2: {
         flex: 1,
         justifyContent: 'center',
@@ -1287,7 +714,6 @@ const styles = StyleSheet.create({
         marginBottom: 30, // Increased space below to separate from content
         letterSpacing: 1, // Small spacing to make it feel light
     },
-
     modalTitle1: {
         fontSize: 32, // Slightly larger for a premium feel
         fontWeight: '600', // Medium weight for sophistication, not too bold
@@ -1301,9 +727,6 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20, // More space for a comfortable feel
         textAlign: 'center', // Center the title for balance
     },
-
-
-
     elegantDetailsContainer: {
         padding: 20,
         backgroundColor: '#ffffff', // Fondo blanco
@@ -1317,11 +740,9 @@ const styles = StyleSheet.create({
         borderColor: '#FF7F50', // Un borde naranja sutil
         marginHorizontal: 10, // Separación horizontal
     },
-
     detailBlock: {
         marginBottom: 20,
     },
-
     detailLabel: {
         fontSize: 18,
         fontWeight: '600',
@@ -1329,7 +750,6 @@ const styles = StyleSheet.create({
         marginBottom: 8,
         textTransform: 'capitalize',
     },
-
     detailValue: {
         fontSize: 16,
         color: '#555',
@@ -1389,23 +809,18 @@ const styles = StyleSheet.create({
         padding: 10,
         elevation: 2, // Add a slight shadow
     },
-
-
     userInfoContainer: {
         flexDirection: 'row',
         flex: 1, // Take up available space
         alignItems: 'stretch',
         marginRight: 15,
     },
-
-
     profilePicture: {
         width: 50,
         height: 50,
         borderRadius: 25,
         marginRight: 15,
     },
-
     nameContainer: {
         flex: 1,
         justifyContent: 'space-between', // Distribute content vertically
@@ -1420,7 +835,6 @@ const styles = StyleSheet.create({
         borderBottomColor: '#ddd', // Light gray color for the line
         marginVertical: 15, // Space around the line to keep separation clean
     },
-
     eventCard: {
         backgroundColor: '#f9f9f9',
         borderRadius: 15,
@@ -1441,7 +855,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: 8,
     },
-    
     textContainer: {
         flex: 1,
     },
@@ -1452,7 +865,6 @@ const styles = StyleSheet.create({
         textTransform: 'capitalize',
         flex: 1, // Ensures the name takes up available space
     },
-    
     eventDate: {
         fontSize: 14,
         fontStyle: 'italic',
@@ -1463,7 +875,6 @@ const styles = StyleSheet.create({
         textAlign: 'right', // Aligns text to the right
         maxWidth: '40%', // Ensures it doesn’t take too much space
     },
-    
     divider: {
         height: 1,
         backgroundColor: '#e5e5e5',
@@ -1528,14 +939,7 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: '600',
         textTransform: 'uppercase',
-    },
-
-
-
-
-
-
-
+    }
 });
 
 const modalStyles = StyleSheet.create({

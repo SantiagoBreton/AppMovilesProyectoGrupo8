@@ -89,7 +89,7 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
                 <View style={styles.modalContainer}>
                     <TouchableWithoutFeedback>
                         <View style={styles.modalContent}>
-                            <Text style={styles.modalTitle}>{eventDetails.name}</Text>
+                            <Text style={styles.modalTitle} >{eventDetails.name}</Text>
                             <View style={styles.modalSection}>
                                 <Text style={styles.modalLabel}>Descripción:</Text>
                                 <Text style={styles.modalText}>{eventDetails.description}</Text>
