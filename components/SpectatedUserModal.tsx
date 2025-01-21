@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, View, Text, TouchableOpacity, Image, FlatList, ScrollView, StyleSheet, Button, Alert } from 'react-native';
+import { Modal, View, Text, TouchableOpacity, Image, FlatList, ScrollView, StyleSheet, Button, Alert, ActivityIndicator } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons'; // If you are using FontAwesome5
 import { Float } from 'react-native/Libraries/Types/CodegenTypes';
 import EventDetailModal from './EventDetailModal';
@@ -39,12 +39,12 @@ const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
     const [eventDetails, setEventDetails] = useState<CustomEvent | null>(null);
     const [userEvents, setUserEvents] = useState<CustomEvent[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    
+
 
     useEffect(() => {
         const handleSeeUser = async () => {
             if (!user) return;
-            setIsLoading(true); 
+            setIsLoading(true);
             try {
                 const response = await getAllEventsFromUser(user.id);
                 if (response.error) {
@@ -60,11 +60,11 @@ const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
             finally {
                 // Simular un retraso de 1 segundo antes de ocultar la carga
                 setTimeout(() => {
-                  setIsLoading(false);
-                }, 1000);
-              }
+                    setIsLoading(false);
+                }, 650);
+            }
         };
-    
+
         handleSeeUser();
     }, [user]);
 
@@ -80,62 +80,70 @@ const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
 
     return (
         <Modal visible={isVisible} animationType="slide">
-            <ScrollView>
-                <View style={styles.header3}>
-                    <Text style={styles.name}></Text>
-                    <TouchableOpacity style={styles.closeButton2} onPress={() => { onClose()}}>   
-                        <FontAwesome5 name="times" size={24} color="black" />
-                    </TouchableOpacity>
+            {isLoading ? (
+                // Mini pantalla de carga
+                <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color="#FF7F50" />
+                    <Text style={styles.loadingText}>Cargando...</Text>
                 </View>
-                <View style={styles.container}>
-                    <View style={styles.header}>
-                        <Image source={{ uri: 'https://via.placeholder.com/150' }} style={styles.profileImage} />
-                        <Text style={styles.name}>{user.name}</Text>
+            ) : (
+                <ScrollView>
+                    <View style={styles.header3}>
+                        <Text style={styles.name}></Text>
+                        <TouchableOpacity style={styles.closeButton2} onPress={() => { onClose() }}>
+                            <FontAwesome5 name="times" size={24} color="black" />
+                        </TouchableOpacity>
                     </View>
-                    <View style={styles.section}>
-                        <Text style={styles.label}>Nombre:</Text>
-                        <Text style={styles.input}>{user.name}</Text>
-                    </View>
-                    <View style={styles.section}>
-                        <Text style={styles.label}>Email:</Text>
-                        <Text style={styles.input}>{user.email}</Text>
-                    </View>
+                    <View style={styles.container}>
+                        <View style={styles.header}>
+                            <Image source={{ uri: 'https://via.placeholder.com/150' }} style={styles.profileImage} />
+                            <Text style={styles.name}>{user.name}</Text>
+                        </View>
+                        <View style={styles.section}>
+                            <Text style={styles.label}>Nombre:</Text>
+                            <Text style={styles.input}>{user.name}</Text>
+                        </View>
+                        <View style={styles.section}>
+                            <Text style={styles.label}>Email:</Text>
+                            <Text style={styles.input}>{user.email}</Text>
+                        </View>
 
-                    <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>Eventos Creados</Text>
-                        {userEvents && userEvents.length > 0 ? (
-                            <FlatList
-                                data={userEvents}
-                                scrollEnabled={false}
-                                renderItem={({ item }) => (
-                                    <TouchableOpacity
-                                        style={styles.eventCard}
-                                        onPress={() => handleEventPress(item)}
-                                    >
-                                        <View style={styles.eventHeader}>
-                                        <Text style={styles.eventDate}>
-                                                {item.date ? new Date(item.date).toLocaleDateString() : 'Fecha no disponible'}
-                                            </Text>
-                                            <Text style={styles.eventName }numberOfLines={2}>{item.name}</Text>
-                                            
-                                        </View>
-                                        <Text style={styles.eventDescription}>{item.description}</Text>
-                                        <View style={styles.detailButtonContainer}>
-                                            <Button title="Detalles" onPress={() => handleEventPress(item)} color="#FF7F50" />
-                                        </View>
-                                    </TouchableOpacity>
-                                )}
-                                keyExtractor={(item) => item.id.toString()}
-                                ListFooterComponent={
-                                    <Text style={styles.footerText}>{`Total de eventos: ${userEvents.length}`}</Text>
-                                }
-                            />
-                        ) : (
-                            <Text style={styles.noEventsText}>No se han creado eventos aún.</Text>
-                        )}
+                        <View style={styles.section}>
+                            <Text style={styles.sectionTitle}>Eventos Creados</Text>
+                            {userEvents && userEvents.length > 0 ? (
+                                <FlatList
+                                    data={userEvents}
+                                    scrollEnabled={false}
+                                    renderItem={({ item }) => (
+                                        <TouchableOpacity
+                                            style={styles.eventCard}
+                                            onPress={() => handleEventPress(item)}
+                                        >
+                                            <View style={styles.eventHeader}>
+                                                <Text style={styles.eventName} numberOfLines={2}>{item.name}</Text>
+                                                <Text style={styles.eventDate}>
+                                                    {item.date ? new Date(item.date).toLocaleDateString() : 'Fecha no disponible'}
+                                                </Text>
+
+                                            </View>
+                                            <Text style={styles.eventDescription}>{item.description}</Text>
+                                            <View style={styles.detailButtonContainer}>
+                                                <Button title="Detalles" onPress={() => handleEventPress(item)} color="#FF7F50" />
+                                            </View>
+                                        </TouchableOpacity>
+                                    )}
+                                    keyExtractor={(item) => item.id.toString()}
+                                    ListFooterComponent={
+                                        <Text style={styles.footerText}>{`Total de eventos: ${userEvents.length}`}</Text>
+                                    }
+                                />
+                            ) : (
+                                <Text style={styles.noEventsText}>No se han creado eventos aún.</Text>
+                            )}
+                        </View>
                     </View>
-                </View>
-            </ScrollView>
+                </ScrollView>
+            )}
             <EventDetailModal
                 visible={isDetailsModalVisible}
                 eventDetails={eventDetails as CustomEvent | null}
@@ -248,10 +256,11 @@ const styles = StyleSheet.create({
         color: '#666',
         fontStyle: 'italic',
         flexShrink: 0, // Prevents the date from shrinking
-        marginTop: 4, // Adds a small gap between the name and the date if it moves to the next line
+        marginTop: 5, // Adds a small gap between the name and the date if it moves to the next line
         marginLeft: 8, // Moves the date a bit more to the left (closer to the name)
         textAlign: 'right', // Aligns the date to the left if it wraps
         width: '100%', // Ensures it takes up the full width on the next line
+        paddingTop: 5,
     },
 
 
@@ -275,6 +284,17 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#999',
         marginTop: 16,
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#fff',
+    },
+    loadingText: {
+        marginTop: 10,
+        fontSize: 16,
+        color: '#333',
     },
 });
 

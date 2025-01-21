@@ -15,6 +15,7 @@ import { getSubscribedEvents } from '@/apiCalls/getSubscribedEvents';
 import { getAllUsersSubscribedToAnEvent } from '@/apiCalls/getAllUsersSubscribedToAnEvent';
 import { updateEvent } from '@/apiCalls/updateEvent';
 import SpectatedUserModal from '@/components/SpectatedUserModal';
+import EventCreationModal from '@/components/EventCreationModal';
 
 
 export default function CreacionEvento() {
@@ -44,7 +45,7 @@ export default function CreacionEvento() {
     const eventsToDisplay = selectedView === 'inscriptos' ? allevents.events : myUserEvents.myEvents;
     const [isAdminModalVisible, setIsAdminModalVisible] = useState(false);
     const [adminEventDetails, setAdminEventDetails] = useState<EventWithId | null>(null);
-    const [subscribedUsers, setSubscribedUsers] = useState<{ id: number; name: string; email: string }[]>([]);
+    const [subscribedUsers, setSubscribedUsers] = useState<User[]>([]);
     const [eventAssLocation, setEventAssLocation] = useState<string | null>(null);
     const [isUpdateNameModalVisible, setIsNameModalVisible] = useState(false);
     const [isUpdateDescriptionModalVisible, setIsDescriptionModalVisible] = useState(false);
@@ -52,7 +53,7 @@ export default function CreacionEvento() {
     const [newDescription, setNewDescription] = useState('');
     const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
     const [userId, setUserId] = useState<number | null>(null);
-    const [seeUser, setSeeUser] = useState<{ id: number; name: string; email: string } | null>(null);
+    const [seeUser, setSeeUser] = useState<User | null>(null);
     const [isSpectatedUserVisible, setIsSpectatedUserVisible] = useState(false);
 
     useEffect(() => {
@@ -92,6 +93,11 @@ export default function CreacionEvento() {
         userId: number;
     };
 
+    interface User {
+        id: number;
+        name: string;
+        email: string;
+    };
 
     const showDatePicker = () => {
         setDatePickerVisible(true);
@@ -490,141 +496,18 @@ export default function CreacionEvento() {
 
             </ScrollView>
 
-
-
             {/* Botón para abrir el modal de creación de evento */}
             <Button
                 title="Crear Evento"
                 onPress={() => setIsModalVisible(true)}
                 color="#FF7F50"
             />
-            <Modal visible={isModalVisible} animationType="slide">
-                <ScrollView contentContainerStyle={styles.scrollContainer}>
-                    <Text style={styles.title}>Crear Evento</Text>
-                    <View style={styles.section}>
-                        <Text style={styles.label}>Título del Evento</Text>
-                        <TextInput
-                            style={styles.input}
-                            value={titulo}
-                            onChangeText={setTitulo}
-                            placeholder="Ingrese el título del evento"
-                            placeholderTextColor="#A9A9A9"
-                        />
-                    </View>
-                    <View style={styles.section}>
-                        <Text style={styles.label}>Descripción</Text>
-                        <TextInput
-                            style={styles.input}
-                            value={descripcion}
-                            onChangeText={setDescripcion}
-                            placeholder="Ingrese la descripción del evento"
-                            placeholderTextColor="#A9A9A9"
-                        />
-                    </View>
-                    <View style={styles.section}>
-                        <Text style={styles.label}>Número Máximo De Participantes</Text>
-                        <TextInput
-                            style={styles.input}
-                            value={maxParticipants.toString()} // Convert the number to a string for TextInput
-                            onChangeText={handleMaxParticipantsChange}
-                            placeholder="Ingrese el número máximo de participantes"
-                            placeholderTextColor="#A9A9A9"
-                            keyboardType="numeric" // This shows a numeric keyboard for input
-                        />
-                    </View>
-                    <View style={styles.section}>
-                        <Text style={styles.label}>Fecha</Text>
-                        <TouchableOpacity onPress={showDatePicker}>
-                            <TextInput
-                                style={styles.input}
-                                value={fecha}
-                                placeholder="Ingrese la fecha del evento"
-                                placeholderTextColor="#A9A9A9"
-                                editable={false} // Disable manual editing
-                            />
-                        </TouchableOpacity>
-                        {datePickerVisible && Platform.OS === 'ios' && (
-                            <Modal transparent animationType="slide" visible={datePickerVisible}>
-                                <View style={styles.datePickerContainer}>
-                                    <View style={styles.datePicker}>
-                                        <DateTimePicker
-                                            value={selectedDate || new Date()}
-                                            mode="date"
-                                            display="inline"
-                                            onChange={handleDateChange}
-                                        />
-                                        <Button
-                                            title="Confirmar"
-                                            onPress={() => setDatePickerVisible(false)}
-                                            color="#FF7F50"
-                                        />
-                                    </View>
-                                </View>
-                            </Modal>
-                        )}
-                        {datePickerVisible && Platform.OS !== 'ios' && (
-                            <DateTimePicker
-                                value={selectedDate || new Date()}
-                                mode="date"
-                                display="default"
-                                onChange={handleDateChange}
-                            />
-                        )}
-                    </View>
-                    <View style={styles.section}>
-                        <Text style={styles.label}>Ubicación</Text>
-                        <TextInput
-                            style={styles.input}
-                            value={eventAssLocation ?? ''}
-                            onChangeText={setUbicacion}
-                            placeholder="Ingrese la ubicación del evento"
-                            placeholderTextColor="#A9A9A9"
-                        />
-                        <Button
-                            title="Seleccionar en el mapa"
-                            onPress={() => setModalVisible(true)}
-                            color="#FF7F50"
-                        />
-                    </View>
-
-                    {/* Botones con marginTop para separación */}
-                    <View style={styles.modalButtonContainer}>
-                        <Button title="Crear Evento" onPress={createNewEvent} color="#FF7F50" />
-                        <Button
-                            title="Cerrar"
-                            onPress={() => {
-                                setIsModalVisible(false);
-                                resetEvetCreationInfo();
-                            }}
-                            color="#FF7F50"
-                        />
-                    </View>
-
-                    <Modal visible={modalVisible} animationType="slide">
-                        {location ? (
-                            <MapView
-                                style={styles.map}
-                                initialRegion={{
-                                    latitude: location.coords.latitude,
-                                    longitude: location.coords.longitude,
-                                    latitudeDelta: 0.01,
-                                    longitudeDelta: 0.01,
-                                }}
-                                onPress={handleMapPress}
-                            >
-                                {selectedLocation && <Marker coordinate={selectedLocation} />}
-                            </MapView>
-                        ) : (
-                            <Text>Cargando mapa...</Text>
-                        )}
-                        <Button
-                            title="Cerrar"
-                            onPress={() => setModalVisible(false)}
-                            color="#FF7F50"
-                        />
-                    </Modal>
-                </ScrollView>
-            </Modal>
+            
+            {/* Modal para crear un evento */}
+            <EventCreationModal
+                isModalVisible={isModalVisible}
+                onClose={() => setIsModalVisible(false)}
+            />
 
 
             <Modal
