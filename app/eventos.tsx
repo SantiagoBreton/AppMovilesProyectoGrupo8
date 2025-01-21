@@ -273,7 +273,7 @@ export default function CreacionEvento() {
                         >
                             {/* Name and Date Section */}
                             <View style={styles.headerSection}>
-                                <Text style={styles.eventName}>{item.name}</Text>
+                                <Text style={styles.eventName} numberOfLines={2} >{item.name}</Text>
 
                                 {/* Date */}
                                 <Text style={styles.eventDate}>
@@ -371,7 +371,7 @@ export default function CreacionEvento() {
                             activeOpacity={0.8}
                         >
                             <View style={styles.cardHeader}>
-                                <Text style={styles.eventName}>{item.name}</Text>
+                                <Text style={styles.eventName} numberOfLines={2}>{item.name}</Text>
                                 <Text style={styles.eventDate}>
                                     {item.date ? new Date(item.date).toLocaleDateString() : 'Fecha no disponible'}
                                 </Text>
@@ -430,9 +430,9 @@ export default function CreacionEvento() {
                     <View style={styles.modalContent}>
                         {eventDetails && (
                             <>
-                                <Text style={styles.modalTitle}>{eventDetails.name}</Text>
+                                <Text style={styles.modalTitle} numberOfLines={2}>{eventDetails.name}</Text>
                                 <View style={styles.modalSection}>
-                                    <Text style={styles.modalLabel}>Descripción:</Text>
+                                    <Text style={styles.modalLabel } numberOfLines={4}>Descripción:</Text>
                                     <Text style={styles.modalText}>{eventDetails.description}</Text>
                                 </View>
                                 <View style={styles.modalSection}>
