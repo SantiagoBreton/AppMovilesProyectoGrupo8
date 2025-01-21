@@ -1,4 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { Modal, View, Text, TouchableOpacity, Image, FlatList, ScrollView, StyleSheet, Button, Alert } from 'react-native';
+import { FontAwesome5 } from '@expo/vector-icons'; // If you are using FontAwesome5
+import { Float } from 'react-native/Libraries/Types/CodegenTypes';
+import EventDetailModal from './EventDetailModal';
+import { getAllEventsFromUser } from '@/apiCalls/getAllEventsFromUser';
 
 interface CustomEvent {
     id: number;
@@ -11,20 +16,18 @@ interface CustomEvent {
     currentParticipants: number;
     userId: number;
 };
-interface SeeUser {
+interface User {
+    id: number;
     name: string;
     email: string;
-    events: CustomEvent[];
 };
 interface SpectatedUserModalProps {
     isVisible: boolean;
-    user: SeeUser | null;
+    user: User | null;
     onClose: () => void;
 }
-import { Modal, View, Text, TouchableOpacity, Image, FlatList, ScrollView, StyleSheet, Button, Alert } from 'react-native';
-import { FontAwesome5 } from '@expo/vector-icons'; // If you are using FontAwesome5
-import { Float } from 'react-native/Libraries/Types/CodegenTypes';
-import EventDetailModal from './EventDetailModal';
+
+
 
 const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
     isVisible,
@@ -34,20 +37,53 @@ const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
 
     const [isDetailsModalVisible, setIsDetailsModalVisible] = useState(false);
     const [eventDetails, setEventDetails] = useState<CustomEvent | null>(null);
-    if (!user ) return null; 
+    const [userEvents, setUserEvents] = useState<CustomEvent[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    
+
+    useEffect(() => {
+        const handleSeeUser = async () => {
+            if (!user) return;
+            setIsLoading(true); 
+            try {
+                const response = await getAllEventsFromUser(user.id);
+                if (response.error) {
+                    console.error('Error fetching user events:', response.error);
+                    Alert.alert('Error', 'Failed to fetch user events');
+                } else {
+                    setUserEvents(response.data);
+                }
+            } catch (error) {
+                console.error('Error fetching user events:', error);
+                Alert.alert('Error', 'Failed to fetch user events');
+            }
+            finally {
+                // Simular un retraso de 1 segundo antes de ocultar la carga
+                setTimeout(() => {
+                  setIsLoading(false);
+                }, 1000);
+              }
+        };
+    
+        handleSeeUser();
+    }, [user]);
+
+
+
     const handleEventPress = (event: CustomEvent) => {
 
         setEventDetails(event);
         setIsDetailsModalVisible(true);
     };
-    
+    if (!user) return null;
+
 
     return (
         <Modal visible={isVisible} animationType="slide">
             <ScrollView>
                 <View style={styles.header3}>
-                    <Text style={styles.name}>{user.name}</Text>
-                    <TouchableOpacity style={styles.closeButton2} onPress={onClose}>
+                    <Text style={styles.name}></Text>
+                    <TouchableOpacity style={styles.closeButton2} onPress={() => { onClose(); setUserEvents([])}}>   
                         <FontAwesome5 name="times" size={24} color="black" />
                     </TouchableOpacity>
                 </View>
@@ -67,14 +103,14 @@ const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
 
                     <View style={styles.section}>
                         <Text style={styles.sectionTitle}>Eventos Creados</Text>
-                        {user.events && user.events.length > 0 ? (
+                        {userEvents && userEvents.length > 0 ? (
                             <FlatList
-                                data={user.events}
+                                data={userEvents}
                                 scrollEnabled={false}
                                 renderItem={({ item }) => (
                                     <TouchableOpacity
                                         style={styles.eventCard}
-                                        onPress={() => handleEventPress(item)} 
+                                        onPress={() => handleEventPress(item)}
                                     >
                                         <View style={styles.eventHeader}>
                                             <Text style={styles.eventName}>{item.name}</Text>
@@ -90,7 +126,7 @@ const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
                                 )}
                                 keyExtractor={(item) => item.id.toString()}
                                 ListFooterComponent={
-                                    <Text style={styles.footerText}>{`Total de eventos: ${user.events.length}`}</Text>
+                                    <Text style={styles.footerText}>{`Total de eventos: ${userEvents.length}`}</Text>
                                 }
                             />
                         ) : (

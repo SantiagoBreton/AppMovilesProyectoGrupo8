@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import {View,Text,TextInput,FlatList,StyleSheet,TouchableOpacity,KeyboardAvoidingView,Platform,Alert,Button,ScrollView,} from 'react-native';
+import { View, Text, TextInput, FlatList, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platform, Alert, Button, ScrollView, } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { Float } from 'react-native/Libraries/Types/CodegenTypes';
 import { getEventByName } from '@/apiCalls/getEventByName';
@@ -16,7 +16,7 @@ export default function Busqueda() {
     const [filteredEvents, setFilteredEvents] = useState<CustomEvent[]>([]);
     const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
     const [isSpectatedUserVisible, setIsSpectatedUserVisible] = useState(false);
-    const [seeUser, setSeeUser] = useState<SeeUser | null>(null);
+    const [seeUser, setSeeUser] = useState<User | null>(null);
 
     interface CustomEvent {
         id: number;
@@ -29,12 +29,6 @@ export default function Busqueda() {
         currentParticipants: number;
         userId: number;
     };
-
-    interface SeeUser {
-        name: string;
-        email: string;
-        events: CustomEvent[];
-    }
 
     interface User {
         id: number;
@@ -77,17 +71,9 @@ export default function Busqueda() {
         }
     }
 
-    const handleSeeUser = async (user: User) => {
-        try {
-            const userEvents = await getAllEventsFromUser(user.id);
-            setSeeUser({ name: user.name, email: user.email, events: userEvents.data });
-
-            setIsSpectatedUserVisible(true);
-
-        } catch (error) {
-            console.error('Error fetching user events:', error);
-            Alert.alert('Error', 'Failed to fetch user events');
-        }
+    const handleSeeUser = (user: User) => {
+        setSeeUser( user )
+        setIsSpectatedUserVisible(true);
     }
 
     const handleDetailsEvent = async (item: CustomEvent) => {
@@ -198,7 +184,7 @@ export default function Busqueda() {
 
                 onClose={() => setIsDetailsModalVisible(false)}
             />
-           
+
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
 
                 <SpectatedUserModal
