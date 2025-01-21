@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Button, StyleSheet, FlatList, Modal, TextInput, ScrollView, TouchableOpacity, Alert, Platform, Pressable, Image } from 'react-native';
+import { View, Text, Button, StyleSheet, FlatList, Modal, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import * as Location from 'expo-location';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import MapView, { Marker } from 'react-native-maps';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import { Float } from 'react-native/Libraries/Types/CodegenTypes';
 import { unsubscribeUserFromAnEvent } from '@/apiCalls/unsubscribeUserFromEvent';
 import { myEvents } from '@/apiCalls/myEvents';
@@ -11,8 +10,6 @@ import { deleteEventById } from '@/apiCalls/deleteEventById';
 import { useEventContext } from '@/context/eventContext';
 import { getSubscribedEvents } from '@/apiCalls/getSubscribedEvents';
 import { getAllUsersSubscribedToAnEvent } from '@/apiCalls/getAllUsersSubscribedToAnEvent';
-import { updateEvent } from '@/apiCalls/updateEvent';
-import SpectatedUserModal from '@/components/SpectatedUserModal';
 import EventCreationModal from '@/components/EventCreationModal';
 import AdminEventModal from '@/components/AdminEventModal';
 
@@ -35,7 +32,6 @@ export default function CreacionEvento() {
     const [subscribedUsers, setSubscribedUsers] = useState<User[]>([]);
     const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
     const [userId, setUserId] = useState<number | null>(null);
-
 
     useEffect(() => {
         const fetchUserId = async () => {
@@ -84,8 +80,6 @@ export default function CreacionEvento() {
 
     const handleCloseMap = () => setMapVisible(false);
 
-    
-
     const handleDetailsEvent = async (item: Event) => {
         try {
             const addresses = await Location.reverseGeocodeAsync({
@@ -106,8 +100,6 @@ export default function CreacionEvento() {
             Alert.alert('Error', 'Failed to fetch event details');
         }
     };
-
-
 
     const switchView = (view: string) => {
         setSelectedView(view);
@@ -143,8 +135,6 @@ export default function CreacionEvento() {
         }
     };
 
-    
-
     const handleDeleteEvent = async (eventId: number) => {
         try {
             await deleteEventById(eventId);
@@ -172,8 +162,6 @@ export default function CreacionEvento() {
         setSelectedEventId(null);
         setIsConfirmaDeletionModalVisible(false);
     };
-
-   
 
     return (
         <View style={styles.container}>
@@ -265,7 +253,6 @@ export default function CreacionEvento() {
                     )}
                     keyExtractor={(item) => item.id.toString()}
                 />
-
 
                 <Text style={styles.subHeader}>Eventos Finalizados</Text>
                 {/* Lista de eventos finalizados */}
