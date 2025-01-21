@@ -8,7 +8,6 @@ import { useEventContext } from '@/context/eventContext';
 import { updateEvent } from '@/apiCalls/updateEvent';
 import DeleteConfirmationModal from './DeleteConfirmationModal';
 
-
 interface EventWithId {
     id: number;
     name: string;
@@ -21,7 +20,6 @@ interface EventWithId {
     userId: number;
 };
 
-
 interface User {
     id: number;
     name: string;
@@ -33,8 +31,6 @@ interface AdminEventModalProps {
     subscribedUsers: User[];
     onClose: () => void;
 }
-
-
 
 const AdminEventModal: React.FC<AdminEventModalProps> = ({
     isVisible,
@@ -60,8 +56,6 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
     useEffect(() => {
         setUpdatedSubscribedUsers(subscribedUsers);
     }, [subscribedUsers]);
-
-
 
     const handleDateChange = (event: any, date?: Date) => {
         setDatePickerVisible(false);
@@ -95,7 +89,6 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
         }
     };
 
-
     const handleEventUpdate = async () => {
         if ((!newName && !newDescription && !selectedDate)) {
             Alert.alert('Error', 'Por favor, complete al menos un campo para actualizar.');
@@ -111,8 +104,6 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
             const updatedName = newName || adminEventDetails?.name || '';
             const updatedDescription = newDescription || adminEventDetails?.description || '';
             const updatedDate = selectedDate || adminEventDetails?.date || new Date();
-
-            console.log(`updatedName: ${updatedName}, updatedDescription: ${updatedDescription}, updatedDate: ${updatedDate}`);
 
             // Call the update function with the resolved values
             await updateEvent(adminEventDetails?.id ?? 0, updatedName, updatedDescription, updatedDate);
@@ -130,7 +121,6 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
             Alert.alert('Error', 'No se pudo actualizar el evento.');
         }
     };
-
 
     return (
         <Modal
@@ -221,8 +211,6 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
                                 </Pressable>
                             </View>
 
-
-
                             {datePickerVisible && (
                                 <DateTimePicker
                                     value={selectedDate || new Date()}
@@ -231,8 +219,6 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
                                     onChange={handleDateChange}
                                 />
                             )}
-
-
                         </>
                     )}
                     <Modal
@@ -273,7 +259,6 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
                             </View>
                         </View>
                     </Modal>
-
 
                     {/* Modal for changing description */}
                     <Modal
@@ -383,7 +368,6 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
 
     );
 };
-
 
 const styles = StyleSheet.create({
     modalContainer2: {
