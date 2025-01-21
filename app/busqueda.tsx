@@ -25,24 +25,22 @@ import { getUserByName } from '@/apiCalls/getUserByName';
 import { getAllEventsFromUser } from '@/apiCalls/getAllEventsFromUser';
 import { subscribeToEvent } from '@/apiCalls/subscribeToAnEvent';
 import { useEventContext } from '@/context/eventContext';
+import SpectatedUserModal from '@/components/SpectatedUserModal';
 import { white } from 'react-native-paper/lib/typescript/styles/themes/v2/colors';
+import EventDetailModal from '@/components/EventDetailModal';
 
 export default function Busqueda() {
     const [query, setQuery] = useState('');
     const [isSearching, setIsSearching] = useState(false);
     const [isDetailsModalVisible, setIsDetailsModalVisible] = useState(false);
-    const [eventDetails, setEventDetails] = useState<Event | null>(null);
-    const [eventLocation, setEventLocation] = useState<string | null>(null);
-    const [isMapVisible, setMapVisible] = useState(false);
-    const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
+    const [eventDetails, setEventDetails] = useState<CustomEvent | null>(null);
+    const [filteredEvents, setFilteredEvents] = useState<CustomEvent[]>([]);
     const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
-    const [spectatedUserName, setSpectatedUserName] = useState('');
-    const [spectatedUserEmail, setSpectatedUserEmail] = useState('');
-    const [spectatedUserEvents, setSpectatedUserEvents] = useState<Event[]>([]);
     const [isSpectatedUserVisible, setIsSpectatedUserVisible] = useState(false);
-    const { refreshEvents } = useEventContext();
+    const [seeUser, setSeeUser] = useState<SeeUser | null>(null);
 
-    interface Event {
+
+    interface CustomEvent {
         id: number;
         name: string;
         date: Date;
@@ -54,14 +52,20 @@ export default function Busqueda() {
         userId: number;
     };
 
+
+    interface SeeUser {
+        name: string;
+        email: string;
+        events: CustomEvent[];
+    }
+
     interface User {
         id: number;
         name: string;
         email: string;
     };
 
-    const handleShowMap = () => setMapVisible(true);
-    const handleCloseMap = () => setMapVisible(false);
+
 
     const handleEventSearch = async () => {
         setIsSearching(true);
@@ -100,10 +104,9 @@ export default function Busqueda() {
 
     const handleSeeUser = async (user: User) => {
         try {
-            setSpectatedUserEmail(user.email);
-            setSpectatedUserName(user.name);
             const userEvents = await getAllEventsFromUser(user.id);
-            setSpectatedUserEvents(userEvents.data);
+            setSeeUser({ name: user.name, email: user.email, events: userEvents.data });
+
             setIsSpectatedUserVisible(true);
 
         } catch (error) {
@@ -111,24 +114,11 @@ export default function Busqueda() {
             Alert.alert('Error', 'Failed to fetch user events');
         }
     }
-    const handleSubscribe = async (eventId: number) => {
-        try {
-            await subscribeToEvent(eventId);
-            Alert.alert('Subscribed', 'You have successfully subscribed to the event');
-            setIsDetailsModalVisible(false);
-            refreshEvents();
-        } catch (error: any) {
-            Alert.alert('Error subscribing to event:', error.message);
-        }
-    };
-    const handleEventPress = (event: { name: any; description: any; }) => {
-        // Aquí puedes navegar a la pantalla de detalles del evento
-        Alert.alert('Detalles del Evento', `Nombre: ${event.name}\nDescripción: ${event.description}`);
-
-    };
+    
 
 
-    const handleDetailsEvent = async (item: Event) => {
+
+    const handleDetailsEvent = async (item: CustomEvent) => {
         try {
             const addresses = await Location.reverseGeocodeAsync({
                 latitude: item.latitude,
@@ -140,8 +130,7 @@ export default function Busqueda() {
                     ? `${addresses[0].city}, ${addresses[0].region}, ${addresses[0].country}`
                     : 'Address not found';
 
-            setEventDetails(item);
-            setEventLocation(location);
+            setEventDetails(item)
             setIsDetailsModalVisible(true);
         } catch (error) {
             console.error('Error fetching address:', error);
@@ -149,7 +138,7 @@ export default function Busqueda() {
         }
     };
 
-    const renderEventResult = ({ item }: { item: Event }) => (
+    const renderEventResult = ({ item }: { item: CustomEvent }) => (
         <TouchableOpacity
             style={styles.eventCard}
             onPress={() => handleDetailsEvent(item)}
@@ -246,172 +235,24 @@ export default function Busqueda() {
                     />
                 </ScrollView>
             )}
-            <Modal
-    visible={isDetailsModalVisible}
-    transparent={true}
-    animationType="slide"
-    onRequestClose={() => setIsDetailsModalVisible(false)}
->
-    <TouchableWithoutFeedback onPress={() => setIsDetailsModalVisible(false)}>
-        <View style={styles.modalContainer}>
-            <TouchableWithoutFeedback>
-                <View style={styles.modalContent}>
-                    {eventDetails && (
-                        <>
-                            <Text style={styles.modalTitle}>{eventDetails.name}</Text>
-                            <View style={styles.modalSection}>
-                                <Text style={styles.modalLabel}>Descripción:</Text>
-                                <Text style={styles.modalText}>{eventDetails.description}</Text>
-                            </View>
-                            <View style={styles.modalSection}>
-                                <Text style={styles.modalLabel}>Fecha:</Text>
-                                <Text style={styles.modalText}>
-                                    {new Date(eventDetails.date).toLocaleDateString()}
-                                </Text>
-                            </View>
-                            <View style={styles.modalSection}>
-                                <Text style={styles.modalLabel}>Ubicación:</Text>
-                                <Text style={styles.modalText}>{eventLocation}</Text>
-                            </View>
-                            <View style={styles.modalSection}>
-                                <Text style={styles.modalLabel}>Participantes:</Text>
-                                <Text style={styles.modalText}>
-                                    {eventDetails.currentParticipants}/{eventDetails.maxParticipants}
-                                </Text>
-                            </View>
-                            <TouchableOpacity
-                                style={[styles.modalActionButton, styles.largeButton]}
-                                onPress={handleShowMap}
-                            >
-                                <Text style={styles.modalActionButtonText}>Ver en el Mapa</Text>
-                            </TouchableOpacity>
-                            <View style={styles.buttonRow}>
-                                <TouchableOpacity
-                                    style={[styles.modalActionButton, styles.subscribeButton]}
-                                    onPress={() => handleSubscribe(eventDetails.id)}
-                                >
-                                    <Text style={styles.modalActionButtonText} numberOfLines={1}>Suscribirse</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity
-                                    style={[styles.closeButton, styles.separatedButton]}
-                                    onPress={() => setIsDetailsModalVisible(false)}
-                                >
-                                    <Text style={styles.closeButtonText}>Cerrar</Text>
-                                </TouchableOpacity>
-                            </View>
-                        </>
-                    )}
-                </View>
-            </TouchableWithoutFeedback>
-        </View>
-    </TouchableWithoutFeedback>
-</Modal>
+            <EventDetailModal
+                visible={isDetailsModalVisible}
+                eventDetails={eventDetails as CustomEvent | null}
+
+                onClose={() => setIsDetailsModalVisible(false)}
+            />
 
 
 
-            {/* Map Modal */}
-            <Modal
-                visible={isMapVisible}
-                transparent={true}
-                animationType="fade"
-                onRequestClose={handleCloseMap}
-            >
-                <View style={styles.mapModalContainer}>
-                    <View style={styles.mapModalContent}>
-                        <MapView
-                            style={styles.map}
-                            initialRegion={{
-                                latitude: (eventDetails?.latitude ?? 0) + 0.004, // Offset latitude
-                                longitude: (eventDetails?.longitude ?? 0) + 0.004, // Offset longitude
-                                latitudeDelta: 0.015,
-                                longitudeDelta: 0.015,
-                            }}
-                        >
-                            <Circle //cambiar a marker para que se vea el punto
-                                center={{
-                                    latitude: (eventDetails?.latitude ?? 0) + 0.001, // Offset latitude
-                                    longitude: (eventDetails?.longitude ?? 0) + 0.001, // Offset longitude
-                                }}
-                                radius={500}
-                                strokeColor="rgba(0, 255, 0, 0.5)"
-                                fillColor="rgba(0, 255, 0, 0.2)"
-                                strokeWidth={2}
-                            //title={eventDetails?.name ?? ''}
-                            //description={eventDetails?.description ?? ''}
-                            />
-                        </MapView>
-                        <TouchableOpacity
-                            style={styles.closeMapButton}
-                            onPress={handleCloseMap}
-                        >
-                            <Text style={styles.closeMapButtonText}>Cerrar Mapa</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </Modal>
-            <Modal visible={isSpectatedUserVisible}>
-                <View style={styles.header3}>
-                <Text style={styles.name}></Text>
-                <TouchableOpacity style={styles.closeButton2} onPress={() => setIsSpectatedUserVisible(false)}>
-                                <FontAwesome5 name="times" size={24} color="black" />
-                        </TouchableOpacity>
-                </View>
-                <ScrollView style={styles.container}>
-                    <View style={styles.header}>
-                        <Image source={{ uri: 'https://via.placeholder.com/150' }} style={styles.profileImage} />
-                        <Text style={styles.name}>{spectatedUserName}</Text>
-                    </View>
-                    <View style={styles.section}>
-                        <Text style={styles.label}>Nombre:</Text>
-                        <Text style={styles.input}>{spectatedUserName}</Text>
-                    </View>
-                    <View style={styles.section}>
-                        <Text style={styles.label}>Email:</Text>
-                        <Text style={styles.input}>{spectatedUserEmail}</Text>
-                    </View>
+           
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
 
-                    <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>Eventos Creados</Text>
-                        {spectatedUserEvents.length > 0 ? (
-                            <FlatList
-                                data={spectatedUserEvents}
-                                scrollEnabled={false}
-                                renderItem={({ item }) => (
-                                    <TouchableOpacity
-                                        style={styles.eventCard}
-                                        onPress={() => handleEventPress(item)}
-                                    >
-                                        <View style={styles.eventHeader}>
-                                            <Text style={styles.eventName}>{item.name}</Text>
-                                            <Text style={styles.eventDate}>
-                                                {item.date
-                                                    ? new Date(item.date).toLocaleDateString()
-                                                    : 'Fecha no disponible'}
-                                            </Text>
-                                        </View>
-                                        <Text style={styles.eventDescription}>{item.description}</Text>
-                                            <View style={styles.detailButtonContainer}>
-                                                <Button
-                                                    title="Detalles"
-                                                    onPress={() => handleDetailsEvent(item)}
-                                                    color="#FF7F50"
-                                                />
-                                            </View>
-                                    </TouchableOpacity>
-                                )}
-                                keyExtractor={(item) => item.id.toString()}
-                                ListFooterComponent={
-                                    <Text style={styles.footerText}>
-                                        {`Total de eventos: ${spectatedUserEvents.length}`}
-                                    </Text>
-                                }
-                            />
-                        ) : (
-                            <Text style={styles.noEventsText}>No se han creado eventos aún.</Text>
-                        )}
-                    </View>
-                </ScrollView>
-            </Modal>
+                <SpectatedUserModal
+                    isVisible={isSpectatedUserVisible}
+                    user={seeUser}
+                    onClose={() => setIsSpectatedUserVisible(false)}
+                />
+            </View>
         </KeyboardAvoidingView>
     );
 }
@@ -669,12 +510,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         paddingVertical: 10,
     },
-    eventHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 8,
-    },
+
     footerText: {
         marginTop: 16,
         textAlign: 'center',
@@ -694,11 +530,7 @@ const styles = StyleSheet.create({
         paddingVertical: 16,
         borderRadius: 16,
     },
-    header3: {
-        alignItems: 'center',
-        paddingBottom: 5,
-        backgroundColor: '#F9F9F9',
-    },
+
     profileImage: {
         width: 100,
         height: 100,
