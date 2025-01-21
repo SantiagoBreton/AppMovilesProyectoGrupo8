@@ -6,6 +6,7 @@ import SpectatedUserModal from './SpectatedUserModal';
 import { unsubscribeUserFromAnEvent } from '@/apiCalls/unsubscribeUserFromEvent';
 import { useEventContext } from '@/context/eventContext';
 import { updateEvent } from '@/apiCalls/updateEvent';
+import DeleteConfirmationModal from './DeleteConfirmationModal';
 
 
 interface EventWithId {
@@ -53,6 +54,7 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
     const [isSpectatedUserVisible, setIsSpectatedUserVisible] = useState(false);
     const { refreshEvents } = useEventContext();
     const [updatedSubscribedUsers, setUpdatedSubscribedUsers] = useState<User[]>(subscribedUsers);
+    const [isDeleteConfirmationVisible, setIsDeleteConfirmationVisible] = useState(false);
 
 
     useEffect(() => {
@@ -86,6 +88,7 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
 
             // Immediately update the subscribed users in the state
             setUpdatedSubscribedUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
+            setIsDeleteConfirmationVisible(false);
 
         } catch (error) {
             Alert.alert('Error', 'No se pudo eliminar al usuario del evento.');
@@ -343,11 +346,17 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
 
                                 {/* Eliminate Button */}
                                 <TouchableOpacity
-                                    onPress={() => handleEliminateUserFromEvent(user.id, adminEventDetails?.id ?? 0)}
+                                    onPress={() => setIsDeleteConfirmationVisible(true)}
                                     style={styles.deleteUserButton}
                                 >
                                     <Text style={styles.deleteUserText}>Eliminar</Text>
                                 </TouchableOpacity>
+
+                                <DeleteConfirmationModal
+                                    isVisible={isDeleteConfirmationVisible}
+                                    confirmDelete={() => handleEliminateUserFromEvent(user.id, adminEventDetails?.id ?? 0)}
+                                    onClose={() => setIsDeleteConfirmationVisible(false)}
+                                />
                             </View>
                         </View>
                     ))
