@@ -7,9 +7,6 @@ import { subscribeToEvent } from '@/apiCalls/subscribeToAnEvent';
 import { useEventContext } from '@/context/eventContext';
 import * as Location from 'expo-location';
 
-
-
-
 interface CustomEvent {
     id: number;
     name: string;
@@ -61,8 +58,6 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
         fetchLocation();
     }, [eventDetails]);
 
-
-
     if (!eventDetails) return null;
     
     const handleCloseMap = () => setMapVisible(false);
@@ -71,8 +66,9 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
             try {
                 await subscribeToEvent(eventId);
                 Alert.alert('Subscribed', 'You have successfully subscribed to the event');
-                onClose;
-                refreshEvents();
+                onClose();
+                eventDetails.currentParticipants++; //no deberia ser necesario
+                refreshEvents(); //FIXME: No se actualiza el contador de participantes
             } catch (error: any) {
                 Alert.alert('Error subscribing to event:', error.message);
             }

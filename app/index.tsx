@@ -12,7 +12,6 @@ export default function Index() {
   const { location, locationError } = useLocation();
   const { trigger } = useEventContext();
   const { events, loading, eventsError } = useAllEvents(trigger);
-  //const activeEvents = events.filter((event) => event.date > new Date().toISOString());
   const [errorMessage, setErrorMessage] = useState<string | null>(null); // Mensaje de error
   const {refreshEvents} = useEventContext();
   const [modalVisible, setModalVisible] = useState(false); // Modal visibility state
@@ -37,11 +36,6 @@ export default function Index() {
       setErrorMessage(error.message || 'Que lastima, no te has podido subscribir Zorra.');
     }
   };
-
-
-
-
-
 
   const getDistanceFromLatLonInKm = (
     lat1: number,
@@ -93,7 +87,6 @@ export default function Index() {
     setShowDatePicker(false);
     if (date) setSelectedDate(date);
   };
-  
 
   const handleMarkerPress = (event: { id: string; name: string; description: string; date: string; currentParticipants: number; maxParticipants: number; latitude: number; longitude: number; }) => {
     setSelectedEvent(event);
