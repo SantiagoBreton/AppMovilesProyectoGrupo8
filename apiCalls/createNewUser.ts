@@ -1,4 +1,4 @@
-import { SERVER_IP } from '@env';
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
 interface User {
     email: string;
@@ -6,12 +6,8 @@ interface User {
     name: string;
 }
 export const createNewUser = async (user: User) => {
-    if (!user.email || !user.password || !user.name) {
-        setErrorMessage('Todos los campos son obligatorios. Por favor, completa todos los campos.');
-        return; // Stop execution if any field is empty
-      }
     try {
-      const response = await fetch(`http://${SERVER_IP}:3000/auth/register`, {
+      const response = await fetch(`http://${process.env.EXPO_PUBLIC_SERVER_IP}:3000/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -39,4 +35,3 @@ export const createNewUser = async (user: User) => {
 function setErrorMessage(arg0: string) {
     throw new Error('Function not implemented.');
 }
-  

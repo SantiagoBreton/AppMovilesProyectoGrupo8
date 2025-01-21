@@ -1,8 +1,8 @@
-import { SERVER_IP } from "@env";
+
 
 export const getAllUsersSubscribedToAnEvent = async (eventId: number) => {
     try {
-        const response = await fetch(`http://${SERVER_IP}:3000/getAllUsersSubscribedToAnEvent/${eventId}`);
+        const response = await fetch(`http://${process.env.EXPO_PUBLIC_SERVER_IP}:3000/getAllUsersSubscribedToAnEvent/${eventId}`);
         
         if (!response.ok) {
             throw new Error("Failed to fetch user for event");

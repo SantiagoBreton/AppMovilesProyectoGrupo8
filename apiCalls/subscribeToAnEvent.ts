@@ -1,4 +1,4 @@
-import { SERVER_IP } from "@env";
+
 import AsyncStorage from "@react-native-async-storage/async-storage";
 // Function to subscribe a user to an event
 export const subscribeToEvent = async (eventId: number) => {
@@ -17,7 +17,7 @@ export const subscribeToEvent = async (eventId: number) => {
     };
     console.log('userIdInt:', userIdInt);
     console.log('eventId:', eventId);
-    const response = await fetch(`http://${SERVER_IP}:3000/subscribeToEvent`, {
+    const response = await fetch(`http://${process.env.EXPO_PUBLIC_SERVER_IP}:3000/subscribeToEvent`, {
       method: 'POST', // POST request to create a subscription
       headers: {
         'Content-Type': 'application/json',

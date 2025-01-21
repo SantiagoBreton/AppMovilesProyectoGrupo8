@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { StyleSheet, View, Text, ActivityIndicator, Button, Modal, TouchableOpacity, TextInput, TouchableWithoutFeedback } from 'react-native';
 import MapView, { Marker, Circle } from 'react-native-maps';
 import { useLocation } from '../hooks/useLocation';
-import { allEvents } from '@/apiCalls/getAllEvents';
+import { useAllEvents } from '@/apiCalls/getAllEvents';
 import { useEventContext } from '@/context/eventContext';
 import { subscribeToEvent } from '@/apiCalls/subscribeToAnEvent';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -11,7 +11,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 export default function Index() {
   const { location, locationError } = useLocation();
   const { trigger } = useEventContext();
-  const { events, loading, eventsError } = allEvents(trigger);
+  const { events, loading, eventsError } = useAllEvents(trigger);
   //const activeEvents = events.filter((event) => event.date > new Date().toISOString());
   const [errorMessage, setErrorMessage] = useState<string | null>(null); // Mensaje de error
   const {refreshEvents} = useEventContext();
