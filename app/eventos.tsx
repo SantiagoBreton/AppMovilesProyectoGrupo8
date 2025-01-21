@@ -14,6 +14,7 @@ import { createEvent } from '@/apiCalls/createEvent';
 import { getSubscribedEvents } from '@/apiCalls/getSubscribedEvents';
 import { getAllUsersSubscribedToAnEvent } from '@/apiCalls/getAllUsersSubscribedToAnEvent';
 import { updateEvent } from '@/apiCalls/updateEvent';
+import SpectatedUserModal from '@/components/SpectatedUserModal';
 
 
 export default function CreacionEvento() {
@@ -43,7 +44,7 @@ export default function CreacionEvento() {
     const eventsToDisplay = selectedView === 'inscriptos' ? allevents.events : myUserEvents.myEvents;
     const [isAdminModalVisible, setIsAdminModalVisible] = useState(false);
     const [adminEventDetails, setAdminEventDetails] = useState<EventWithId | null>(null);
-    const [subscribedUsers, setSubscribedUsers] = useState<{ id: number; name: string }[]>([]);
+    const [subscribedUsers, setSubscribedUsers] = useState<{ id: number; name: string; email: string }[]>([]);
     const [eventAssLocation, setEventAssLocation] = useState<string | null>(null);
     const [isUpdateNameModalVisible, setIsNameModalVisible] = useState(false);
     const [isUpdateDescriptionModalVisible, setIsDescriptionModalVisible] = useState(false);
@@ -51,6 +52,8 @@ export default function CreacionEvento() {
     const [newDescription, setNewDescription] = useState('');
     const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
     const [userId, setUserId] = useState<number | null>(null);
+    const [seeUser, setSeeUser] = useState<{ id: number; name: string; email: string } | null>(null);
+    const [isSpectatedUserVisible, setIsSpectatedUserVisible] = useState(false);
 
     useEffect(() => {
         const fetchUserId = async () => {
@@ -313,6 +316,11 @@ export default function CreacionEvento() {
         setSelectedEventId(null);
         setIsConfirmaDeletionModalVisible(false);
     };
+
+    const handleSeeUserProfile = (user: { id: number; name: string; email: string }) => {
+        setSeeUser(user)
+        setIsSpectatedUserVisible(true);
+    }
 
     return (
         <View style={styles.container}>
@@ -893,7 +901,7 @@ export default function CreacionEvento() {
                         {subscribedUsers.map((user) => (
                             <View key={user.id} style={styles.userCard}>
                                 {/* Profile Picture */}
-                                <TouchableOpacity onPress={() => alertUserProfile(user)}>
+                                <TouchableOpacity onPress={() => handleSeeUserProfile({ id: user.id, name: user.name, email: user.email })}>
                                     <Image
                                         source={{ uri: 'https://www.gravatar.com/avatar/2c7d99fe281ecd3bcd65ab915bac6dd5?s=250' }} // Use default image if no profile picture
                                         style={styles.profilePicture}
@@ -903,11 +911,16 @@ export default function CreacionEvento() {
                                 {/* User Info (Name and Eliminate Button) */}
                                 <View style={styles.userInfo}>
                                     {/* User Name */}
-                                    <TouchableOpacity onPress={() => alertUserProfile(user)}>
+                                    <TouchableOpacity onPress={() => handleSeeUserProfile({ id: user.id, name: user.name, email: user.email })}>
                                         <Text style={styles.userName} numberOfLines={1}>
                                             {user.name}
                                         </Text>
                                     </TouchableOpacity>
+                                    <SpectatedUserModal
+                                        isVisible={isSpectatedUserVisible}
+                                        user={seeUser}
+                                        onClose={() => setIsSpectatedUserVisible(false)}
+                                    />
 
                                     {/* Eliminate Button */}
                                     <TouchableOpacity
@@ -1441,7 +1454,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: 8,
     },
-    
+
     textContainer: {
         flex: 1,
     },
@@ -1452,7 +1465,7 @@ const styles = StyleSheet.create({
         textTransform: 'capitalize',
         flex: 1, // Ensures the name takes up available space
     },
-    
+
     eventDate: {
         fontSize: 14,
         fontStyle: 'italic',
@@ -1463,7 +1476,7 @@ const styles = StyleSheet.create({
         textAlign: 'right', // Aligns text to the right
         maxWidth: '40%', // Ensures it doesn’t take too much space
     },
-    
+
     divider: {
         height: 1,
         backgroundColor: '#e5e5e5',
