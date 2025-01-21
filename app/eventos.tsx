@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Button, StyleSheet, FlatList, Modal, TextInput, ScrollView, TouchableOpacity, Alert, Platform } from 'react-native';
+import { View, Text, Button, StyleSheet, FlatList, Modal, TextInput, ScrollView, TouchableOpacity, Alert, Platform, Pressable, Image } from 'react-native';
 import * as Location from 'expo-location';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import MapView, { Marker, Region } from 'react-native-maps';
@@ -238,6 +238,10 @@ export default function CreacionEvento() {
         setEventAssLocation(null);
         setSelectedDate(null);
     };
+    const alertUserProfile = (user: { id?: number; name: any; email?: any; signupDate?: any; }) => {
+        // You can replace this with a more complex profile modal in the future.
+        alert(`Perfil de ${user.name}\n\nCorreo: ${user.email}\nFecha de inscripción: ${new Date(user.signupDate).toLocaleDateString()}`);
+    }
 
     const handleUnsubscribe = async (eventId: number) => {
         try {
@@ -631,42 +635,90 @@ export default function CreacionEvento() {
                 animationType="slide"
                 onRequestClose={() => setIsAdminModalVisible(false)}
             >
-                <View style={styles.modalContainer}>
-                    <ScrollView contentContainerStyle={styles.modalContent}>
-                        <Text style={styles.modalTitle}>Administrar Evento</Text>
+                <View style={styles.modalContainer2}>
+                    <ScrollView contentContainerStyle={styles.modalContent2}>
+                        <Text style={styles.modalTitle1}>Administrar Evento</Text>
+                        <View style={styles.titleSeparator} />
 
                         {/* Detalles del evento */}
                         {adminEventDetails && (
                             <>
-                                <Text style={styles.modalText}>Nombre: {adminEventDetails.name}</Text>
-                                <Text style={styles.modalText}>
-                                    Descripcion: {adminEventDetails.description}
-                                </Text>
-                                <Text style={styles.modalText}>
-                                    Fecha Evento: {new Date(adminEventDetails.date).toLocaleDateString()}
-                                </Text>
+                                <Text style={styles.detailsSectionTitle}>Detalles del Evento</Text>
+                                <View style={styles.elegantDetailsContainer}>
+                                    {/* Nombre del Evento */}
+                                    <View style={styles.detailBlock}>
+                                        <Text style={styles.detailLabel}>📛 Nombre:</Text>
+                                        <Text style={styles.detailValue}>{adminEventDetails.name}</Text>
+                                    </View>
 
-                                {/* Button to change name */}
-                                <TouchableOpacity
-                                    style={styles.dateChangeButton}
-                                    onPress={() => setIsNameModalVisible(true)}
-                                >
-                                    <Text style={styles.dateChangeText}>Cambiar Nombre</Text>
-                                </TouchableOpacity>
+                                    {/* Descripción del Evento */}
+                                    <View style={styles.detailBlock}>
+                                        <Text style={styles.detailLabel}>📄 Descripción:</Text>
+                                        <Text style={styles.detailValue}>{adminEventDetails.description}</Text>
+                                    </View>
 
-                                {/* Button to change description */}
-                                <TouchableOpacity
-                                    style={styles.dateChangeButton}
-                                    onPress={() => setIsDescriptionModalVisible(true)}
-                                >
-                                    <Text style={styles.dateChangeText}>Cambiar Descripción</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity
-                                    style={styles.dateChangeButton}
-                                    onPress={() => setDatePickerVisible(true)}
-                                >
-                                    <Text style={styles.dateChangeText}>Cambiar Fecha</Text>
-                                </TouchableOpacity>
+                                    {/* Fecha del Evento */}
+                                    <View style={styles.detailBlock}>
+                                        <Text style={styles.detailLabel}>📅 Fecha:</Text>
+                                        <Text style={styles.detailValue}>
+                                            {new Date(adminEventDetails.date).toLocaleDateString('es-ES', {
+                                                weekday: 'long',
+                                                year: 'numeric',
+                                                month: 'long',
+                                                day: 'numeric',
+                                            })}
+                                        </Text>
+                                    </View>
+                                </View>
+
+                                <View style={styles.titleSeparator} />
+
+                                <View style={styles.actionCardsContainer}>
+                                    {/* Cambiar Nombre */}
+                                    <Pressable
+                                        style={({ pressed }) => [
+                                            styles.actionCard,
+                                            pressed && styles.actionCardPressed,
+                                        ]}
+                                        onPress={() => setIsNameModalVisible(true)}
+                                    >
+                                        <View style={styles.cardIconContainer}>
+                                            <Text style={styles.cardIcon}>✏️</Text>
+                                        </View>
+                                        <Text style={styles.cardTitle}>Cambiar Nombre</Text>
+                                    </Pressable>
+
+                                    {/* Cambiar Descripción */}
+                                    <Pressable
+                                        style={({ pressed }) => [
+                                            styles.actionCard,
+                                            pressed && styles.actionCardPressed,
+                                        ]}
+                                        onPress={() => setIsDescriptionModalVisible(true)}
+                                    >
+                                        <View style={styles.cardIconContainer}>
+                                            <Text style={styles.cardIcon}>📝</Text>
+                                        </View>
+                                        <Text style={styles.cardTitle}>Cambiar Descripción</Text>
+                                    </Pressable>
+
+                                    {/* Cambiar Fecha */}
+                                    <Pressable
+                                        style={({ pressed }) => [
+                                            styles.actionCard,
+                                            pressed && styles.actionCardPressed,
+                                        ]}
+                                        onPress={() => setDatePickerVisible(true)}
+                                    >
+                                        <View style={styles.cardIconContainer}>
+                                            <Text style={styles.cardIcon}>📅</Text>
+                                        </View>
+                                        <Text style={styles.cardTitle}>Cambiar Fecha</Text>
+                                    </Pressable>
+                                </View>
+
+
+
                                 {datePickerVisible && (
                                     <DateTimePicker
                                         value={selectedDate || new Date()}
@@ -675,6 +727,8 @@ export default function CreacionEvento() {
                                         onChange={handleDateChange}
                                     />
                                 )}
+
+
                             </>
                         )}
                         <Modal
@@ -683,9 +737,9 @@ export default function CreacionEvento() {
                             animationType="slide"
                             onRequestClose={() => setIsNameModalVisible(false)}
                         >
-                            <View style={styles.modalContainer}>
-                                <View style={styles.modalContent}>
-                                    <Text style={styles.modalTitle}>Cambiar Nombre</Text>
+                            <View style={styles.modalContainer2}>
+                                <View style={styles.modalContent2}>
+                                    <Text style={styles.modalTitle2}>Cambiar Nombre</Text>
                                     <TextInput
                                         style={styles.input}
                                         placeholder="Nuevo Nombre"
@@ -724,9 +778,9 @@ export default function CreacionEvento() {
                             animationType="slide"
                             onRequestClose={() => setIsDescriptionModalVisible(false)}
                         >
-                            <View style={styles.modalContainer}>
-                                <View style={styles.modalContent}>
-                                    <Text style={styles.modalTitle}>Cambiar Descripción</Text>
+                            <View style={styles.modalContainer2}>
+                                <View style={styles.modalContent2}>
+                                    <Text style={styles.modalTitle2}>Cambiar Descripción</Text>
                                     <TextInput
                                         style={styles.input}
                                         placeholder="Nueva Descripción"
@@ -756,24 +810,43 @@ export default function CreacionEvento() {
                                 </View>
                             </View>
                         </Modal>
-
+                        <View style={styles.titleSeparator} />
 
                         {/* Lista de usuarios inscriptos */}
                         <Text style={styles.sectionTitle}>Usuarios Inscriptos:</Text>
+
                         {subscribedUsers.map((user) => (
-                            <View key={user.id} style={styles.userRow}>
-                                <Text style={styles.userName}>{user.name}</Text>
-                                <TouchableOpacity
-                                    onPress={() => handleEliminateUserFromEvent(user.id, adminEventDetails?.id ?? 0)}
-                                    style={styles.deleteUserButton}
-                                >
-                                    <Text style={styles.deleteUserText}>Eliminar</Text>
+                            <View key={user.id} style={styles.userCard}>
+                                {/* Profile Picture */}
+                                <TouchableOpacity onPress={() => alertUserProfile(user)}>
+                                    <Image
+                                        source={{ uri: 'https://www.gravatar.com/avatar/2c7d99fe281ecd3bcd65ab915bac6dd5?s=250' }} // Use default image if no profile picture
+                                        style={styles.profilePicture}
+                                    />
                                 </TouchableOpacity>
+
+                                {/* User Info (Name and Eliminate Button) */}
+                                <View style={styles.userInfo}>
+                                    {/* User Name */}
+                                    <TouchableOpacity onPress={() => alertUserProfile(user)}>
+                                        <Text style={styles.userName} numberOfLines={1}>
+                                            {user.name}
+                                        </Text>
+                                    </TouchableOpacity>
+
+                                    {/* Eliminate Button */}
+                                    <TouchableOpacity
+                                        onPress={() => handleEliminateUserFromEvent(user.id, adminEventDetails?.id ?? 0)}
+                                        style={styles.deleteUserButton}
+                                    >
+                                        <Text style={styles.deleteUserText}>Eliminar</Text>
+                                    </TouchableOpacity>
+                                </View>
                             </View>
                         ))}
-
+                        <View style={styles.titleSeparator} />
                         {/* Botones de acción */}
-                        <View style={styles.actionButtons}>
+                        <View style={styles.actionButtons2}>
                             <TouchableOpacity
                                 style={styles.updateButton}
                                 onPress={() => adminEventDetails && handleEventUpdate()}
@@ -932,40 +1005,38 @@ const styles = StyleSheet.create({
     },
     modalButtons: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
-        gap: 10, // Add space between buttons
-        width: '100%', // Ensure the container takes full width
+        justifyContent: 'space-around',
         marginTop: 20,
     },
     saveButton: {
-        backgroundColor: '#4CAF50', // Green for save button
-        paddingVertical: 12, // Adjust padding for better spacing
-        paddingHorizontal: 10, // Added padding for text alignment
-        borderRadius: 25, // Rounded edges
-        flex: 1, // Make both buttons equally wide
-        alignItems: 'center',
-        justifyContent: 'center', // Center content vertically
-    },
-    saveButtonText: {
-        color: 'white',
-        fontSize: 16,
-        fontWeight: 'bold',
-        textAlign: 'center', // Center text horizontally
-    },
-    cancelButton: {
-        backgroundColor: '#f44336', // Red for cancel button
+        backgroundColor: '#00C851', // Verde llamativo
         paddingVertical: 12,
-        paddingHorizontal: 10,
+        paddingHorizontal: 20,
         borderRadius: 25,
-        flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
+        flex: 1,
+        marginHorizontal: 5,
     },
-    cancelButtonText: {
-        color: 'white',
+    saveButtonText: {
+        color: '#fff',
         fontSize: 16,
         fontWeight: 'bold',
-        textAlign: 'center',
+    },
+    cancelButton: {
+        backgroundColor: '#ff4444', // Rojo vibrante
+        paddingVertical: 12,
+        paddingHorizontal: 20,
+        borderRadius: 25,
+        alignItems: 'center',
+        justifyContent: 'center',
+        flex: 1,
+        marginHorizontal: 5,
+    },
+    cancelButtonText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: 'bold',
     },
 
 
@@ -1014,9 +1085,8 @@ const styles = StyleSheet.create({
         marginBottom: 15,
     },
     sectionTitle: {
-        fontSize: 18,
+        fontSize: 22,
         fontWeight: 'bold',
-        marginVertical: 10,
         color: '#FF7F50',
     },
     userRow: {
@@ -1024,19 +1094,24 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         paddingVertical: 10,
-        borderBottomColor: '#ccc',
+        borderBottomColor: '#ddd',
         borderBottomWidth: 1,
     },
     userName: {
-        fontSize: 16,
+        fontSize: 18,
         color: '#333',
+        marginBottom: 5, // Space between name and button
     },
     deleteUserButton: {
-        backgroundColor: '#f44336',
-        paddingVertical: 5,
-        paddingHorizontal: 10,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#FF6347',
+        paddingVertical: 8,
+        paddingHorizontal: 15,
         borderRadius: 5,
     },
+
+
     scrollContainer: {
         flexGrow: 1, // Ensures the content stretches vertically
         paddingBottom: 20, // Optional: Add bottom padding for better spacing when scrolling
@@ -1047,16 +1122,19 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     dateChangeButton: {
-        backgroundColor: '#FF7F50',
-        padding: 10,
-        borderRadius: 5,
+        backgroundColor: '#6C63FF', // Azul moderno
+        paddingVertical: 12,
+        paddingHorizontal: 15,
+        borderRadius: 30, // Botón redondeado
         marginVertical: 10,
         alignItems: 'center',
+        justifyContent: 'center',
+        elevation: 5, // Sombra para profundidad
     },
     dateChangeText: {
         color: '#fff',
-        fontSize: 14,
-        fontWeight: 'bold',
+        fontSize: 16,
+        fontWeight: '600',
     },
     actionButtons: {
         flexDirection: 'row',
@@ -1064,15 +1142,16 @@ const styles = StyleSheet.create({
         marginTop: 20,
     },
     updateButton: {
-        backgroundColor: '#4CAF50',
-        padding: 10,
-        borderRadius: 5,
-        width: '45%',
+        backgroundColor: '#007E33', // Verde oscuro
+        padding: 12,
+        borderRadius: 30,
+        alignItems: 'center',
+        flex: 1,
+        marginRight: 10,
     },
     updateButtonText: {
         color: '#fff',
-        fontSize: 14,
-        textAlign: 'center',
+        fontSize: 16,
         fontWeight: 'bold',
     },
     cardHeader: {
@@ -1082,10 +1161,11 @@ const styles = StyleSheet.create({
         marginBottom: 8,
     },
     closeButton: {
-        backgroundColor: '#f44336',
-        padding: 10,
-        borderRadius: 5,
-        width: '45%',
+        backgroundColor: '#CC0000', // Rojo oscuro
+        padding: 12,
+        borderRadius: 30,
+        alignItems: 'center',
+        flex: 1,
     },
     divider: {
         height: 1,
@@ -1094,8 +1174,7 @@ const styles = StyleSheet.create({
     },
     closeButtonText: {
         color: '#fff',
-        fontSize: 14,
-        textAlign: 'center',
+        fontSize: 16,
         fontWeight: 'bold',
     },
     modalButtonContainer: {
@@ -1108,11 +1187,199 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: 'rgba(0, 0, 0, 0.5)', // Dim background
-      },
-      datePicker: {
+    },
+    datePicker: {
         backgroundColor: 'white',
         borderRadius: 10,
         padding: 20,
         width: '90%',
-      }
+    },
+
+    modalContainer2: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.7)', // Más oscuro para dar profundidad
+    },
+    modalContent2: {
+        width: '90%',
+        padding: 20,
+        backgroundColor: '#fefefe',
+        borderRadius: 15,
+        elevation: 10, // Sombra en Android
+        shadowColor: '#000', // Sombra en iOS
+        shadowOpacity: 0.3,
+        shadowRadius: 10,
+        shadowOffset: { width: 0, height: 5 },
+    },
+    modalTitle2: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        color: '#FF7F50', // Naranja vibrante
+        textAlign: 'center',
+        marginBottom: 15,
+        textTransform: 'uppercase', // Dar estilo más formal
+    },
+    modalText2: {
+        fontSize: 16,
+        color: '#555',
+        marginBottom: 10,
+    },
+    actionButtons2: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginTop: 20,
+    },
+    detailsSectionTitle: {
+        fontSize: 24, // A bit smaller to create hierarchy
+        fontWeight: '600', // Medium weight for differentiation
+        color: '#FF6347', // Warm color to create contrast
+        backgroundColor: '#fff3e0', // Soft background color to make it pop
+        paddingVertical: 10, // Padding to make it feel more like a banner
+        paddingHorizontal: 15,
+        borderRadius: 20, // Rounded corners for a more modern look
+        textAlign: 'center', // Center align the title
+        marginBottom: 30, // Increased space below to separate from content
+        letterSpacing: 1, // Small spacing to make it feel light
+    },
+
+    modalTitle1: {
+        fontSize: 32, // Slightly larger for a premium feel
+        fontWeight: '600', // Medium weight for sophistication, not too bold
+        color: '#4A4A4A', // A neutral, refined dark gray (softer than pure black)
+        letterSpacing: 0.5, // Slight spacing to keep it clean and airy
+        textTransform: 'capitalize', // Keep it elegant without all caps
+        textShadowColor: '#ddd', // Soft, light gray shadow for depth
+        textShadowOffset: { width: 0, height: 2 }, // Slight shadow offset
+        textShadowRadius: 4, // Soft shadow for gentle emphasis
+        marginBottom: 20, // Slight space below to balance with surrounding content
+        paddingHorizontal: 20, // More space for a comfortable feel
+        textAlign: 'center', // Center the title for balance
+    },
+    
+
+
+    elegantDetailsContainer: {
+        padding: 20,
+        backgroundColor: '#ffffff', // Fondo blanco
+        borderRadius: 15,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 5 },
+        shadowOpacity: 0.3,
+        shadowRadius: 10,
+        elevation: 6, // Sombra para Android
+        borderWidth: 1,
+        borderColor: '#FF7F50', // Un borde naranja sutil
+        marginHorizontal: 10, // Separación horizontal
+    },
+
+    detailBlock: {
+        marginBottom: 20,
+    },
+
+    detailLabel: {
+        fontSize: 18,
+        fontWeight: '600',
+        color: '#333',
+        marginBottom: 8,
+        textTransform: 'capitalize',
+    },
+
+    detailValue: {
+        fontSize: 16,
+        color: '#555',
+        backgroundColor: '#F9F9F9', // Fondo para el valor
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        borderRadius: 8,
+        lineHeight: 22,
+        borderWidth: 1,
+        borderColor: '#EAEAEA', // Un borde gris claro
+        overflow: 'hidden',
+    },
+    actionCardsContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',  // Distribute buttons evenly
+        alignItems: 'center',             // Vertically align buttons in the center
+        flexWrap: 'wrap',                 // Allow buttons to wrap to next line if needed
+        marginVertical: 20,
+    },
+    actionCard: {
+        width: '30%',                    // Make each button take up 30% of the width
+        minWidth: 120,                   // Ensure a minimum width
+        height: 120,
+        backgroundColor: '#fff',
+        borderRadius: 10,
+        elevation: 5,                    // Shadow for Android
+        shadowColor: '#000',             // Shadow for iOS
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 5,
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 10,
+        marginBottom: 15,                // Add space between buttons
+    },
+    actionCardPressed: {
+        backgroundColor: '#FF9F68',      // Pressed button color
+    },
+    cardIconContainer: {
+        marginBottom: 10,
+    },
+    cardIcon: {
+        fontSize: 30,
+        color: '#FF7F50',                // Icon color
+    },
+    cardTitle: {
+        fontSize: 14,
+        color: '#333',                   // Elegant text color
+        textAlign: 'center',
+    },
+    userCard: {
+        flexDirection: 'row', // Align image and info in a row
+        alignItems: 'center',
+        marginBottom: 15,
+        borderRadius: 8,
+        backgroundColor: '#f8f8f8',
+        padding: 10,
+        elevation: 2, // Add a slight shadow
+    },
+
+
+    userInfoContainer: {
+        flexDirection: 'row',
+        flex: 1, // Take up available space
+        alignItems: 'stretch',
+        marginRight: 15,
+    },
+
+
+    profilePicture: {
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        marginRight: 15,
+    },
+
+    nameContainer: {
+        flex: 1,
+        justifyContent: 'space-between', // Distribute content vertically
+        alignItems: 'flex-start',
+    },
+    userInfo: {
+        flexDirection: 'column', // Align name and button vertically
+        flex: 1, // Take up available space next to the image
+    },
+    titleSeparator: {
+        borderBottomWidth: 1, // Creates the horizontal line
+        borderBottomColor: '#ddd', // Light gray color for the line
+        marginVertical: 15, // Space around the line to keep separation clean
+    },
+
+
+
+
+
+
+
 });
