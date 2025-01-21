@@ -325,42 +325,67 @@ export default function CreacionEvento() {
                     renderItem={({ item }) => (
                         <TouchableOpacity
                             style={styles.eventCard}
-                            activeOpacity={0.8}
+                            activeOpacity={0.9}
                         >
-                            <View style={styles.cardHeader}>
+                            {/* Name and Date Section */}
+                            <View style={styles.headerSection}>
                                 <Text style={styles.eventName}>{item.name}</Text>
+
+                                {/* Date */}
                                 <Text style={styles.eventDate}>
                                     {item.date ? new Date(item.date).toLocaleDateString() : 'Fecha no disponible'}
                                 </Text>
                             </View>
-                            <Text style={styles.eventDescription}>{item.description}</Text>
 
+                            {/* Divider */}
                             <View style={styles.divider} />
 
-                            {userId !== null && item.userId === userId && (
-                                <View style={styles.actionButtons}>
-                                    <Button title="Administar" onPress={() => handleAdministrarEvent(item)} />
-                                    <Button
-                                        title="Eliminar"
-                                        onPress={() => handleDeleteEvent(item.id)}
-                                        color="#f44336"
-                                    />
-                                </View>
-                            )}
-                            {userId !== null && item.userId !== userId && (
-                                <View style={styles.actionButtons}>
-                                    <Button title="Detalles" onPress={() => handleDetailsEvent(item)} />
-                                    <Button
-                                        title="Desuscribirse"
-                                        onPress={() => handleUnsubscribe(item.id)}
-                                        color="#f44336"
-                                    />
-                                </View>
-                            )}
+                            {/* Event Description */}
+                            <Text style={styles.eventDescription} numberOfLines={3}>
+                                {item.description || 'No hay descripción disponible para este evento.'}
+                            </Text>
+
+                            {/* Action Buttons */}
+                            <View style={styles.actionButtons}>
+                                {userId !== null && item.userId === userId && (
+                                    <>
+                                        <TouchableOpacity
+                                            style={styles.adminButton}
+                                            onPress={() => handleAdministrarEvent(item)}
+                                        >
+                                            <Text style={styles.adminButtonText}>Administrar</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity
+                                            style={styles.deleteButton}
+                                            onPress={() => handleDeleteEvent(item.id)}
+                                        >
+                                            <Text style={styles.deleteButtonText}>Eliminar</Text>
+                                        </TouchableOpacity>
+                                    </>
+                                )}
+                                {userId !== null && item.userId !== userId && (
+                                    <>
+                                        <TouchableOpacity
+                                            style={styles.detailsButton}
+                                            onPress={() => handleDetailsEvent(item)}
+                                        >
+                                            <Text style={styles.detailsButtonText}>Detalles</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity
+                                            style={styles.unsubscribeButton}
+                                            onPress={() => handleUnsubscribe(item.id)}
+                                        >
+                                            <Text style={styles.unsubscribeButtonText}>Desuscribirse</Text>
+                                        </TouchableOpacity>
+                                    </>
+                                )}
+                            </View>
                         </TouchableOpacity>
                     )}
                     keyExtractor={(item) => item.id.toString()}
                 />
+
+
                 <Text style={styles.subHeader}>Eventos Finalizados</Text>
                 {/* Lista de eventos finalizados */}
                 <FlatList
@@ -932,28 +957,14 @@ const styles = StyleSheet.create({
         width: '100%', // Make the button container take full width of the card
         justifyContent: 'center', // Center the button within the container
     },
-    eventCard: {
-        backgroundColor: '#ffffff',
-        borderRadius: 10,
-        padding: 16,
-        marginVertical: 8,
-        marginHorizontal: 16,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
-        elevation: 5,
-    },
+
     modalSection: {
         marginBottom: 10,
         paddingVertical: 5,
         borderBottomWidth: 1,
         borderBottomColor: '#FF7F50',
     },
-    eventDate: {
-        fontSize: 14,
-        color: '#666',
-    },
+
     modalLabel: {
         fontSize: 16,
         fontWeight: 'bold',
@@ -977,11 +988,7 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         textAlign: 'center',
     },
-    eventName: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#FF7F50',
-    },
+
     closeMapButton: {
         position: 'absolute',
         bottom: 10,
@@ -998,11 +1005,7 @@ const styles = StyleSheet.create({
     buttonWrapper: {
         width: '45%',               // Controla el ancho de cada botón
     },
-    eventDescription: {
-        fontSize: 16,
-        color: '#555',
-        marginBottom: 12,
-    },
+
     modalButtons: {
         flexDirection: 'row',
         justifyContent: 'space-around',
@@ -1136,11 +1139,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '600',
     },
-    actionButtons: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        marginTop: 20,
-    },
+
     updateButton: {
         backgroundColor: '#007E33', // Verde oscuro
         padding: 12,
@@ -1158,7 +1157,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 8,
+        marginBottom: 12,
     },
     closeButton: {
         backgroundColor: '#CC0000', // Rojo oscuro
@@ -1167,11 +1166,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         flex: 1,
     },
-    divider: {
-        height: 1,
-        backgroundColor: '#ddd',
-        marginVertical: 8,
-    },
+
     closeButtonText: {
         color: '#fff',
         fontSize: 16,
@@ -1256,7 +1251,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20, // More space for a comfortable feel
         textAlign: 'center', // Center the title for balance
     },
-    
+
 
 
     elegantDetailsContainer: {
@@ -1374,6 +1369,115 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1, // Creates the horizontal line
         borderBottomColor: '#ddd', // Light gray color for the line
         marginVertical: 15, // Space around the line to keep separation clean
+    },
+
+    eventCard: {
+        backgroundColor: '#f9f9f9',
+        borderRadius: 15,
+        marginVertical: 10,
+        marginHorizontal: 16,
+        padding: 16,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.1,
+        shadowRadius: 10,
+        elevation: 5,
+        borderWidth: 1,
+        borderColor: '#e6e6e6',
+    },
+    headerSection: {
+        flexDirection: 'row',
+        justifyContent: 'space-between', // Pushes name and date to opposite ends
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    
+    textContainer: {
+        flex: 1,
+    },
+    eventName: {
+        fontSize: 20,
+        fontWeight: '700',
+        color: '#333',
+        textTransform: 'capitalize',
+        flex: 1, // Ensures the name takes up available space
+    },
+    
+    eventDate: {
+        fontSize: 14,
+        fontStyle: 'italic',
+        color: '#6b7280',
+        backgroundColor: '#f1f1f1',
+        padding: 4,
+        borderRadius: 5,
+        textAlign: 'right', // Aligns text to the right
+        maxWidth: '40%', // Ensures it doesn’t take too much space
+    },
+    
+    divider: {
+        height: 1,
+        backgroundColor: '#e5e5e5',
+        marginVertical: 10,
+    },
+    eventDescription: {
+        fontSize: 16,
+        color: '#4b5563',
+        lineHeight: 22,
+        marginBottom: 12,
+        textAlign: 'justify',
+    },
+    actionButtons: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginTop: 10,
+    },
+    adminButton: {
+        backgroundColor: '#3b82f6',
+        paddingVertical: 10,
+        paddingHorizontal: 16,
+        borderRadius: 8,
+    },
+    adminButtonText: {
+        color: '#fff',
+        fontSize: 14,
+        fontWeight: '600',
+        textTransform: 'uppercase',
+    },
+    deleteButton: {
+        backgroundColor: '#ef4444',
+        paddingVertical: 10,
+        paddingHorizontal: 16,
+        borderRadius: 8,
+    },
+    deleteButtonText: {
+        color: '#fff',
+        fontSize: 14,
+        fontWeight: '600',
+        textTransform: 'uppercase',
+    },
+    detailsButton: {
+        backgroundColor: '#6366f1',
+        paddingVertical: 10,
+        paddingHorizontal: 16,
+        borderRadius: 8,
+    },
+    detailsButtonText: {
+        color: '#fff',
+        fontSize: 14,
+        fontWeight: '600',
+        textTransform: 'uppercase',
+    },
+    unsubscribeButton: {
+        backgroundColor: '#f59e0b',
+        paddingVertical: 10,
+        paddingHorizontal: 16,
+        borderRadius: 8,
+    },
+    unsubscribeButtonText: {
+        color: '#fff',
+        fontSize: 14,
+        fontWeight: '600',
+        textTransform: 'uppercase',
     },
 
 
