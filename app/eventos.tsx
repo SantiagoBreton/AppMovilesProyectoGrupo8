@@ -25,11 +25,11 @@ export default function CreacionEvento() {
     const [datePickerVisible, setDatePickerVisible] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedLocation, setSelectedLocation] = useState<{ latitude: number; longitude: number } | null>(null);
-    const [selectedDate, setSelectedDate] = useState(new Date());
+    const [selectedDate, setSelectedDate] = useState<Date | null>(null);
     const [maxParticipants, setMaxParticipants] = useState(0);
     const [selectedLatitude, setLatitude] = useState<number | null>(null);
     const [selectedLongitude, setLongitude] = useState<number | null>(null);
-    const [selectedView, setSelectedView] = useState('inscritos'); // 'inscritos' o 'creados'
+    const [selectedView, setSelectedView] = useState('inscriptos'); // 'inscriptos' o 'creados'
     const { refreshEvents } = useEventContext();
     const { location, locationError } = useLocation();
     const [isDetailsModalVisible, setIsDetailsModalVisible] = useState(false);
@@ -39,7 +39,7 @@ export default function CreacionEvento() {
     const [isMapVisible, setMapVisible] = useState(false);
     const allevents = getSubscribedEvents(trigger);
     const myUserEvents = myEvents(trigger); // Call myEvents and store the result directly in the variable
-    const eventsToDisplay = selectedView === 'inscritos' ? allevents.events : myUserEvents.myEvents;
+    const eventsToDisplay = selectedView === 'inscriptos' ? allevents.events : myUserEvents.myEvents;
     const [isAdminModalVisible, setIsAdminModalVisible] = useState(false);
     const [adminEventDetails, setAdminEventDetails] = useState<EventWithId | null>(null);
     const [subscribedUsers, setSubscribedUsers] = useState<{ id: number; name: string }[]>([]);
@@ -105,7 +105,10 @@ export default function CreacionEvento() {
         if (date && date >= new Date()) {
             setSelectedDate(date);
             setFecha(date.toLocaleDateString());
-
+        }
+        else {
+            setSelectedDate(null);
+            Alert.alert('Error', 'Por favor, seleccione una fecha válida.');
         }
     };
 
@@ -159,6 +162,10 @@ export default function CreacionEvento() {
     };
 
     const handleEventUpdate = async () => {
+        if ((!newName && !newDescription && !selectedDate) || (selectedDate && selectedDate < new Date())) {
+            Alert.alert('Error', 'Por favor, complete al menos un campo para actualizar.');
+            return;
+        }
         try {
             console.log(`newName: ${newName}, newDescription: ${newDescription}, selectedDate: ${selectedDate}`);
 
@@ -206,7 +213,7 @@ export default function CreacionEvento() {
             };
             await createEvent(event);
             setIsModalVisible(false);
-            resetEvetCreaionInfo();
+            resetEvetCreationInfo();
 
             refreshEvents();
         } catch (error) {
@@ -219,7 +226,7 @@ export default function CreacionEvento() {
         setSelectedView(view);
     };
 
-    const resetEvetCreaionInfo = () => {
+    const resetEvetCreationInfo = () => {
         setTitulo('');
         setDescripcion('');
         setFecha('');
@@ -229,6 +236,7 @@ export default function CreacionEvento() {
         setLatitude(null);
         setLongitude(null);
         setEventAssLocation(null);
+        setSelectedDate(null);
     };
 
     const handleUnsubscribe = async (eventId: number) => {
@@ -252,7 +260,7 @@ export default function CreacionEvento() {
             if (allSubscribedUser.data) {
                 setSubscribedUsers(allSubscribedUser.data);
             } else {
-                Alert.alert('Error', 'No se pudo cargar la información de los usuarios inscritos.');
+                Alert.alert('Error', 'No se pudo cargar la información de los usuarios inscriptos.');
             }
             setAdminEventDetails(event);
             setIsAdminModalVisible(true);
@@ -291,8 +299,8 @@ export default function CreacionEvento() {
                 <View style={styles.buttonWrapper}>
                     <Button
                         title="Eventos a los que me Inscribí"
-                        onPress={() => switchView('inscritos')}
-                        color={selectedView === 'inscritos' ? '#FF7F50' : '#A9A9A9'} // Naranja para seleccionado, gris claro para no seleccionado
+                        onPress={() => switchView('inscriptos')}
+                        color={selectedView === 'inscriptos' ? '#FF7F50' : '#A9A9A9'} // Naranja para seleccionado, gris claro para no seleccionado
                     />
                 </View>
                 <View style={styles.buttonWrapper}>
@@ -453,7 +461,7 @@ export default function CreacionEvento() {
                                 <View style={styles.datePickerContainer}>
                                     <View style={styles.datePicker}>
                                         <DateTimePicker
-                                            value={selectedDate}
+                                            value={selectedDate || new Date()}
                                             mode="date"
                                             display="inline"
                                             onChange={handleDateChange}
@@ -469,7 +477,7 @@ export default function CreacionEvento() {
                         )}
                         {datePickerVisible && Platform.OS !== 'ios' && (
                             <DateTimePicker
-                                value={selectedDate}
+                                value={selectedDate || new Date()}
                                 mode="date"
                                 display="default"
                                 onChange={handleDateChange}
@@ -499,7 +507,7 @@ export default function CreacionEvento() {
                             title="Cerrar"
                             onPress={() => {
                                 setIsModalVisible(false);
-                                resetEvetCreaionInfo();
+                                resetEvetCreationInfo();
                             }}
                             color="#FF7F50"
                         />
@@ -661,7 +669,7 @@ export default function CreacionEvento() {
                                 </TouchableOpacity>
                                 {datePickerVisible && (
                                     <DateTimePicker
-                                        value={selectedDate}
+                                        value={selectedDate || new Date()}
                                         mode="date"
                                         display={Platform.OS === 'ios' ? 'inline' : 'default'}
                                         onChange={handleDateChange}
@@ -750,8 +758,8 @@ export default function CreacionEvento() {
                         </Modal>
 
 
-                        {/* Lista de usuarios inscritos */}
-                        <Text style={styles.sectionTitle}>Usuarios Inscritos:</Text>
+                        {/* Lista de usuarios inscriptos */}
+                        <Text style={styles.sectionTitle}>Usuarios Inscriptos:</Text>
                         {subscribedUsers.map((user) => (
                             <View key={user.id} style={styles.userRow}>
                                 <Text style={styles.userName}>{user.name}</Text>
