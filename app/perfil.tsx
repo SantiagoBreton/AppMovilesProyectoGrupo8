@@ -90,7 +90,7 @@ export default function Perfil() {
                                 onPress={() => handleEventPress(item)}
                             >
                                 <View style={styles.eventHeader}>
-                                    <Text style={styles.eventName}>{item.name}</Text>
+                                    <Text style={styles.eventName} numberOfLines={2}>{item.name}</Text>
                                     <Text style={styles.eventDate}>
                                         {item.date
                                             ? new Date(item.date).toLocaleDateString()
@@ -132,12 +132,6 @@ const styles = StyleSheet.create({
         backgroundColor: '#F9F9F9',
         paddingHorizontal: 16,
         paddingVertical: 24,
-    },
-    eventHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 8,
     },
     footerText: {
         marginTop: 16,
@@ -204,6 +198,14 @@ const styles = StyleSheet.create({
         marginBottom: 16,
         textAlign: 'center',
     },
+    eventHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start', // Aligns content at the top
+        flexWrap: 'wrap', // Allows wrapping to the next line when necessary
+        marginBottom: 8,
+    },
+
     eventCard: {
         backgroundColor: '#fef6f2',
         borderRadius: 12,
@@ -221,11 +223,21 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: 'bold',
         color: '#FF7F50',
+        flex: 1, // Allow the event name to take up the available space
+        marginRight: 8, // Adds space between the event name and the date
     },
+
+
     eventDate: {
         fontSize: 14,
         color: '#666',
         fontStyle: 'italic',
+        flexShrink: 0, // Prevents the date from shrinking
+        marginTop: 5, // Adds a small gap between the name and the date if it moves to the next line
+        marginLeft: 8, // Moves the date a bit more to the left (closer to the name)
+        textAlign: 'right', // Aligns the date to the left if it wraps
+        width: '100%', // Ensures it takes up the full width on the next line
+        paddingTop: 5,
     },
     eventDescription: {
         fontSize: 14,
