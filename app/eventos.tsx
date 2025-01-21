@@ -14,13 +14,11 @@ import { getAllUsersSubscribedToAnEvent } from '@/apiCalls/getAllUsersSubscribed
 import { updateEvent } from '@/apiCalls/updateEvent';
 import SpectatedUserModal from '@/components/SpectatedUserModal';
 import EventCreationModal from '@/components/EventCreationModal';
+import AdminEventModal from '@/components/AdminEventModal';
 
 
 export default function CreacionEvento() {
     const [isModalVisible, setIsModalVisible] = useState(false);
-    const [fecha, setFecha] = useState('');
-    const [datePickerVisible, setDatePickerVisible] = useState(false);
-    const [selectedDate, setSelectedDate] = useState<Date | null>(null);
     const [selectedView, setSelectedView] = useState('inscriptos'); // 'inscriptos' o 'creados'
     const { refreshEvents } = useEventContext();
     const [isDetailsModalVisible, setIsDetailsModalVisible] = useState(false);
@@ -35,14 +33,9 @@ export default function CreacionEvento() {
     const [isAdminModalVisible, setIsAdminModalVisible] = useState(false);
     const [adminEventDetails, setAdminEventDetails] = useState<EventWithId | null>(null);
     const [subscribedUsers, setSubscribedUsers] = useState<User[]>([]);
-    const [isUpdateNameModalVisible, setIsNameModalVisible] = useState(false);
-    const [isUpdateDescriptionModalVisible, setIsDescriptionModalVisible] = useState(false);
-    const [newName, setNewName] = useState('');
-    const [newDescription, setNewDescription] = useState('');
     const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
     const [userId, setUserId] = useState<number | null>(null);
-    const [seeUser, setSeeUser] = useState<User | null>(null);
-    const [isSpectatedUserVisible, setIsSpectatedUserVisible] = useState(false);
+
 
     useEffect(() => {
         const fetchUserId = async () => {
@@ -91,18 +84,7 @@ export default function CreacionEvento() {
 
     const handleCloseMap = () => setMapVisible(false);
 
-    const handleDateChange = (event: any, date?: Date) => {
-        setDatePickerVisible(false);
-
-        if (date && date >= new Date()) {
-            setSelectedDate(date);
-            setFecha(date.toLocaleDateString());
-        }
-        else {
-            setSelectedDate(null);
-            Alert.alert('Error', 'Por favor, seleccione una fecha válida.');
-        }
-    };
+    
 
     const handleDetailsEvent = async (item: Event) => {
         try {
@@ -125,40 +107,7 @@ export default function CreacionEvento() {
         }
     };
 
-    const handleEventUpdate = async () => {
-        if ((!newName && !newDescription && !selectedDate)) {
-            Alert.alert('Error', 'Por favor, complete al menos un campo para actualizar.');
-            return;
-        }
-        if (selectedDate && selectedDate <= new Date()) {
-            setSelectedDate(adminEventDetails?.date ?? null);
-        }
-        try {
-            console.log(`newName: ${newName}, newDescription: ${newDescription}, selectedDate: ${selectedDate}`);
 
-            // Fallback to default values if inputs are empty
-            const updatedName = newName || adminEventDetails?.name || '';
-            const updatedDescription = newDescription || adminEventDetails?.description || '';
-            const updatedDate = selectedDate || adminEventDetails?.date || new Date();
-
-            console.log(`updatedName: ${updatedName}, updatedDescription: ${updatedDescription}, updatedDate: ${updatedDate}`);
-
-            // Call the update function with the resolved values
-            await updateEvent(adminEventDetails?.id ?? 0, updatedName, updatedDescription, updatedDate);
-
-            // Refresh and reset
-            refreshEvents();
-            setNewName('');
-            setNewDescription('');
-            setSelectedDate(new Date());
-            setIsAdminModalVisible(false);
-
-            Alert.alert('Éxito', 'El evento se actualizó.');
-        } catch (error) {
-            console.error('Error updating event:', error);
-            Alert.alert('Error', 'No se pudo actualizar el evento.');
-        }
-    };
 
     const switchView = (view: string) => {
         setSelectedView(view);
@@ -194,16 +143,7 @@ export default function CreacionEvento() {
         }
     };
 
-    const handleEliminateUserFromEvent = async (userId: number, eventId: number) => {
-        try {
-            await unsubscribeUserFromAnEvent(userId, eventId);
-            Alert.alert('Éxito', 'Usuario eliminado del evento correctamente.');
-            setSubscribedUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
-            refreshEvents();
-        } catch (error) {
-            Alert.alert('Error', 'No se pudo eliminar al usuario del evento.');
-        }
-    };
+    
 
     const handleDeleteEvent = async (eventId: number) => {
         try {
@@ -233,10 +173,7 @@ export default function CreacionEvento() {
         setIsConfirmaDeletionModalVisible(false);
     };
 
-    const handleSeeUserProfile = (user: { id: number; name: string; email: string }) => {
-        setSeeUser(user)
-        setIsSpectatedUserVisible(true);
-    }
+   
 
     return (
         <View style={styles.container}>
@@ -505,245 +442,16 @@ export default function CreacionEvento() {
                     </View>
                 </View>
             </Modal>
-            <Modal
-                visible={isAdminModalVisible}
-                transparent={true}
-                animationType="slide"
-                onRequestClose={() => setIsAdminModalVisible(false)}
-            >
-                <View style={styles.modalContainer2}>
-                    <ScrollView contentContainerStyle={styles.modalContent2}>
-                        <Text style={styles.modalTitle1}>Administrar Evento</Text>
-                        <View style={styles.titleSeparator} />
+            
+            {/* Modal para administrar eventos */}
 
-                        {/* Detalles del evento */}
-                        {adminEventDetails && (
-                            <>
-                                <Text style={styles.detailsSectionTitle}>Detalles del Evento</Text>
-                                <View style={styles.elegantDetailsContainer}>
-                                    {/* Nombre del Evento */}
-                                    <View style={styles.detailBlock}>
-                                        <Text style={styles.detailLabel}>📛 Nombre:</Text>
-                                        <Text style={styles.detailValue}>{adminEventDetails.name}</Text>
-                                    </View>
+            <AdminEventModal
+                isVisible={isAdminModalVisible}
+                adminEventDetails={adminEventDetails}
+                subscribedUsers={subscribedUsers}
+                onClose={() => setIsAdminModalVisible(false)}
+            />
 
-                                    {/* Descripción del Evento */}
-                                    <View style={styles.detailBlock}>
-                                        <Text style={styles.detailLabel}>📄 Descripción:</Text>
-                                        <Text style={styles.detailValue}>{adminEventDetails.description}</Text>
-                                    </View>
-
-                                    {/* Fecha del Evento */}
-                                    <View style={styles.detailBlock}>
-                                        <Text style={styles.detailLabel}>📅 Fecha:</Text>
-                                        <Text style={styles.detailValue}>
-                                            {new Date(adminEventDetails.date).toLocaleDateString('es-ES', {
-                                                weekday: 'long',
-                                                year: 'numeric',
-                                                month: 'long',
-                                                day: 'numeric',
-                                            })}
-                                        </Text>
-                                    </View>
-                                </View>
-
-                                <View style={styles.titleSeparator} />
-
-                                <View style={styles.actionCardsContainer}>
-                                    {/* Cambiar Nombre */}
-                                    <Pressable
-                                        style={({ pressed }) => [
-                                            styles.actionCard,
-                                            pressed && styles.actionCardPressed,
-                                        ]}
-                                        onPress={() => setIsNameModalVisible(true)}
-                                    >
-                                        <View style={styles.cardIconContainer}>
-                                            <Text style={styles.cardIcon}>✏️</Text>
-                                        </View>
-                                        <Text style={styles.cardTitle}>Cambiar Nombre</Text>
-                                    </Pressable>
-
-                                    {/* Cambiar Descripción */}
-                                    <Pressable
-                                        style={({ pressed }) => [
-                                            styles.actionCard,
-                                            pressed && styles.actionCardPressed,
-                                        ]}
-                                        onPress={() => setIsDescriptionModalVisible(true)}
-                                    >
-                                        <View style={styles.cardIconContainer}>
-                                            <Text style={styles.cardIcon}>📝</Text>
-                                        </View>
-                                        <Text style={styles.cardTitle}>Cambiar Descripción</Text>
-                                    </Pressable>
-
-                                    {/* Cambiar Fecha */}
-                                    <Pressable
-                                        style={({ pressed }) => [
-                                            styles.actionCard,
-                                            pressed && styles.actionCardPressed,
-                                        ]}
-                                        onPress={() => setDatePickerVisible(true)}
-                                    >
-                                        <View style={styles.cardIconContainer}>
-                                            <Text style={styles.cardIcon}>📅</Text>
-                                        </View>
-                                        <Text style={styles.cardTitle}>Cambiar Fecha</Text>
-                                    </Pressable>
-                                </View>
-
-
-
-                                {datePickerVisible && (
-                                    <DateTimePicker
-                                        value={selectedDate || new Date()}
-                                        mode="date"
-                                        display={Platform.OS === 'ios' ? 'inline' : 'default'}
-                                        onChange={handleDateChange}
-                                    />
-                                )}
-
-
-                            </>
-                        )}
-                        <Modal
-                            visible={isUpdateNameModalVisible}
-                            transparent={true}
-                            animationType="slide"
-                            onRequestClose={() => setIsNameModalVisible(false)}
-                        >
-                            <View style={styles.modalContainer2}>
-                                <View style={styles.modalContent2}>
-                                    <Text style={styles.modalTitle2}>Cambiar Nombre</Text>
-                                    <TextInput
-                                        style={styles.input}
-                                        placeholder="Nuevo Nombre"
-                                        value={newName}
-                                        onChangeText={setNewName}
-                                    />
-                                    <View style={styles.modalButtons}>
-                                        <TouchableOpacity
-                                            style={styles.saveButton}
-                                            onPress={() => {
-                                                setIsNameModalVisible(false);
-                                                // Handle Save Logic
-                                            }}
-                                        >
-                                            <Text style={styles.saveButtonText}>Guardar</Text>
-                                        </TouchableOpacity>
-                                        <TouchableOpacity
-                                            style={styles.cancelButton}
-                                            onPress={() => {
-                                                setIsNameModalVisible(false);
-                                                setNewName(''); // Clear the input
-                                            }}
-                                        >
-                                            <Text style={styles.cancelButtonText}>Cancelar</Text>
-                                        </TouchableOpacity>
-                                    </View>
-                                </View>
-                            </View>
-                        </Modal>
-
-
-                        {/* Modal for changing description */}
-                        <Modal
-                            visible={isUpdateDescriptionModalVisible}
-                            transparent={true}
-                            animationType="slide"
-                            onRequestClose={() => setIsDescriptionModalVisible(false)}
-                        >
-                            <View style={styles.modalContainer2}>
-                                <View style={styles.modalContent2}>
-                                    <Text style={styles.modalTitle2}>Cambiar Descripción</Text>
-                                    <TextInput
-                                        style={styles.input}
-                                        placeholder="Nueva Descripción"
-                                        value={newDescription}
-                                        onChangeText={setNewDescription}
-                                    />
-                                    <View style={styles.modalButtons}>
-                                        <TouchableOpacity
-                                            style={styles.saveButton}
-                                            onPress={() => {
-                                                setIsDescriptionModalVisible(false);
-                                                // Handle Save Logic
-                                            }}
-                                        >
-                                            <Text style={styles.saveButtonText}>Guardar</Text>
-                                        </TouchableOpacity>
-                                        <TouchableOpacity
-                                            style={styles.cancelButton}
-                                            onPress={() => {
-                                                setIsDescriptionModalVisible(false);
-                                                setNewDescription(''); // Clear the input
-                                            }}
-                                        >
-                                            <Text style={styles.cancelButtonText}>Cancelar</Text>
-                                        </TouchableOpacity>
-                                    </View>
-                                </View>
-                            </View>
-                        </Modal>
-                        <View style={styles.titleSeparator} />
-
-                        {/* Lista de usuarios inscriptos */}
-                        <Text style={styles.sectionTitle}>Usuarios Inscriptos:</Text>
-
-                        {subscribedUsers.map((user) => (
-                            <View key={user.id} style={styles.userCard}>
-                                {/* Profile Picture */}
-                                <TouchableOpacity onPress={() => handleSeeUserProfile({ id: user.id, name: user.name, email: user.email })}>
-                                    <Image
-                                        source={{ uri: 'https://www.gravatar.com/avatar/2c7d99fe281ecd3bcd65ab915bac6dd5?s=250' }} // Use default image if no profile picture
-                                        style={styles.profilePicture}
-                                    />
-                                </TouchableOpacity>
-
-                                {/* User Info (Name and Eliminate Button) */}
-                                <View style={styles.userInfo}>
-                                    {/* User Name */}
-                                    <TouchableOpacity onPress={() => handleSeeUserProfile({ id: user.id, name: user.name, email: user.email })}>
-                                        <Text style={styles.userName} numberOfLines={1}>
-                                            {user.name}
-                                        </Text>
-                                    </TouchableOpacity>
-                                    <SpectatedUserModal
-                                        isVisible={isSpectatedUserVisible}
-                                        user={seeUser}
-                                        onClose={() => setIsSpectatedUserVisible(false)}
-                                    />
-
-                                    {/* Eliminate Button */}
-                                    <TouchableOpacity
-                                        onPress={() => handleEliminateUserFromEvent(user.id, adminEventDetails?.id ?? 0)}
-                                        style={styles.deleteUserButton}
-                                    >
-                                        <Text style={styles.deleteUserText}>Eliminar</Text>
-                                    </TouchableOpacity>
-                                </View>
-                            </View>
-                        ))}
-                        <View style={styles.titleSeparator} />
-                        {/* Botones de acción */}
-                        <View style={styles.actionButtons2}>
-                            <TouchableOpacity
-                                style={styles.updateButton}
-                                onPress={() => adminEventDetails && handleEventUpdate()}
-                            >
-                                <Text style={styles.updateButtonText}>Guardar Cambios</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                style={styles.closeButton}
-                                onPress={() => setIsAdminModalVisible(false)}
-                            >
-                                <Text style={styles.closeButtonText}>Cerrar</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </ScrollView>
-                </View>
-            </Modal>
 
         </View>
     );
