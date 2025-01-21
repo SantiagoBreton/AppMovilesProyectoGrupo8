@@ -1,32 +1,11 @@
 import React, { useState } from 'react';
-import {
-    View,
-    Text,
-    TextInput,
-    FlatList,
-    StyleSheet,
-    TouchableOpacity,
-    KeyboardAvoidingView,
-    Platform,
-    Modal,
-    Alert,
-    Button,
-    ScrollView,
-    Image,
-    TouchableWithoutFeedback,
-    Dimensions
-} from 'react-native';
+import {View,Text,TextInput,FlatList,StyleSheet,TouchableOpacity,KeyboardAvoidingView,Platform,Alert,Button,ScrollView,} from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
-import MapView, { Circle, Marker } from 'react-native-maps';
 import { Float } from 'react-native/Libraries/Types/CodegenTypes';
-import * as Location from 'expo-location';
 import { getEventByName } from '@/apiCalls/getEventByName';
 import { getUserByName } from '@/apiCalls/getUserByName';
 import { getAllEventsFromUser } from '@/apiCalls/getAllEventsFromUser';
-import { subscribeToEvent } from '@/apiCalls/subscribeToAnEvent';
-import { useEventContext } from '@/context/eventContext';
 import SpectatedUserModal from '@/components/SpectatedUserModal';
-import { white } from 'react-native-paper/lib/typescript/styles/themes/v2/colors';
 import EventDetailModal from '@/components/EventDetailModal';
 
 export default function Busqueda() {
@@ -38,7 +17,6 @@ export default function Busqueda() {
     const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
     const [isSpectatedUserVisible, setIsSpectatedUserVisible] = useState(false);
     const [seeUser, setSeeUser] = useState<SeeUser | null>(null);
-
 
     interface CustomEvent {
         id: number;
@@ -52,7 +30,6 @@ export default function Busqueda() {
         userId: number;
     };
 
-
     interface SeeUser {
         name: string;
         email: string;
@@ -64,8 +41,6 @@ export default function Busqueda() {
         name: string;
         email: string;
     };
-
-
 
     const handleEventSearch = async () => {
         setIsSearching(true);
@@ -114,28 +89,10 @@ export default function Busqueda() {
             Alert.alert('Error', 'Failed to fetch user events');
         }
     }
-    
-
-
 
     const handleDetailsEvent = async (item: CustomEvent) => {
-        try {
-            const addresses = await Location.reverseGeocodeAsync({
-                latitude: item.latitude,
-                longitude: item.longitude,
-            });
-
-            const location =
-                addresses.length > 0
-                    ? `${addresses[0].city}, ${addresses[0].region}, ${addresses[0].country}`
-                    : 'Address not found';
-
-            setEventDetails(item)
-            setIsDetailsModalVisible(true);
-        } catch (error) {
-            console.error('Error fetching address:', error);
-            Alert.alert('Error', 'Failed to fetch event details');
-        }
+        setEventDetails(item)
+        setIsDetailsModalVisible(true);
     };
 
     const renderEventResult = ({ item }: { item: CustomEvent }) => (
@@ -241,9 +198,6 @@ export default function Busqueda() {
 
                 onClose={() => setIsDetailsModalVisible(false)}
             />
-
-
-
            
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
 
@@ -256,8 +210,6 @@ export default function Busqueda() {
         </KeyboardAvoidingView>
     );
 }
-
-const { width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
     modalTitle: {
@@ -338,57 +290,6 @@ const styles = StyleSheet.create({
         width: '100%', // Make the button container take full width of the card
         justifyContent: 'center', // Center the button within the container
     },
-    closeMapButton: {
-        position: 'absolute',
-        bottom: 10,
-        paddingVertical: 10,
-        paddingHorizontal: 20,
-        backgroundColor: '#f44336',
-        borderRadius: 5,
-    },
-    closeMapButtonText: {
-        color: '#fff',
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
-    buttonWrapper: {
-        width: '45%',               // Controla el ancho de cada botón
-    },
-    mapModalContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    },
-    mapModalContent: {
-        width: '90%',
-        height: '60%',
-        backgroundColor: '#fff',
-        borderRadius: 10,
-        overflow: 'hidden',
-        alignItems: 'center',
-    },
-    map: {
-        width: '100%',
-        height: '100%',
-    },
-    modalContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)', // Fondo semi-transparente
-    },
-    modalContent: {
-        width: '80%',
-        padding: 20,
-        backgroundColor: '#fff',
-        borderRadius: 10,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        elevation: 5,
-    },
     container2: {
         marginTop: 30,
         flex: 1,
@@ -415,31 +316,6 @@ const styles = StyleSheet.create({
     userInfo: {
         flex: 1,
     },
-    eventCard2: {
-        padding: 15,
-        backgroundColor: '#f9f9f9',
-        borderRadius: 8,
-        marginBottom: 10,
-        borderColor: '#FF7F50',
-        borderWidth: 1,
-    },
-    detailButton2: {
-        marginTop: 10,
-        flexDirection: 'row',
-        width: '100%', // Make the button container take full width of the card
-        justifyContent: 'center', // Center the button within the container
-    },
-    eventName2: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#FF7F50',
-    },
-    closeButton2: {
-        position: 'absolute',
-        top: 8,
-        right: 8,
-        padding: 8,
-    },
     closeButton: {
         marginTop: 10,
         alignSelf: 'center',
@@ -448,49 +324,10 @@ const styles = StyleSheet.create({
         backgroundColor: '#FF7F50',
         borderRadius: 25,
     },
-    closeButtonText: {
-        color: '#fff',
-        fontSize: 16,
-        fontWeight: 'bold',
-        textAlign: 'center',
-    },
-    modalSection: {
-        marginBottom: 10,
-        paddingVertical: 5,
-        borderBottomWidth: 1,
-        borderBottomColor: '#FF7F50',
-    },
-    modalLabel: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: '#FF7F50',
-    },
-    modalText: {
-        fontSize: 14,
-        color: '#333',
-    },
-    modalActionButton: {
-        marginTop: 10, // Reducido el espacio
-        alignSelf: 'center',
-        paddingVertical: 12,
-        paddingHorizontal: 30,
-        backgroundColor: '#FF7F50',
-        borderRadius: 25,
-    },
-    largeButton: {
-        paddingVertical: 20, // Botón más grande
-        width: '100%', // Ocupa todo el ancho del contenedor
-    },
     buttonRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         marginTop: 10, // Reducido el espacio
-    },
-    modalActionButtonText: {
-        color: '#fff',
-        fontSize: width > 360 ? 16 : 14,
-        fontWeight: 'bold',
-        textAlign: 'center',
     },
     iconContainer: {
         width: 50,
@@ -503,57 +340,6 @@ const styles = StyleSheet.create({
     },
     cardContent: {
         flex: 1,
-    },
-    container: {
-        flex: 1,
-        backgroundColor: '#F9F9F9',
-        paddingHorizontal: 16,
-        paddingVertical: 10,
-    },
-
-    footerText: {
-        marginTop: 16,
-        textAlign: 'center',
-        fontSize: 14,
-        color: '#666',
-    },
-    noEventsText: {
-        textAlign: 'center',
-        fontSize: 16,
-        color: '#999',
-        marginTop: 16,
-    },
-    header: {
-        alignItems: 'center',
-        marginBottom: 24,
-        backgroundColor: '#FF7F50',
-        paddingVertical: 16,
-        borderRadius: 16,
-    },
-
-    profileImage: {
-        width: 100,
-        height: 100,
-        borderRadius: 50,
-        borderWidth: 2,
-        borderColor: '#fff',
-        marginBottom: 8,
-    },
-    name: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: '#fff',
-    },
-    section: {
-        backgroundColor: '#fff',
-        padding: 16,
-        marginVertical: 12,
-        borderRadius: 12,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
-        shadowRadius: 6,
-        elevation: 4,
     },
     label: {
         fontSize: 16,
