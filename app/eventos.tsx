@@ -33,6 +33,7 @@ export default function CreacionEvento() {
     const { refreshEvents } = useEventContext();
     const { location, locationError } = useLocation();
     const [isDetailsModalVisible, setIsDetailsModalVisible] = useState(false);
+    const [isConfirmaDeletionModalVisible, setIsConfirmaDeletionModalVisible] = useState(false);
     const [eventDetails, setEventDetails] = useState<Event | null>(null);
     const [eventLocation, setEventLocation] = useState<string | null>(null);
     const { trigger } = useEventContext();
@@ -48,9 +49,7 @@ export default function CreacionEvento() {
     const [isUpdateDescriptionModalVisible, setIsDescriptionModalVisible] = useState(false);
     const [newName, setNewName] = useState('');
     const [newDescription, setNewDescription] = useState('');
-
-
-
+    const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
     const [userId, setUserId] = useState<number | null>(null);
 
     useEffect(() => {
@@ -162,9 +161,12 @@ export default function CreacionEvento() {
     };
 
     const handleEventUpdate = async () => {
-        if ((!newName && !newDescription && !selectedDate) || (selectedDate && selectedDate < new Date())) {
+        if ((!newName && !newDescription && !selectedDate)) {
             Alert.alert('Error', 'Por favor, complete al menos un campo para actualizar.');
             return;
+        }
+        if (selectedDate && selectedDate <= new Date()) {
+            setSelectedDate(adminEventDetails?.date ?? null);
         }
         try {
             console.log(`newName: ${newName}, newDescription: ${newDescription}, selectedDate: ${selectedDate}`);
@@ -282,17 +284,35 @@ export default function CreacionEvento() {
         } catch (error) {
             Alert.alert('Error', 'No se pudo eliminar al usuario del evento.');
         }
-    }
-        ;
-
-
-    const handleDeleteEvent = (eventId: any) => {
-        deleteEventById(eventId)
-        refreshEvents();
-        Alert.alert('Eliminar Evento', `Eliminar el evento con id: ${eventId}`);
     };
 
+    const handleDeleteEvent = async (eventId: number) => {
+        try {
+            await deleteEventById(eventId);
+            refreshEvents();
+            Alert.alert('Éxito', 'El evento ha sido eliminado.');
+        } catch (error) {
+            console.error('Error deleting event:', error);
+            Alert.alert('Error', 'No se pudo eliminar el evento.');
+        }
+    };
 
+    const openDeleteModal = (eventId: number) => {
+        setSelectedEventId(eventId);
+        setIsConfirmaDeletionModalVisible(true);
+    };
+
+    const confirmDelete = () => {
+        if (selectedEventId !== null) {
+            handleDeleteEvent(selectedEventId); // Call your existing delete function
+        }
+        closeDeleteModal();
+    };
+
+    const closeDeleteModal = () => {
+        setSelectedEventId(null);
+        setIsConfirmaDeletionModalVisible(false);
+    };
 
     return (
         <View style={styles.container}>
@@ -357,7 +377,7 @@ export default function CreacionEvento() {
                                         </TouchableOpacity>
                                         <TouchableOpacity
                                             style={styles.deleteButton}
-                                            onPress={() => handleDeleteEvent(item.id)}
+                                            onPress={() => openDeleteModal(item.id)}
                                         >
                                             <Text style={styles.deleteButtonText}>Eliminar</Text>
                                         </TouchableOpacity>
@@ -380,6 +400,36 @@ export default function CreacionEvento() {
                                     </>
                                 )}
                             </View>
+
+                            {/* Modal for Delete Confirmation */}
+                            <Modal
+                                visible={isConfirmaDeletionModalVisible}
+                                transparent={true}
+                                animationType="fade"
+                            >
+                                <View style={modalStyles.modalOverlay}>
+                                    <View style={modalStyles.modalContainer}>
+                                        <Text style={modalStyles.modalTitle}>Confirmar Eliminación</Text>
+                                        <Text style={modalStyles.modalMessage}>
+                                            ¿Estás seguro de que deseas eliminar este evento? Esta acción no se puede deshacer.
+                                        </Text>
+                                        <View style={modalStyles.modalButtons}>
+                                            <TouchableOpacity
+                                                style={[modalStyles.modalButton, modalStyles.cancelButton]}
+                                                onPress={closeDeleteModal}
+                                            >
+                                                <Text style={modalStyles.cancelButtonText}>Cancelar</Text>
+                                            </TouchableOpacity>
+                                            <TouchableOpacity
+                                                style={[modalStyles.modalButton, modalStyles.confirmButton]}
+                                                onPress={confirmDelete}
+                                            >
+                                                <Text style={modalStyles.confirmButtonText}>Eliminar</Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                    </View>
+                                </View>
+                            </Modal>
                         </TouchableOpacity>
                     )}
                     keyExtractor={(item) => item.id.toString()}
@@ -1486,4 +1536,58 @@ const styles = StyleSheet.create({
 
 
 
+});
+
+const modalStyles = StyleSheet.create({
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    modalContainer: {
+        backgroundColor: '#fff',
+        padding: 20,
+        borderRadius: 10,
+        width: '80%',
+        alignItems: 'center',
+    },
+    modalTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 10,
+        color: '#333',
+    },
+    modalMessage: {
+        fontSize: 16,
+        textAlign: 'center',
+        marginBottom: 20,
+        color: '#666',
+    },
+    modalButtons: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        width: '100%',
+    },
+    modalButton: {
+        flex: 1,
+        padding: 10,
+        borderRadius: 5,
+        alignItems: 'center',
+        marginHorizontal: 5,
+    },
+    cancelButton: {
+        backgroundColor: '#ddd',
+    },
+    confirmButton: {
+        backgroundColor: '#e53935',
+    },
+    cancelButtonText: {
+        color: '#333',
+        fontWeight: 'bold',
+    },
+    confirmButtonText: {
+        color: '#fff',
+        fontWeight: 'bold',
+    },
 });
