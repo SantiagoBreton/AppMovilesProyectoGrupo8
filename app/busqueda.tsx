@@ -87,7 +87,7 @@ export default function Busqueda() {
             onPress={() => handleDetailsEvent(item)}
         >
             <View style={styles.cardContent}>
-                <Text style={styles.eventName}>{item.name}</Text>
+                <Text style={styles.eventName} numberOfLines={2}>{item.name}</Text>
                 <Text style={styles.eventDate}>
                     {item.date ? new Date(item.date).toLocaleDateString() : 'Fecha no disponible'}
                 </Text>
@@ -371,6 +371,12 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#666',
         fontStyle: 'italic',
+        flexShrink: 0, // Prevents the date from shrinking
+        marginTop: 5, // Adds a small gap between the name and the date if it moves to the next line
+        marginLeft: 8, // Moves the date a bit more to the left (closer to the name)
+        textAlign: 'right', // Aligns the date to the left if it wraps
+        width: '100%', // Ensures it takes up the full width on the next line
+        paddingTop: 5,
     },
     eventDescription: {
         fontSize: 14,

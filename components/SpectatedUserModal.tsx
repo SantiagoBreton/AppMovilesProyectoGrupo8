@@ -263,7 +263,6 @@ const styles = StyleSheet.create({
         paddingTop: 5,
     },
 
-
     eventDescription: {
         fontSize: 14,
         color: '#333',
