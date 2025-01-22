@@ -18,6 +18,7 @@ interface Event {
     description: string;
     maxParticipants: number;
     currentParticipants: number;
+    rating: number;
     userId: number;
 };
 
@@ -94,7 +95,9 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
                 longitude: selectedLongitude ?? 0,
                 description: descripcion,
                 maxParticipants: maxParticipants,
+                rating: 0,
                 currentParticipants: 0,
+
                 userId: currentUserId ? parseInt(currentUserId, 10) : 0,
             };
             await createEvent(event);

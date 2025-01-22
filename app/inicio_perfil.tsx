@@ -21,7 +21,7 @@ export default function InicioPerfil() {
     message?: string;  // Optional field for any message returned
   }
   const createUser = async () => {
-    const user = { email, password, name: userName };
+    const user = { email, password, name: userName, rating: 0 };
     if (validateUser(user)) {
       try {
         const res = await createNewUser(user);

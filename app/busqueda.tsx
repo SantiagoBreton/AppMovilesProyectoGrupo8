@@ -34,6 +34,7 @@ export default function Busqueda() {
         id: number;
         name: string;
         email: string;
+        rating: Float;
     };
 
     const handleEventSearch = async () => {

@@ -1,5 +1,5 @@
 
-import AsyncStorage from "@react-native-async-storage/async-storage";
+
 import { Float } from "react-native/Libraries/Types/CodegenTypes";
 
 
@@ -11,6 +11,7 @@ interface Event {
     description: String;
     maxParticipants: number;
     currentParticipants: number;
+    rating: number;
     userId: number;
 };
 
