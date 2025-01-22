@@ -2,11 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, Button, StyleSheet, FlatList, Modal, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import * as Location from 'expo-location';
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import MapView, { Marker } from 'react-native-maps';
 import { Float } from 'react-native/Libraries/Types/CodegenTypes';
-import { unsubscribeUserFromAnEvent } from '@/apiCalls/unsubscribeUserFromEvent';
 import { myEvents } from '@/apiCalls/myEvents';
-import { deleteEventById } from '@/apiCalls/deleteEventById';
 import { useEventContext } from '@/context/eventContext';
 import { getSubscribedEvents } from '@/apiCalls/getSubscribedEvents';
 import { getAllUsersSubscribedToAnEvent } from '@/apiCalls/getAllUsersSubscribedToAnEvent';
@@ -24,7 +21,6 @@ export default function CreacionEvento() {
     const [eventDetails, setEventDetails] = useState<EventWithId | null>(null);
     const [eventLocation, setEventLocation] = useState<string | null>(null);
     const { trigger } = useEventContext();
-    const [isMapVisible, setMapVisible] = useState(false);
     const allevents = getSubscribedEvents(trigger);
     const myUserEvents = myEvents(trigger); // Call myEvents and store the result directly in the variable
     const eventsToDisplay = selectedView === 'inscriptos' ? allevents.events : myUserEvents.myEvents;
@@ -65,10 +61,6 @@ export default function CreacionEvento() {
         name: string;
         email: string;
     };
-
-
-
-    const handleCloseMap = () => setMapVisible(false);
 
     const handleDetailsEvent = async (item: EventWithId) => {
         try {
@@ -187,6 +179,7 @@ export default function CreacionEvento() {
                 isModalVisible={isModalVisible}
                 onClose={() => setIsModalVisible(false)}
             />
+            
             <EventDetailModal
                 visible={isDetailsModalVisible}
                 eventDetails={eventDetails}
@@ -195,43 +188,7 @@ export default function CreacionEvento() {
             />
 
 
-            {/* Map Modal */}
-            <Modal
-                visible={isMapVisible}
-                transparent={true}
-                animationType="fade"
-                onRequestClose={handleCloseMap}
-            >
-                <View style={styles.mapModalContainer}>
-                    <View style={styles.mapModalContent}>
-                        <MapView
-                            style={styles.map}
-                            initialRegion={{
-                                latitude: eventDetails?.latitude ?? 0,
-                                longitude: eventDetails?.longitude ?? 0,
-                                latitudeDelta: 0.01,
-                                longitudeDelta: 0.01,
-                            }}
-                        >
-                            <Marker
-                                coordinate={{
-                                    latitude: eventDetails?.latitude ?? 0,
-                                    longitude: eventDetails?.longitude ?? 0,
-                                }}
-                                title={eventDetails?.name ?? ''}
-                                description={eventDetails?.description ?? ''}
-                            />
-                        </MapView>
-                        <TouchableOpacity
-                            style={styles.closeMapButton}
-                            onPress={handleCloseMap}
-                        >
-                            <Text style={styles.closeMapButtonText}>Cerrar Mapa</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </Modal>
-
+           
             {/* Modal para administrar eventos */}
 
             <AdminEventModal
