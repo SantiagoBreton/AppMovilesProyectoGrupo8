@@ -36,8 +36,6 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
     const [isMapVisible, setMapVisible] = useState(false);
     const [eventLocation, setEventLocation] = useState<string | null>(null);
     const [userId, setUserId] = useState<number | null>(null);
-    console.log("showSuscribe value = " + showSuscribe);
-    console.log("Visible value = " + visible);
 
     useEffect(() => {
         const fetchUserId = async () => {

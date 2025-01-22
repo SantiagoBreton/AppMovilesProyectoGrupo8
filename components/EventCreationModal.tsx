@@ -20,11 +20,7 @@ interface Event {
     currentParticipants: number;
     userId: number;
 };
-interface User {
-    id: number;
-    name: string;
-    email: string;
-};
+
 interface EventCreationModalProps {
     isModalVisible: boolean;
     onClose: () => void;
@@ -49,7 +45,6 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
     const [selectedLongitude, setLongitude] = useState<number | null>(null);
     const { refreshEvents } = useEventContext();
     const { location, locationError } = useLocation();
-    const [input, setInput] = useState('');
 
 
 
@@ -104,6 +99,7 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
             };
             await createEvent(event);
             resetEvetCreationInfo();
+            onClose();
 
             refreshEvents();
         } catch (error) {
@@ -252,7 +248,7 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
 
                 {/* Buttons */}
                 <View style={styles.modalButtonContainer}>
-                    <TouchableOpacity style={styles.buttonCreate} onPress={createNewEvent}>
+                    <TouchableOpacity style={styles.buttonCreate} onPress={createNewEvent }>
                         <Text style={styles.buttonText}>Crear Evento</Text>
                     </TouchableOpacity>
                     <TouchableOpacity

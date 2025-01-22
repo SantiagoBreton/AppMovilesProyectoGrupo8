@@ -13,14 +13,14 @@ import { getAllUsersSubscribedToAnEvent } from '@/apiCalls/getAllUsersSubscribed
 import EventCreationModal from '@/components/EventCreationModal';
 import AdminEventModal from '@/components/AdminEventModal';
 import EventDetailModal from '@/components/EventDetailModal';
+import EventCardModal from '@/components/EventCard';
 
 
 export default function CreacionEvento() {
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [selectedView, setSelectedView] = useState('inscriptos'); // 'inscriptos' o 'creados'
-    const { refreshEvents } = useEventContext();
     const [isDetailsModalVisible, setIsDetailsModalVisible] = useState(false);
-    const [isConfirmaDeletionModalVisible, setIsConfirmaDeletionModalVisible] = useState(false);
+
     const [eventDetails, setEventDetails] = useState<EventWithId | null>(null);
     const [eventLocation, setEventLocation] = useState<string | null>(null);
     const { trigger } = useEventContext();
@@ -31,7 +31,6 @@ export default function CreacionEvento() {
     const [isAdminModalVisible, setIsAdminModalVisible] = useState(false);
     const [adminEventDetails, setAdminEventDetails] = useState<EventWithId | null>(null);
     const [subscribedUsers, setSubscribedUsers] = useState<User[]>([]);
-    const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
     const [userId, setUserId] = useState<number | null>(null);
 
     useEffect(() => {
@@ -67,7 +66,7 @@ export default function CreacionEvento() {
         email: string;
     };
 
-    const handleShowMap = () => setMapVisible(true);
+
 
     const handleCloseMap = () => setMapVisible(false);
 
@@ -96,19 +95,7 @@ export default function CreacionEvento() {
         setSelectedView(view);
     };
 
-    const handleUnsubscribe = async (eventId: number) => {
-        try {
-            const currentUserId = await AsyncStorage.getItem('userId');
-            if (currentUserId) {
-                await unsubscribeUserFromAnEvent(parseInt(currentUserId), eventId);
-                refreshEvents();
-            }
-        } catch (error) {
-            console.error('Error unsubscribing:', error);
-            Alert.alert('Error', 'No se pudo cancelar la inscripción.');
-        }
 
-    };
 
     const handleAdministrarEvent = async (event: EventWithId) => {
         try {
@@ -126,21 +113,7 @@ export default function CreacionEvento() {
         }
     };
 
-    const handleDeleteEvent = async (eventId: number) => {
-        try {
-            await deleteEventById(eventId);
-            refreshEvents();
-            Alert.alert('Éxito', 'El evento ha sido eliminado.');
-        } catch (error) {
-            console.error('Error deleting event:', error);
-            Alert.alert('Error', 'No se pudo eliminar el evento.');
-        }
-    };
 
-    const openDeleteModal = (eventId: number) => {
-        setSelectedEventId(eventId);
-        setIsConfirmaDeletionModalVisible(true);
-    };
 
     return (
         <View style={styles.container}>
@@ -167,112 +140,35 @@ export default function CreacionEvento() {
             <ScrollView>
 
                 {/* Lista de eventos activos */}
+
                 <FlatList
                     data={eventsToDisplay.filter(event => new Date(event.date) >= new Date())}
                     scrollEnabled={false}
                     renderItem={({ item }) => (
-                        <TouchableOpacity
-                            style={styles.eventCard}
-                            activeOpacity={0.9}
-                        >
-                            {/* Name and Date Section */}
-                            <View style={styles.headerSection}>
-                                <Text style={styles.eventName} numberOfLines={2} >{item.name}</Text>
+                        <EventCardModal
+                            event={item}
+                            handleDetailsEvent={handleDetailsEvent}
+                            handleAdministrarEvent={handleAdministrarEvent}
+                        />
 
-                                {/* Date */}
-                                <Text style={styles.eventDate}>
-                                    {item.date ? new Date(item.date).toLocaleDateString() : 'Fecha no disponible'}
-                                </Text>
-                            </View>
-
-                            {/* Divider */}
-                            <View style={styles.divider} />
-
-                            {/* Event Description */}
-                            <Text style={styles.eventDescription} numberOfLines={3}>
-                                {item.description || 'No hay descripción disponible para este evento.'}
-                            </Text>
-
-                            {/* Action Buttons */}
-                            <View style={styles.actionButtons}>
-                                {userId !== null && item.userId === userId && (
-                                    <>
-                                        <TouchableOpacity
-                                            style={styles.adminButton}
-                                            onPress={() => handleAdministrarEvent(item)}
-                                        >
-                                            <Text style={styles.adminButtonText}>Administrar</Text>
-                                        </TouchableOpacity>
-                                        <TouchableOpacity
-                                            style={styles.deleteButton}
-                                            onPress={() => openDeleteModal(item.id)}
-                                        >
-                                            <Text style={styles.deleteButtonText}>Eliminar</Text>
-                                        </TouchableOpacity>
-                                    </>
-                                )}
-                                {userId !== null && item.userId !== userId && (
-                                    <>
-                                        <TouchableOpacity
-                                            style={styles.detailsButton}
-                                            onPress={() => handleDetailsEvent(item)}
-                                        >
-                                            <Text style={styles.detailsButtonText}>Detalles</Text>
-                                        </TouchableOpacity>
-                                        <TouchableOpacity
-                                            style={styles.unsubscribeButton}
-                                            onPress={() => handleUnsubscribe(item.id)}
-                                        >
-                                            <Text style={styles.unsubscribeButtonText}>Desuscribirse</Text>
-                                        </TouchableOpacity>
-                                    </>
-                                )}
-                            </View>
-                        </TouchableOpacity>
                     )}
                     keyExtractor={(item) => item.id.toString()}
                 />
 
+
                 <Text style={styles.subHeader}>Eventos Finalizados</Text>
+
                 {/* Lista de eventos finalizados */}
                 <FlatList
                     data={eventsToDisplay.filter(event => new Date(event.date) < new Date())}
                     scrollEnabled={false}
                     renderItem={({ item }) => (
-                        <TouchableOpacity
-                            style={styles.eventCard}
-                            activeOpacity={0.8}
-                        >
-                            <View style={styles.cardHeader}>
-                                <Text style={styles.eventName} numberOfLines={2}>{item.name}</Text>
-                                <Text style={styles.eventDate}>
-                                    {item.date ? new Date(item.date).toLocaleDateString() : 'Fecha no disponible'}
-                                </Text>
-                            </View>
-                            <Text style={styles.eventDescription}>{item.description}</Text>
+                        <EventCardModal
+                            event={item}
+                            handleDetailsEvent={handleDetailsEvent}
+                            handleAdministrarEvent={handleAdministrarEvent}
+                        />
 
-                            <View style={styles.divider} />
-
-                            {userId !== null && item.userId === userId && (
-                                <View style={styles.actionButtons}>
-                                    <Button title="Detalles" onPress={() => handleDetailsEvent(item)} />
-                                    <Button
-                                        title="Eliminar"
-                                        onPress={() => handleDeleteEvent(item.id)}
-                                        color="#f44336"
-                                    />
-                                </View>
-                            )}
-                            {userId !== null && item.userId !== userId && (
-                                <View style={styles.actionButtons}>
-                                    <Button title="Detalles" onPress={() => handleDetailsEvent(item)} />
-                                    {/* <Button title="Calificaciones y comentarios" onPress={() => {
-                                handleReviewsEvent(item); 
-                                handleCommentsEvents(item);
-                                }} /> */}
-                                </View>
-                            )}
-                        </TouchableOpacity>
                     )}
                     keyExtractor={(item) => item.id.toString()}
                 />
@@ -285,7 +181,7 @@ export default function CreacionEvento() {
                 onPress={() => setIsModalVisible(true)}
                 color="#FF7F50"
             />
-            
+
             {/* Modal para crear un evento */}
             <EventCreationModal
                 isModalVisible={isModalVisible}
@@ -297,54 +193,7 @@ export default function CreacionEvento() {
                 showSuscribe={true}
                 onClose={() => setIsDetailsModalVisible(false)}
             />
-            {/* <Modal
-                visible={isDetailsModalVisible}
-                transparent={true}
-                animationType="slide"
-                onRequestClose={() => setIsDetailsModalVisible(false)}
-            >
-                <View style={styles.modalContainer}>
-                    <View style={styles.modalContent}>
-                        {eventDetails && (
-                            <>
-                                <Text style={styles.modalTitle} numberOfLines={2}>{eventDetails.name}</Text>
-                                <View style={styles.modalSection}>
-                                    <Text style={styles.modalLabel } numberOfLines={4}>Descripción:</Text>
-                                    <Text style={styles.modalText}>{eventDetails.description}</Text>
-                                </View>
-                                <View style={styles.modalSection}>
-                                    <Text style={styles.modalLabel}>Fecha:</Text>
-                                    <Text style={styles.modalText}>
-                                        {new Date(eventDetails.date).toLocaleDateString()}
-                                    </Text>
-                                </View>
-                                <View style={styles.modalSection}>
-                                    <Text style={styles.modalLabel}>Ubicación:</Text>
-                                    <Text style={styles.modalText}>{eventLocation}</Text>
-                                </View>
-                                <View style={styles.modalSection}>
-                                    <Text style={styles.modalLabel}>Participantes:</Text>
-                                    <Text style={styles.modalText}>
-                                        {eventDetails.currentParticipants}/{eventDetails.maxParticipants}
-                                    </Text>
-                                </View>
-                                <TouchableOpacity
-                                    style={styles.modalActionButton}
-                                    onPress={handleShowMap}
-                                >
-                                    <Text style={styles.modalActionButtonText}>Ver en el Mapa</Text>
-                                </TouchableOpacity>
-                            </>
-                        )}
-                        <TouchableOpacity
-                            style={[styles.modalActionButton, { backgroundColor: 'red' }]}
-                            onPress={() => setIsDetailsModalVisible(false)}
-                        >
-                            <Text style={styles.closeButtonText}>Cerrar</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </Modal> */}
+
 
             {/* Map Modal */}
             <Modal
@@ -382,7 +231,7 @@ export default function CreacionEvento() {
                     </View>
                 </View>
             </Modal>
-            
+
             {/* Modal para administrar eventos */}
 
             <AdminEventModal
