@@ -146,6 +146,7 @@ const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
             )}
             <EventDetailModal
                 visible={isDetailsModalVisible}
+                showSuscribe={true}
                 eventDetails={eventDetails as CustomEvent | null}
                 onClose={() => setIsDetailsModalVisible(false)}
             />

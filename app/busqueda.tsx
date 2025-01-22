@@ -181,7 +181,7 @@ export default function Busqueda() {
             <EventDetailModal
                 visible={isDetailsModalVisible}
                 eventDetails={eventDetails as CustomEvent | null}
-
+                showSuscribe = {true}
                 onClose={() => setIsDetailsModalVisible(false)}
             />
 

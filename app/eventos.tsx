@@ -12,6 +12,7 @@ import { getSubscribedEvents } from '@/apiCalls/getSubscribedEvents';
 import { getAllUsersSubscribedToAnEvent } from '@/apiCalls/getAllUsersSubscribedToAnEvent';
 import EventCreationModal from '@/components/EventCreationModal';
 import AdminEventModal from '@/components/AdminEventModal';
+import EventDetailModal from '@/components/EventDetailModal';
 
 
 export default function CreacionEvento() {
@@ -20,7 +21,7 @@ export default function CreacionEvento() {
     const { refreshEvents } = useEventContext();
     const [isDetailsModalVisible, setIsDetailsModalVisible] = useState(false);
     const [isConfirmaDeletionModalVisible, setIsConfirmaDeletionModalVisible] = useState(false);
-    const [eventDetails, setEventDetails] = useState<Event | null>(null);
+    const [eventDetails, setEventDetails] = useState<EventWithId | null>(null);
     const [eventLocation, setEventLocation] = useState<string | null>(null);
     const { trigger } = useEventContext();
     const [isMapVisible, setMapVisible] = useState(false);
@@ -48,16 +49,6 @@ export default function CreacionEvento() {
         fetchUserId();
     }, []);
 
-    interface Event {
-        name: string;
-        date: Date;
-        latitude: Float;
-        longitude: Float;
-        description: string;
-        maxParticipants: number;
-        currentParticipants: number;
-        userId: number;
-    };
     interface EventWithId {
         id: number;
         name: string;
@@ -80,7 +71,7 @@ export default function CreacionEvento() {
 
     const handleCloseMap = () => setMapVisible(false);
 
-    const handleDetailsEvent = async (item: Event) => {
+    const handleDetailsEvent = async (item: EventWithId) => {
         try {
             const addresses = await Location.reverseGeocodeAsync({
                 latitude: item.latitude,
@@ -149,18 +140,6 @@ export default function CreacionEvento() {
     const openDeleteModal = (eventId: number) => {
         setSelectedEventId(eventId);
         setIsConfirmaDeletionModalVisible(true);
-    };
-
-    const confirmDelete = () => {
-        if (selectedEventId !== null) {
-            handleDeleteEvent(selectedEventId); // Call your existing delete function
-        }
-        closeDeleteModal();
-    };
-
-    const closeDeleteModal = () => {
-        setSelectedEventId(null);
-        setIsConfirmaDeletionModalVisible(false);
     };
 
     return (
@@ -312,9 +291,13 @@ export default function CreacionEvento() {
                 isModalVisible={isModalVisible}
                 onClose={() => setIsModalVisible(false)}
             />
-
-
-            <Modal
+            <EventDetailModal
+                visible={isDetailsModalVisible}
+                eventDetails={eventDetails}
+                showSuscribe={true}
+                onClose={() => setIsDetailsModalVisible(false)}
+            />
+            {/* <Modal
                 visible={isDetailsModalVisible}
                 transparent={true}
                 animationType="slide"
@@ -361,7 +344,7 @@ export default function CreacionEvento() {
                         </TouchableOpacity>
                     </View>
                 </View>
-            </Modal>
+            </Modal> */}
 
             {/* Map Modal */}
             <Modal
