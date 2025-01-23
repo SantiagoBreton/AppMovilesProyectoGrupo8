@@ -36,7 +36,7 @@ interface Rating {
     ritingUserId: number;
     comment: string;
     rating: number;
-    
+
 
 }
 
@@ -53,9 +53,11 @@ const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
     const [isLoading, setIsLoading] = useState(true);
     const [isRevieModalVisible, setIsReviewModalVisible] = useState(false);
     const totalStars = 5;
-    const filledStars = Math.floor(user?.rating ?? 0); // Fully filled stars
-    const hasHalfStar = (user?.rating ?? 0) % 1 >= 0.5; // Determine if a half-star is needed
+    const rating = user?.rating !== undefined && !isNaN(user.rating) ? user.rating : 0; // Handle NaN or undefined ratings
+    const filledStars = Math.floor(rating); // Fully filled stars
+    const hasHalfStar = rating % 1 >= 0.5; // Determine if a half-star is needed
     const emptyStars = totalStars - filledStars - (hasHalfStar ? 1 : 0); // Remaining empty stars
+
     const [userRating, setUserRating] = useState<Rating[]>([]); // User rating
 
 
@@ -99,9 +101,14 @@ const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
 
                 // Actualizar promedio de calificación del usuario
                 const averageRating =
-                    ratingResponse.data.reduce((acc: any, rating: { rating: any; }) => acc + rating.rating, 0) /
-                    ratingResponse.data.length;
+                    ratingResponse.data.length > 0
+                        ? ratingResponse.data
+                            .reduce((acc: number, rating: { rating: number }) => acc + (rating.rating || 0), 0) /
+                        ratingResponse.data.length
+                        : 0; // Default to 0 if no ratings
+
                 user.rating = averageRating; // Actualizar el objeto `user`
+
             }
         } catch (error) {
             console.error('Error refreshing user ratings:', error);
@@ -174,7 +181,8 @@ const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
                                         style={styles.star}
                                     />
                                 ))}
-                                <Text style={styles.text}>{`(${user.rating.toFixed(1)}) `}</Text>
+                                <Text style={styles.text}>{`(${isNaN(user.rating) ? 0 : user.rating.toFixed(1)}) `}</Text>
+
 
 
                             </View>
@@ -238,7 +246,7 @@ const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
                 isVisible={isRevieModalVisible}
                 user={user}
                 refreshData={refreshUserRatings}
-                onClose={() =>{ setIsReviewModalVisible(false); refreshUserRatings()}}
+                onClose={() => { setIsReviewModalVisible(false); refreshUserRatings() }}
             />
         </Modal >
     );
