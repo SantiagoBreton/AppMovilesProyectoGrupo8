@@ -63,7 +63,6 @@ export default function Busqueda() {
             const currentUserId = await AsyncStorage.getItem('userId');
             if (currentUserId) {
                 const filteredResults = await getEventByName(parseInt(currentUserId), query);
-                console.log('Filtered events:', filteredResults.data);
                 setFilteredEvents(filteredResults.data);
             } else {
                 console.error('User ID is null');
