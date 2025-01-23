@@ -62,42 +62,49 @@ const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
 
 
     useEffect(() => {
-        const handleSeeUser = async () => {
+        const fetchUserData = async () => {
             if (!user) return;
             setIsLoading(true);
             try {
-                const response = await getAllEventsFromUser(user.id);
-                if (response.error) {
-                    console.error('Error fetching user events:', response.error);
+                // Obtener eventos del usuario
+                const eventResponse = await getAllEventsFromUser(user.id);
+                if (eventResponse.error) {
+                    console.error('Error fetching user events:', eventResponse.error);
                     Alert.alert('Error', 'Failed to fetch user events');
                 } else {
-                    await refreshUserRatings();
-                    setUserEvents(response.data);
+                    setUserEvents(eventResponse.data);
                 }
+
+                // Actualizar calificaciones del usuario
+                await refreshUserRatings();
             } catch (error) {
-                console.error('Error fetching user events:', error);
-                Alert.alert('Error', 'Failed to fetch user events');
-            }
-            finally {
-                // Simular un retraso de 1 segundo antes de ocultar la carga
+                console.error('Error fetching user data:', error);
+                Alert.alert('Error', 'Failed to fetch user data');
+            } finally {
                 setTimeout(() => {
                     setIsLoading(false);
                 }, 650);
             }
         };
 
-        handleSeeUser();
+        fetchUserData();
     }, [user]);
 
     const refreshUserRatings = async () => {
         if (!user) return;
         try {
-            const response = await getAllUserRatings(user.id);
-            if (response.data) {
-                user.rating = response.data.reduce((acc: number, rating: Rating) => acc + rating.rating, 0) / response.data.length;
+            const ratingResponse = await getAllUserRatings(user.id);
+            if (ratingResponse.data) {
+                setUserRating(ratingResponse.data);
+
+                // Actualizar promedio de calificación del usuario
+                const averageRating =
+                    ratingResponse.data.reduce((acc: any, rating: { rating: any; }) => acc + rating.rating, 0) /
+                    ratingResponse.data.length;
+                user.rating = averageRating; // Actualizar el objeto `user`
             }
         } catch (error) {
-            console.error("Error refreshing user ratings:", error);
+            console.error('Error refreshing user ratings:', error);
         }
     };
 
@@ -231,7 +238,7 @@ const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
                 isVisible={isRevieModalVisible}
                 user={user}
                 refreshData={refreshUserRatings}
-                onClose={() => setIsReviewModalVisible(false)}
+                onClose={() =>{ setIsReviewModalVisible(false); refreshUserRatings()}}
             />
         </Modal >
     );

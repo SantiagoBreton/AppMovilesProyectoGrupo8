@@ -134,6 +134,7 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
                         onChangeText={setUserComments}
                         multiline={true}
                     />
+                    <View style={styles.titleSeparator} />
 
                     {/* User Comments Section */}
                     <View style={styles.commentsContainer}>
@@ -256,6 +257,11 @@ const styles = StyleSheet.create({
         backgroundColor: '#FF6F61',
         borderRadius: 15,
         padding: 5,
+    },
+    titleSeparator: {
+        borderBottomWidth: 1, // Creates the horizontal line
+        borderBottomColor: '#ddd', // Light gray color for the line
+        marginVertical: 15, // Space around the line to keep separation clean
     },
 });
 
