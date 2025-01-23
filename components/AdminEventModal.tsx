@@ -7,6 +7,8 @@ import { unsubscribeUserFromAnEvent } from '@/apiCalls/unsubscribeUserFromEvent'
 import { useEventContext } from '@/context/eventContext';
 import { updateEvent } from '@/apiCalls/updateEvent';
 import DeleteConfirmationModal from './DeleteConfirmationModal';
+import { confirmSubscriptionToAnEvent } from '@/apiCalls/confirmSubscriptionToAnEvent';
+import { denySubscriptionToAnEvent } from '@/apiCalls/denySubscriptionToAnEvent';
 
 interface EventWithId {
     id: number;
@@ -30,6 +32,7 @@ interface AdminEventModalProps {
     isVisible: boolean;
     adminEventDetails: EventWithId | null;
     subscribedUsers: User[];
+    requestingUsers: User[];
     onClose: () => void;
 }
 
@@ -37,6 +40,7 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
     isVisible,
     adminEventDetails,
     subscribedUsers,
+    requestingUsers,
     onClose,
 }) => {
 
@@ -51,18 +55,20 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
     const [isSpectatedUserVisible, setIsSpectatedUserVisible] = useState(false);
     const { refreshEvents } = useEventContext();
     const [updatedSubscribedUsers, setUpdatedSubscribedUsers] = useState<User[]>(subscribedUsers);
+    const[updatedRequestingUsers, setUpdatedRequestingUsers] = useState<User[]>(requestingUsers);
     const [isDeleteConfirmationVisible, setIsDeleteConfirmationVisible] = useState(false);
     const [errorMessageTitle, setErrorMessageTitle] = useState('');
     const [errorMessageDescription, setErrorMessageDescription] = useState('');
     const [errorMessageParticipants, setErrorMessageParticipants] = useState('');
     const [errorMessageDate, setErrorMessageDate] = useState('');
     const [activeTab, setActiveTab] = useState<'inscritos' | 'pendientes'>('inscritos');
-    const [pendingUsers, setPendingUsers] = useState<User[]>([]); // Lista de usuarios pendientes
 
 
     useEffect(() => {
         setUpdatedSubscribedUsers(subscribedUsers);
-    }, [subscribedUsers]);
+        setUpdatedRequestingUsers(requestingUsers);
+        
+    }, [subscribedUsers, requestingUsers]);
 
     const handleDateChange = (event: any, date?: Date) => {
         setDatePickerVisible(false);
@@ -151,14 +157,45 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
         }
     };
 
-    const handleAcceptUser = (userId: number) => {
-        // Lógica para aceptar al usuario
-        console.log(`Usuario aceptado: ${userId}`);
+    const handleAcceptUser = async (userId: number) => {
+        try {
+            if (adminEventDetails?.id !== undefined) {
+                const response = await confirmSubscriptionToAnEvent(adminEventDetails.id, userId);
+                if (response) {
+                    Alert.alert('Éxito', 'Usuario aceptado en el evento correctamente.');
+                    setUpdatedSubscribedUsers((prevUsers) => [...prevUsers, requestingUsers.find((user) => user.id === userId) ?? { id: 0, name: '', email: '', rating: 0 }]);
+                    setUpdatedRequestingUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
+                    requestingUsers = requestingUsers.filter((user) => user.id !== userId);
+                    refreshEvents();}
+            } 
+            else {
+                Alert.alert('Error', 'No se pudo obtener el ID del evento.');
+            }
+            
+
+        } catch (error: any) {
+            Alert.alert('Error', 'No se pudo aceptar al usuario en el evento.');
+        }
     };
 
-    const handleDenyUser = (userId: number) => {
-        // Lógica para denegar al usuario
-        console.log(`Usuario denegado: ${userId}`);
+    const handleDenyUser = async (userId: number) => {
+        try {
+            if (adminEventDetails?.id !== undefined) {
+                const response = await denySubscriptionToAnEvent(adminEventDetails.id, userId);
+                if (response) {
+                    Alert.alert('Éxito', 'Usuario denegado en el evento correctamente.');
+                    setUpdatedRequestingUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
+                    requestingUsers = requestingUsers.filter((user) => user.id !== userId);
+                    refreshEvents();}
+            } 
+            else {
+                Alert.alert('Error', 'No se pudo obtener el ID del evento.');
+            }
+            
+
+        } catch (error: any) {
+            Alert.alert('Error', 'No se pudo denegar al usuario en el evento.');
+        }
     };
 
 
@@ -370,56 +407,56 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
                         {/* Contenido basado en la pestaña activa */}
                         {activeTab === 'inscritos' && (
                             <View>
-                            <Text style={styles.sectionTitle}>Usuarios Inscriptos:</Text>
-                            {updatedSubscribedUsers.length === 0 ? (
-                                <Text style={styles.noSubscribedUsersText}>No hay usuarios inscritos.</Text>
-                            ) : (
-                                updatedSubscribedUsers.map((user) => (
-                                    <View key={user.id} style={styles.userCard}>
-                                        <TouchableOpacity onPress={() => handleSeeUserProfile(user)}>
-                                            <Image
-                                                source={{
-                                                    uri: 'https://www.gravatar.com/avatar/2c7d99fe281ecd3bcd65ab915bac6dd5?s=250',
-                                                }}
-                                                style={styles.profilePicture}
-                                            />
-                                        </TouchableOpacity>
-                                        <View style={styles.userInfo}>
+                                <Text style={styles.sectionTitle}>Usuarios Inscriptos:</Text>
+                                {updatedSubscribedUsers.length === 0 ? (
+                                    <Text style={styles.noSubscribedUsersText}>No hay usuarios inscritos.</Text>
+                                ) : (
+                                    updatedSubscribedUsers.map((user) => (
+                                        <View key={user.id} style={styles.userCard}>
                                             <TouchableOpacity onPress={() => handleSeeUserProfile(user)}>
-                                                <Text style={styles.userName}>{user.name}</Text>
+                                                <Image
+                                                    source={{
+                                                        uri: 'https://www.gravatar.com/avatar/2c7d99fe281ecd3bcd65ab915bac6dd5?s=250',
+                                                    }}
+                                                    style={styles.profilePicture}
+                                                />
                                             </TouchableOpacity>
-                                            <TouchableOpacity
-                                                onPress={() =>
-                                                    setIsDeleteConfirmationVisible(true)
-                                                }
-                                                style={styles.deleteUserButton}
-                                            >
-                                                <Text style={styles.deleteUserText}>Eliminar</Text>
-                                            </TouchableOpacity>
-                                            <DeleteConfirmationModal
-                                                isVisible={isDeleteConfirmationVisible}
-                                                confirmDelete={() =>
-                                                    handleEliminateUserFromEvent(
-                                                        user.id,
-                                                        adminEventDetails?.id ?? 0
-                                                    )
-                                                }
-                                                onClose={() => setIsDeleteConfirmationVisible(false)}
-                                            />
+                                            <View style={styles.userInfo}>
+                                                <TouchableOpacity onPress={() => handleSeeUserProfile(user)}>
+                                                    <Text style={styles.userName}>{user.name}</Text>
+                                                </TouchableOpacity>
+                                                <TouchableOpacity
+                                                    onPress={() =>
+                                                        setIsDeleteConfirmationVisible(true)
+                                                    }
+                                                    style={styles.deleteUserButton}
+                                                >
+                                                    <Text style={styles.deleteUserText}>Eliminar</Text>
+                                                </TouchableOpacity>
+                                                <DeleteConfirmationModal
+                                                    isVisible={isDeleteConfirmationVisible}
+                                                    confirmDelete={() =>
+                                                        handleEliminateUserFromEvent(
+                                                            user.id,
+                                                            adminEventDetails?.id ?? 0
+                                                        )
+                                                    }
+                                                    onClose={() => setIsDeleteConfirmationVisible(false)}
+                                                />
+                                            </View>
                                         </View>
-                                    </View>
-                                ))
-                            )}
-                        </View>
+                                    ))
+                                )}
+                            </View>
                         )}
 
                         {activeTab === 'pendientes' && (
                             <View>
                                 <Text style={styles.sectionTitle}>Usuarios Pendientes:</Text>
-                                {pendingUsers.length === 0 ? (
+                                {updatedRequestingUsers.length === 0 ? (
                                     <Text style={styles.noPendingUsersText}>No hay solicitudes pendientes.</Text>
                                 ) : (
-                                    pendingUsers.map((user) => (
+                                    updatedRequestingUsers.map((user) => (
                                         <View key={user.id} style={styles.userCard}>
                                             <TouchableOpacity onPress={() => handleSeeUserProfile(user)}>
                                                 <Image
