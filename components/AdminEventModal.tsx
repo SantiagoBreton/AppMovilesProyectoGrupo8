@@ -56,6 +56,8 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
     const [errorMessageDescription, setErrorMessageDescription] = useState('');
     const [errorMessageParticipants, setErrorMessageParticipants] = useState('');
     const [errorMessageDate, setErrorMessageDate] = useState('');
+    const [activeTab, setActiveTab] = useState<'inscritos' | 'pendientes'>('inscritos');
+    const [pendingUsers, setPendingUsers] = useState<User[]>([]); // Lista de usuarios pendientes
 
 
     useEffect(() => {
@@ -77,7 +79,7 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
         }
     };
 
-    const handleSeeUserProfile = (user: { id: number; name: string; email: string ; rating: number}) => {
+    const handleSeeUserProfile = (user: { id: number; name: string; email: string; rating: number }) => {
         setSeeUser(user)
         setIsSpectatedUserVisible(true);
     }
@@ -147,6 +149,16 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
         else {
             setErrorMessageDescription('La descripcion no puede tener más de 100 caracteres');
         }
+    };
+
+    const handleAcceptUser = (userId: number) => {
+        // Lógica para aceptar al usuario
+        console.log(`Usuario aceptado: ${userId}`);
+    };
+
+    const handleDenyUser = (userId: number) => {
+        // Lógica para denegar al usuario
+        console.log(`Usuario denegado: ${userId}`);
     };
 
 
@@ -334,50 +346,114 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
                     <View style={styles.titleSeparator} />
 
                     {/* Lista de usuarios inscriptos */}
-                    <Text style={styles.sectionTitle}>Usuarios Inscriptos:</Text>
-
-                    {updatedSubscribedUsers.map((user) => (
-                        <View key={user.id} style={styles.userCard}>
-                            {/* Profile Picture */}
-                            <TouchableOpacity onPress={() => handleSeeUserProfile({ id: user.id, name: user.name, email: user.email, rating: user.rating })}>
-                                <Image
-                                    source={{ uri: 'https://www.gravatar.com/avatar/2c7d99fe281ecd3bcd65ab915bac6dd5?s=250' }} // Use default image if no profile picture
-                                    style={styles.profilePicture}
-                                />
+                    <View style={styles.container}>
+                        {/* Tabs */}
+                        <View style={styles.tabContainer}>
+                            <TouchableOpacity
+                                style={[styles.tabButton, activeTab === 'inscritos' && styles.activeTabButton]}
+                                onPress={() => setActiveTab('inscritos')}
+                            >
+                                <Text style={[styles.tabText, activeTab === 'inscritos' && styles.activeTabText]}>
+                                    Usuarios Inscritos
+                                </Text>
                             </TouchableOpacity>
-
-                            {/* User Info (Name and Eliminate Button) */}
-                            <View style={styles.userInfo}>
-                                {/* User Name */}
-                                <TouchableOpacity onPress={() => handleSeeUserProfile({ id: user.id, name: user.name, email: user.email, rating: user.rating })}>
-                                    <Text style={styles.userName} numberOfLines={1}>
-                                        {user.name}
-                                    </Text>
-                                </TouchableOpacity>
-
-                                <SpectatedUserModal
-                                    isVisible={isSpectatedUserVisible}
-                                    user={seeUser}
-                                    onClose={() => setIsSpectatedUserVisible(false)}
-                                />
-
-                                {/* Eliminate Button */}
-                                <TouchableOpacity
-                                    onPress={() => setIsDeleteConfirmationVisible(true)}
-                                    style={styles.deleteUserButton}
-                                >
-                                    <Text style={styles.deleteUserText}>Eliminar</Text>
-                                </TouchableOpacity>
-
-                                <DeleteConfirmationModal
-                                    isVisible={isDeleteConfirmationVisible}
-                                    confirmDelete={() => handleEliminateUserFromEvent(user.id, adminEventDetails?.id ?? 0)}
-                                    onClose={() => setIsDeleteConfirmationVisible(false)}
-                                />
-                            </View>
+                            <TouchableOpacity
+                                style={[styles.tabButton, activeTab === 'pendientes' && styles.activeTabButton]}
+                                onPress={() => setActiveTab('pendientes')}
+                            >
+                                <Text style={[styles.tabText, activeTab === 'pendientes' && styles.activeTabText]}>
+                                    Usuarios Pendientes
+                                </Text>
+                            </TouchableOpacity>
                         </View>
-                    ))
-                    }
+
+                        {/* Contenido basado en la pestaña activa */}
+                        {activeTab === 'inscritos' && (
+                            <View>
+                            <Text style={styles.sectionTitle}>Usuarios Inscriptos:</Text>
+                            {updatedSubscribedUsers.length === 0 ? (
+                                <Text style={styles.noSubscribedUsersText}>No hay usuarios inscritos.</Text>
+                            ) : (
+                                updatedSubscribedUsers.map((user) => (
+                                    <View key={user.id} style={styles.userCard}>
+                                        <TouchableOpacity onPress={() => handleSeeUserProfile(user)}>
+                                            <Image
+                                                source={{
+                                                    uri: 'https://www.gravatar.com/avatar/2c7d99fe281ecd3bcd65ab915bac6dd5?s=250',
+                                                }}
+                                                style={styles.profilePicture}
+                                            />
+                                        </TouchableOpacity>
+                                        <View style={styles.userInfo}>
+                                            <TouchableOpacity onPress={() => handleSeeUserProfile(user)}>
+                                                <Text style={styles.userName}>{user.name}</Text>
+                                            </TouchableOpacity>
+                                            <TouchableOpacity
+                                                onPress={() =>
+                                                    setIsDeleteConfirmationVisible(true)
+                                                }
+                                                style={styles.deleteUserButton}
+                                            >
+                                                <Text style={styles.deleteUserText}>Eliminar</Text>
+                                            </TouchableOpacity>
+                                            <DeleteConfirmationModal
+                                                isVisible={isDeleteConfirmationVisible}
+                                                confirmDelete={() =>
+                                                    handleEliminateUserFromEvent(
+                                                        user.id,
+                                                        adminEventDetails?.id ?? 0
+                                                    )
+                                                }
+                                                onClose={() => setIsDeleteConfirmationVisible(false)}
+                                            />
+                                        </View>
+                                    </View>
+                                ))
+                            )}
+                        </View>
+                        )}
+
+                        {activeTab === 'pendientes' && (
+                            <View>
+                                <Text style={styles.sectionTitle}>Usuarios Pendientes:</Text>
+                                {pendingUsers.length === 0 ? (
+                                    <Text style={styles.noPendingUsersText}>No hay solicitudes pendientes.</Text>
+                                ) : (
+                                    pendingUsers.map((user) => (
+                                        <View key={user.id} style={styles.userCard}>
+                                            <TouchableOpacity onPress={() => handleSeeUserProfile(user)}>
+                                                <Image
+                                                    source={{
+                                                        uri: 'https://www.gravatar.com/avatar/2c7d99fe281ecd3bcd65ab915bac6dd5?s=250',
+                                                    }}
+                                                    style={styles.profilePicture}
+                                                />
+                                            </TouchableOpacity>
+                                            <View style={styles.userInfo}>
+                                                <TouchableOpacity onPress={() => handleSeeUserProfile(user)}>
+                                                    <Text style={styles.userName}>{user.name}</Text>
+                                                </TouchableOpacity>
+                                                <View style={styles.actionButtons}>
+                                                    <TouchableOpacity
+                                                        onPress={() => handleAcceptUser(user.id)}
+                                                        style={styles.acceptButton}
+                                                    >
+                                                        <Text style={styles.acceptButtonText}>Aceptar</Text>
+                                                    </TouchableOpacity>
+                                                    <TouchableOpacity
+                                                        onPress={() => handleDenyUser(user.id)}
+                                                        style={styles.denyButton}
+                                                    >
+                                                        <Text style={styles.denyButtonText}>Denegar</Text>
+                                                    </TouchableOpacity>
+                                                </View>
+                                            </View>
+                                        </View>
+                                    ))
+                                )}
+                            </View>
+                        )}
+                    </View>
                     <View style={styles.titleSeparator} />
                     {/* Botones de acción */}
                     <View style={styles.actionButtons2}>
@@ -754,7 +830,63 @@ const styles = StyleSheet.create({
         fontSize: 14,
         textAlign: 'center',
         marginBottom: 10,
-      },
+    },
+    container: {
+        flex: 1,
+        padding: 20,
+    },
+    tabContainer: {
+        flexDirection: 'row',
+        marginBottom: 20,
+    },
+    tabButton: {
+        flex: 1,
+        padding: 10,
+        borderBottomWidth: 2,
+        borderBottomColor: 'lightgray',
+        alignItems: 'center',
+    },
+    activeTabButton: {
+        borderBottomColor: '#FF7F50',
+    },
+    tabText: {
+        fontSize: 16,
+        color: 'gray',
+    },
+    activeTabText: {
+        color: '#FF7F50',
+        fontWeight: 'bold',
+    },
+
+
+    acceptButton: {
+        backgroundColor: 'green',
+        padding: 5,
+        borderRadius: 5,
+    },
+    acceptButtonText: {
+        color: 'white',
+    },
+    denyButton: {
+        backgroundColor: 'red',
+        padding: 5,
+        borderRadius: 5,
+    },
+    denyButtonText: {
+        color: 'white',
+    },
+    noPendingUsersText: {
+        fontSize: 16,
+        color: 'gray',
+        textAlign: 'center',
+        marginTop: 20,
+    },
+    noSubscribedUsersText: {
+        fontSize: 16,
+        color: 'gray',
+        textAlign: 'center',
+        marginTop: 20,
+    },
 
 });
 
