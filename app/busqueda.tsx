@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, FlatList, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platform, Alert, Button, ScrollView, } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { Float } from 'react-native/Libraries/Types/CodegenTypes';
 import { getEventByName } from '@/apiCalls/getEventByName';
 import { getUserByName } from '@/apiCalls/getUserByName';
-import { getAllEventsFromUser } from '@/apiCalls/getAllEventsFromUser';
 import SpectatedUserModal from '@/components/SpectatedUserModal';
 import EventDetailModal from '@/components/EventDetailModal';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Busqueda() {
     const [query, setQuery] = useState('');
@@ -17,6 +17,22 @@ export default function Busqueda() {
     const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
     const [isSpectatedUserVisible, setIsSpectatedUserVisible] = useState(false);
     const [seeUser, setSeeUser] = useState<User | null>(null);
+    const [userId, setUserId] = useState<number | null>(null);
+
+    useEffect(() => {
+        const fetchUserId = async () => {
+            try {
+                const storedUserId = await AsyncStorage.getItem('userId');
+                if (storedUserId) {
+                    setUserId(parseInt(storedUserId, 10)); // Convierte el ID de string a número
+                }
+            } catch (error) {
+                console.error('Error fetching userId:', error);
+            }
+        };
+
+        fetchUserId();
+    }, []);
 
     interface CustomEvent {
         id: number;
@@ -44,8 +60,15 @@ export default function Busqueda() {
                 setFilteredEvents([]);
                 return;
             }
-            const filteredResults = await getEventByName(query);
-            setFilteredEvents(filteredResults.data);
+            const currentUserId = await AsyncStorage.getItem('userId');
+            if (currentUserId) {
+                const filteredResults = await getEventByName(parseInt(currentUserId), query);
+                console.log('Filtered events:', filteredResults.data);
+                setFilteredEvents(filteredResults.data);
+            } else {
+                console.error('User ID is null');
+                Alert.alert('Error', 'User ID is null');
+            }
         } catch (error) {
             console.error('Error fetching events:', error);
             Alert.alert('Error', 'Failed to fetch events');
