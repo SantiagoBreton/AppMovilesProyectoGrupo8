@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, Text, ActivityIndicator, Button, Modal, TouchableOpacity, TextInput, TouchableWithoutFeedback } from 'react-native';
 import MapView, { Marker, Circle } from 'react-native-maps';
 import { useLocation } from '../hooks/useLocation';
@@ -18,12 +18,26 @@ export default function Index() {
   const [selectedEvent, setSelectedEvent] = useState<{ id: string; name: string; description: string; date: string; currentParticipants: number; maxParticipants: number; latitude: number; longitude: number; } | null>(null); // Selected event state
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [nameFilter, setNameFilter] = useState<string>('');
-  const [proximityFilter, setProximityFilter] = useState<number>(50000);
+  const [proximityFilter, setProximityFilter] = useState<number>(50);
   const [filterModalVisible, setFilterModalVisible] = useState(false); 
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [mapLoaded, setMapLoaded] = useState(false); // To track if the map has loaded
 
-  if (loading) {
-    return <ActivityIndicator size="large" color="#0000ff" />;
+
+  useEffect(() => {
+    if (location) {
+      setMapLoaded(true);
+    }
+
+  }, [location]);
+
+  if (!mapLoaded) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#FF7F50" />
+        <Text style={styles.loadingText}>Cargando...</Text>
+      </View>
+    );
   }
 
   const handleSubscribe = async (eventId: number) => {
@@ -403,6 +417,17 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: '#333',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
   },
   
 });

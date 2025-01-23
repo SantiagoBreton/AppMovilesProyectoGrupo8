@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, StyleSheet, Image, ScrollView, Button, FlatList, TouchableOpacity, Alert, Platform } from 'react-native';
+import { View, Text, TextInput, StyleSheet, Image, ScrollView, Button, FlatList, TouchableOpacity, Alert, Platform, ActivityIndicator } from 'react-native';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { myData } from '@/apiCalls/getMyUserData';
 import { myEvents } from '@/apiCalls/myEvents';
@@ -8,28 +8,42 @@ import { Float } from 'react-native/Libraries/Types/CodegenTypes';
 import { useAuthContext } from '@/context/userLoginContext';  // Updated import
 
 export default function Perfil() {
-    const { nombre, email, dataError } = myData();
+    const { nombre, email } = myData();
     const { trigger } = useEventContext();
     const myUserEvents = myEvents(trigger);
     const eventsToDisplay = myUserEvents.myEvents;
     const { logout } = useAuthContext();
-
+    const [userLoaded, setUserLoaded] = useState(false); // To track if the map has loaded
     const [userId, setUserId] = useState<number | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        const fetchUserId = async () => {
+        const fetchUserData = async () => {
             try {
                 const storedUserId = await AsyncStorage.getItem('userId');
                 if (storedUserId) {
-                    setUserId(parseInt(storedUserId, 10)); // Convierte el ID de string a número
+                    setUserId(parseInt(storedUserId, 10));
                 }
             } catch (error) {
                 console.error('Error fetching userId:', error);
             }
+            if (nombre && eventsToDisplay) {
+                setIsLoading(false);
+            }
         };
 
-        fetchUserId();
-    }, []);
+        fetchUserData();
+    }, [nombre]);
+
+    if (isLoading) {
+        return (
+            <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#FF7F50" />
+                <Text style={styles.loadingText}>Cargando...</Text>
+            </View>
+        );
+    }
+
 
     interface Event {
         name: String;
@@ -43,7 +57,7 @@ export default function Perfil() {
     };
 
     const handleEventPress = (event: { name: any; description: any; }) => {
-        // Aquí puedes navegar a la pantalla de detalles del evento
+
         Alert.alert('Detalles del Evento', `Nombre: ${event.name}\nDescripción: ${event.description}`);
 
     };
@@ -247,5 +261,16 @@ const styles = StyleSheet.create({
     detailButtonContainer: {
         alignSelf: 'flex-end',
         marginTop: 8,
+    },
+    loadingText: {
+        marginTop: 10,
+        fontSize: 16,
+        color: '#333',
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#fff',
     },
 });
