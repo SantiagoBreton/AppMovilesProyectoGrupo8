@@ -60,6 +60,7 @@ export default function CreacionEvento() {
         id: number;
         name: string;
         email: string;
+        rating: number;
     };
 
     const handleDetailsEvent = async (item: EventWithId) => {
