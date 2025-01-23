@@ -71,6 +71,7 @@ const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
                     console.error('Error fetching user events:', response.error);
                     Alert.alert('Error', 'Failed to fetch user events');
                 } else {
+                    await refreshUserRatings();
                     setUserEvents(response.data);
                 }
             } catch (error) {
@@ -87,6 +88,18 @@ const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
 
         handleSeeUser();
     }, [user]);
+
+    const refreshUserRatings = async () => {
+        if (!user) return;
+        try {
+            const response = await getAllUserRatings(user.id);
+            if (response.data) {
+                user.rating = response.data.reduce((acc: number, rating: Rating) => acc + rating.rating, 0) / response.data.length;
+            }
+        } catch (error) {
+            console.error("Error refreshing user ratings:", error);
+        }
+    };
 
 
 
@@ -217,6 +230,7 @@ const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
             <ReviewModal
                 isVisible={isRevieModalVisible}
                 user={user}
+                refreshData={refreshUserRatings}
                 onClose={() => setIsReviewModalVisible(false)}
             />
         </Modal >

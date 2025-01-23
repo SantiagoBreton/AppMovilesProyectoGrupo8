@@ -46,23 +46,12 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
     const [selectedLongitude, setLongitude] = useState<number | null>(null);
     const { refreshEvents } = useEventContext();
     const { location, locationError } = useLocation();
+    const [errorMessageTitle, setErrorMessageTitle] = useState('');
+    const [errorMessageDescription, setErrorMessageDescription] = useState('');
+    const [errorMessageParticipants, setErrorMessageParticipants] = useState('');
+    const [errorMessageDate, setErrorMessageDate] = useState('');
 
 
-
-    const handleDateChange = (event: any, date?: Date) => {
-        setDatePickerVisible(false);
-
-        if (date && date >= new Date()) {
-            setSelectedDate(date);
-            setFecha(date.toLocaleDateString());
-        }
-
-    };
-
-    const handleMaxParticipantsChange = (text: string) => {
-        const numericValue = parseInt(text, 10);
-        setMaxParticipants(isNaN(numericValue) ? 0 : numericValue);
-    };
 
     const resetEvetCreationInfo = () => {
         setTitulo('');
@@ -132,8 +121,8 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
 
 
     };
-      
-      
+
+
     const confirmLocationSelection = () => {
         if (!selectedLocation) {
             Alert.alert("Error", "Por favor, selecciona una ubicación antes de confirmar.");
@@ -142,6 +131,56 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
         setModalVisible(false);
 
     };
+    const handleEventTitleChange = (text: string) => {
+        if (text.length <= 30) {
+            setTitulo(text);
+            setErrorMessageTitle('');
+        }
+        else {
+            setErrorMessageTitle('El nombre de usuario no puede tener más de 30 caracteres');
+        }
+    };
+
+    const handleDescriptionChange = (text: string) => {
+        if (text.length <= 100) {
+            setDescripcion(text);
+            setErrorMessageDescription('');
+        }
+        else {
+            setErrorMessageDescription('La descripcion no puede tener más de 100 caracteres');
+        }
+    };
+
+
+    const handleDateChange = (event: any, date?: Date) => {
+        setDatePickerVisible(false);
+
+        if (date && date >= new Date()) {
+            setSelectedDate(date);
+            setFecha(date.toLocaleDateString());
+            setErrorMessageDate('');
+        }
+        else {
+            setErrorMessageDate('Seleccione una fecha válida');
+        }
+
+    };
+
+    const handleMaxParticipantsChange = (text: string) => {
+        const numericValue = parseInt(text, 10);
+        if (numericValue < 0) {
+            setErrorMessageParticipants('El número máximo de participantes no puede ser negativo');
+            return;
+        }
+        if (numericValue > 100) {
+            setErrorMessageParticipants('El número máximo de participantes no puede ser mayor a 100');
+            return;
+        }
+        setMaxParticipants(isNaN(numericValue) ? 0 : numericValue);
+        setErrorMessageParticipants('');
+    };
+
+
 
 
 
@@ -150,6 +189,7 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
         <Modal visible={isModalVisible} animationType="slide">
             <ScrollView contentContainerStyle={styles.scrollContainer}>
                 <Text style={styles.title}>Crear Evento</Text>
+                
 
                 {/* Event Title */}
                 <View style={styles.section}>
@@ -157,10 +197,11 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
                     <TextInput
                         style={styles.input}
                         value={titulo}
-                        onChangeText={setTitulo}
+                        onChangeText={handleEventTitleChange}
                         placeholder="Ingrese el título del evento"
                         placeholderTextColor="#A9A9A9"
                     />
+                    {errorMessageTitle ? <Text style={styles.errorMessage}>{errorMessageTitle}</Text> : null}
                 </View>
 
                 {/* Description */}
@@ -169,11 +210,12 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
                     <TextInput
                         style={styles.input}
                         value={descripcion}
-                        onChangeText={setDescripcion}
+                        onChangeText={handleDescriptionChange}
                         placeholder="Ingrese la descripción del evento"
                         placeholderTextColor="#A9A9A9"
                         multiline
                     />
+                    {errorMessageDescription ? <Text style={styles.errorMessage}>{errorMessageDescription}</Text> : null}
                 </View>
 
                 {/* Maximum Participants */}
@@ -187,6 +229,7 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
                         placeholderTextColor="#A9A9A9"
                         keyboardType="numeric"
                     />
+                    {errorMessageParticipants ? <Text style={styles.errorMessage}>{errorMessageParticipants}</Text> : null}
                 </View>
 
                 {/* Event Date */}
@@ -229,6 +272,7 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
                             onChange={handleDateChange}
                         />
                     )}
+                    {errorMessageDate ? <Text style={styles.errorMessage}>{errorMessageDate}</Text> : null}
                 </View>
 
                 {/* Location */}
@@ -251,7 +295,7 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
 
                 {/* Buttons */}
                 <View style={styles.modalButtonContainer}>
-                    <TouchableOpacity style={styles.buttonCreate} onPress={createNewEvent }>
+                    <TouchableOpacity style={styles.buttonCreate} onPress={createNewEvent}>
                         <Text style={styles.buttonText}>Crear Evento</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
@@ -544,6 +588,14 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: 'bold',
     },
+    errorMessage: {
+        color: 'red',
+        fontSize: 14,
+        textAlign: 'center',
+        marginBottom: 10,
+      },
 });
 
 export default EventCreationModal;
+
+
