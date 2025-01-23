@@ -1,5 +1,3 @@
-
-// Function to delete event by id
 export const unsubscribeUserFromAnEvent = async (userId: number, eventId: number ) => {
     try {
       const response = await fetch(`http://${process.env.EXPO_PUBLIC_SERVER_IP}:3000/unsubscribeUserFromEvent/${userId}/${eventId}`, {
