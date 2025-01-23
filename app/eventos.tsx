@@ -11,6 +11,7 @@ import EventCreationModal from '@/components/EventCreationModal';
 import AdminEventModal from '@/components/AdminEventModal';
 import EventDetailModal from '@/components/EventDetailModal';
 import EventCardModal from '@/components/EventCard';
+import { getAllRequestingUsersToAnEvent } from '@/apiCalls/getAllRequestingUsersToAnEvent';
 
 
 export default function CreacionEvento() {
@@ -27,6 +28,7 @@ export default function CreacionEvento() {
     const [isAdminModalVisible, setIsAdminModalVisible] = useState(false);
     const [adminEventDetails, setAdminEventDetails] = useState<EventWithId | null>(null);
     const [subscribedUsers, setSubscribedUsers] = useState<User[]>([]);
+    const [requestingUsers, setRequestingUsers] = useState<User[]>([]);
     const [userId, setUserId] = useState<number | null>(null);
 
     useEffect(() => {
@@ -93,9 +95,11 @@ export default function CreacionEvento() {
     const handleAdministrarEvent = async (event: EventWithId) => {
         try {
             const allSubscribedUser = await getAllUsersSubscribedToAnEvent(event.id);
+            const allRequestingUsers = await getAllRequestingUsersToAnEvent(event.id);
 
-            if (allSubscribedUser.data) {
+            if (allSubscribedUser.data != null && allRequestingUsers.data != null) {
                 setSubscribedUsers(allSubscribedUser.data);
+                setRequestingUsers(allRequestingUsers.data);
             } else {
                 Alert.alert('Error', 'No se pudo cargar la información de los usuarios inscriptos.');
             }
@@ -196,6 +200,7 @@ export default function CreacionEvento() {
                 isVisible={isAdminModalVisible}
                 adminEventDetails={adminEventDetails}
                 subscribedUsers={subscribedUsers}
+                requestingUsers={requestingUsers}
                 onClose={() => setIsAdminModalVisible(false)}
             />
 
