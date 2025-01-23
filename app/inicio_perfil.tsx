@@ -21,7 +21,7 @@ export default function InicioPerfil() {
     message?: string;  // Optional field for any message returned
   }
   const createUser = async () => {
-    const user = { email, password, name: userName };
+    const user = { email, password, name: userName, rating: 0 };
     if (validateUser(user)) {
       try {
         const res = await createNewUser(user);
@@ -57,13 +57,13 @@ export default function InicioPerfil() {
     }
     return true;
   };
-  
+
   const loginNewUser = async () => {
     const user = { email, password, name: "" };
-  
+
     try {
       const res = await loginUser(user);  // Now res will contain either 'id' or 'error'
-  
+
       if ('id' in res) {
         // Login successful, handle success
         await AsyncStorage.setItem('userId', res.id.toString());
@@ -78,14 +78,24 @@ export default function InicioPerfil() {
       console.error('Error logging in:', error);
     }
   };
-  
-  
+
+
   const handlePress = () => {
     setErrorMessage('');  // Reset the error message before trying to log in or register
     if (isLogin) {
       loginNewUser();
     } else {
       createUser();
+    }
+
+  };
+
+  const handleUsernameChange = (text: string) => {
+    if (text.length <= 25) {
+      setUsername(text);
+    }
+    else {
+      setErrorMessage('El nombre de usuario no puede tener más de 25 caracteres');
     }
   };
 
@@ -145,7 +155,7 @@ export default function InicioPerfil() {
               style={styles.input}
               placeholder="Nombre De Usuario"
               value={userName}
-              onChangeText={setUsername}
+              onChangeText={handleUsernameChange}
               placeholderTextColor="#A9A9A9"
               onFocus={() => bounceAnimation(confirmPasswordAnimation)} // Bounce when input is focused
             />

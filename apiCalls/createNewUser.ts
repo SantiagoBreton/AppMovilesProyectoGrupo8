@@ -4,6 +4,7 @@ interface User {
     email: string;
     password: string;
     name: string;
+    rating: number;
 }
 export const createNewUser = async (user: User) => {
     try {

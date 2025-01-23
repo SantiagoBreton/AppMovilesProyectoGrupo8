@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Modal, View, Text, TouchableOpacity, Image, FlatList, ScrollView, StyleSheet, Button, Alert, ActivityIndicator } from 'react-native';
-import { FontAwesome5 } from '@expo/vector-icons'; // If you are using FontAwesome5
+import { FontAwesome, FontAwesome5 } from '@expo/vector-icons'; // If you are using FontAwesome5
 import { Float } from 'react-native/Libraries/Types/CodegenTypes';
 import EventDetailModal from './EventDetailModal';
 import { getAllEventsFromUser } from '@/apiCalls/getAllEventsFromUser';
+import { getUserRating } from '@/apiCalls/getUserRating';
+import ReviewModal from './RatingUserModal';
+import { getAllUserRatings } from '@/apiCalls/getAllUserRatings';
 
 interface CustomEvent {
     id: number;
@@ -20,13 +23,22 @@ interface User {
     id: number;
     name: string;
     email: string;
+    rating: number;
 };
 interface SpectatedUserModalProps {
     isVisible: boolean;
     user: User | null;
     onClose: () => void;
 }
+interface Rating {
+    id: number;
+    userId: number;
+    ritingUserId: number;
+    comment: string;
+    rating: number;
+    
 
+}
 
 
 const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
@@ -39,34 +51,62 @@ const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
     const [eventDetails, setEventDetails] = useState<CustomEvent | null>(null);
     const [userEvents, setUserEvents] = useState<CustomEvent[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [isRevieModalVisible, setIsReviewModalVisible] = useState(false);
+    const totalStars = 5;
+    const filledStars = Math.floor(user?.rating ?? 0); // Fully filled stars
+    const hasHalfStar = (user?.rating ?? 0) % 1 >= 0.5; // Determine if a half-star is needed
+    const emptyStars = totalStars - filledStars - (hasHalfStar ? 1 : 0); // Remaining empty stars
+    const [userRating, setUserRating] = useState<Rating[]>([]); // User rating
+
+
 
 
     useEffect(() => {
-        const handleSeeUser = async () => {
+        const fetchUserData = async () => {
             if (!user) return;
             setIsLoading(true);
             try {
-                const response = await getAllEventsFromUser(user.id);
-                if (response.error) {
-                    console.error('Error fetching user events:', response.error);
+                // Obtener eventos del usuario
+                const eventResponse = await getAllEventsFromUser(user.id);
+                if (eventResponse.error) {
+                    console.error('Error fetching user events:', eventResponse.error);
                     Alert.alert('Error', 'Failed to fetch user events');
                 } else {
-                    setUserEvents(response.data);
+                    setUserEvents(eventResponse.data);
                 }
+
+                // Actualizar calificaciones del usuario
+                await refreshUserRatings();
             } catch (error) {
-                console.error('Error fetching user events:', error);
-                Alert.alert('Error', 'Failed to fetch user events');
-            }
-            finally {
-                // Simular un retraso de 1 segundo antes de ocultar la carga
+                console.error('Error fetching user data:', error);
+                Alert.alert('Error', 'Failed to fetch user data');
+            } finally {
                 setTimeout(() => {
                     setIsLoading(false);
                 }, 650);
             }
         };
 
-        handleSeeUser();
+        fetchUserData();
     }, [user]);
+
+    const refreshUserRatings = async () => {
+        if (!user) return;
+        try {
+            const ratingResponse = await getAllUserRatings(user.id);
+            if (ratingResponse.data) {
+                setUserRating(ratingResponse.data);
+
+                // Actualizar promedio de calificación del usuario
+                const averageRating =
+                    ratingResponse.data.reduce((acc: any, rating: { rating: any; }) => acc + rating.rating, 0) /
+                    ratingResponse.data.length;
+                user.rating = averageRating; // Actualizar el objeto `user`
+            }
+        } catch (error) {
+            console.error('Error refreshing user ratings:', error);
+        }
+    };
 
 
 
@@ -75,6 +115,7 @@ const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
         setEventDetails(event);
         setIsDetailsModalVisible(true);
     };
+
     if (!user) return null;
 
 
@@ -99,6 +140,45 @@ const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
                             <Image source={{ uri: 'https://via.placeholder.com/150' }} style={styles.profileImage} />
                             <Text style={styles.name}>{user.name}</Text>
                         </View>
+                        <TouchableOpacity onPress={() => { setIsReviewModalVisible(true) }}>
+                            <View style={styles.starContainer}>
+                                {/* Render fully filled stars */}
+                                <Text style={styles.text}>Users Rating:  </Text>
+                                {Array.from({ length: filledStars }).map((_, index) => (
+                                    <FontAwesome
+                                        key={`filled-${index}`}
+                                        name="star"
+                                        size={24}
+                                        color="#FFD700"
+                                        style={styles.star}
+                                    />
+                                ))}
+
+                                {/* Render a half-filled star, if needed */}
+                                {hasHalfStar && (
+                                    <FontAwesome
+                                        name="star-half"
+                                        size={24}
+                                        color="#FFD700"
+                                        style={styles.star}
+                                    />
+                                )}
+
+                                {/* Render empty stars */}
+                                {Array.from({ length: emptyStars }).map((_, index) => (
+                                    <FontAwesome
+                                        key={`empty-${index}`}
+                                        name="star-o"
+                                        size={24}
+                                        color="#FFD700"
+                                        style={styles.star}
+                                    />
+                                ))}
+                                <Text style={styles.text}>{`(${user.rating.toFixed(1)}) `}</Text>
+
+
+                            </View>
+                        </TouchableOpacity>
                         <View style={styles.section}>
                             <Text style={styles.label}>Nombre:</Text>
                             <Text style={styles.input}>{user.name}</Text>
@@ -107,6 +187,7 @@ const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
                             <Text style={styles.label}>Email:</Text>
                             <Text style={styles.input}>{user.email}</Text>
                         </View>
+
 
                         <View style={styles.section}>
                             <Text style={styles.sectionTitle}>Eventos Creados</Text>
@@ -142,14 +223,24 @@ const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
                             )}
                         </View>
                     </View>
+
                 </ScrollView>
-            )}
+            )
+            }
             <EventDetailModal
                 visible={isDetailsModalVisible}
+                showSuscribe={true}
                 eventDetails={eventDetails as CustomEvent | null}
                 onClose={() => setIsDetailsModalVisible(false)}
             />
-        </Modal>
+
+            <ReviewModal
+                isVisible={isRevieModalVisible}
+                user={user}
+                refreshData={refreshUserRatings}
+                onClose={() =>{ setIsReviewModalVisible(false); refreshUserRatings()}}
+            />
+        </Modal >
     );
 };
 
@@ -159,6 +250,26 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingBottom: 5,
         backgroundColor: '#F9F9F9',
+    },
+    starContainer: {
+        backgroundColor: '#fff',
+        padding: 16,
+        marginVertical: 12,
+        borderRadius: 12,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 6,
+        elevation: 4,
+        flexDirection: 'row',
+    },
+    star: {
+        marginHorizontal: 2,
+    },
+    text: {
+        marginLeft: 10,
+        fontSize: 16,
+        color: '#333',
     },
     name: {
         fontSize: 24,

@@ -24,6 +24,7 @@ interface User {
     id: number;
     name: string;
     email: string;
+    rating: number;
 };
 interface AdminEventModalProps {
     isVisible: boolean;
@@ -51,6 +52,10 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
     const { refreshEvents } = useEventContext();
     const [updatedSubscribedUsers, setUpdatedSubscribedUsers] = useState<User[]>(subscribedUsers);
     const [isDeleteConfirmationVisible, setIsDeleteConfirmationVisible] = useState(false);
+    const [errorMessageTitle, setErrorMessageTitle] = useState('');
+    const [errorMessageDescription, setErrorMessageDescription] = useState('');
+    const [errorMessageParticipants, setErrorMessageParticipants] = useState('');
+    const [errorMessageDate, setErrorMessageDate] = useState('');
 
 
     useEffect(() => {
@@ -63,14 +68,16 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
         if (date && date >= new Date()) {
             setSelectedDate(date);
             setFecha(date.toLocaleDateString());
+            setErrorMessageDate('');
         }
         else {
+            setErrorMessageDate('Seleccione una fecha válida');
             setSelectedDate(null);
             Alert.alert('Error', 'Por favor, seleccione una fecha válida.');
         }
     };
 
-    const handleSeeUserProfile = (user: { id: number; name: string; email: string }) => {
+    const handleSeeUserProfile = (user: { id: number; name: string; email: string ; rating: number}) => {
         setSeeUser(user)
         setIsSpectatedUserVisible(true);
     }
@@ -121,6 +128,28 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
             Alert.alert('Error', 'No se pudo actualizar el evento.');
         }
     };
+
+    const handleEventTitleChange = (text: string) => {
+        if (text.length <= 30) {
+            setNewName(text);
+            setErrorMessageTitle('');
+        }
+        else {
+            setErrorMessageTitle('El nombre de usuario no puede tener más de 30 caracteres');
+        }
+    };
+
+    const handleDescriptionChange = (text: string) => {
+        if (text.length <= 100) {
+            setNewDescription(text);
+            setErrorMessageDescription('');
+        }
+        else {
+            setErrorMessageDescription('La descripcion no puede tener más de 100 caracteres');
+        }
+    };
+
+
 
     return (
         <Modal
@@ -209,6 +238,7 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
                                     </View>
                                     <Text style={styles.cardTitle}>Cambiar Fecha</Text>
                                 </Pressable>
+                                {errorMessageDate ? <Text style={styles.errorMessage}>{errorMessageDate}</Text> : null}
                             </View>
 
                             {datePickerVisible && (
@@ -234,7 +264,7 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
                                     style={styles.input}
                                     placeholder="Nuevo Nombre"
                                     value={newName}
-                                    onChangeText={setNewName}
+                                    onChangeText={handleEventTitleChange}
                                 />
                                 <View style={styles.modalButtons}>
                                     <TouchableOpacity
@@ -256,6 +286,7 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
                                         <Text style={styles.cancelButtonText}>Cancelar</Text>
                                     </TouchableOpacity>
                                 </View>
+                                {errorMessageTitle ? <Text style={styles.errorMessage}>{errorMessageTitle}</Text> : null}
                             </View>
                         </View>
                     </Modal>
@@ -274,7 +305,7 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
                                     style={styles.input}
                                     placeholder="Nueva Descripción"
                                     value={newDescription}
-                                    onChangeText={setNewDescription}
+                                    onChangeText={handleDescriptionChange}
                                 />
                                 <View style={styles.modalButtons}>
                                     <TouchableOpacity
@@ -296,6 +327,7 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
                                         <Text style={styles.cancelButtonText}>Cancelar</Text>
                                     </TouchableOpacity>
                                 </View>
+                                {errorMessageDescription ? <Text style={styles.errorMessage}>{errorMessageDescription}</Text> : null}
                             </View>
                         </View>
                     </Modal>
@@ -307,7 +339,7 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
                     {updatedSubscribedUsers.map((user) => (
                         <View key={user.id} style={styles.userCard}>
                             {/* Profile Picture */}
-                            <TouchableOpacity onPress={() => handleSeeUserProfile({ id: user.id, name: user.name, email: user.email })}>
+                            <TouchableOpacity onPress={() => handleSeeUserProfile({ id: user.id, name: user.name, email: user.email, rating: user.rating })}>
                                 <Image
                                     source={{ uri: 'https://www.gravatar.com/avatar/2c7d99fe281ecd3bcd65ab915bac6dd5?s=250' }} // Use default image if no profile picture
                                     style={styles.profilePicture}
@@ -317,7 +349,7 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
                             {/* User Info (Name and Eliminate Button) */}
                             <View style={styles.userInfo}>
                                 {/* User Name */}
-                                <TouchableOpacity onPress={() => handleSeeUserProfile({ id: user.id, name: user.name, email: user.email })}>
+                                <TouchableOpacity onPress={() => handleSeeUserProfile({ id: user.id, name: user.name, email: user.email, rating: user.rating })}>
                                     <Text style={styles.userName} numberOfLines={1}>
                                         {user.name}
                                     </Text>
@@ -717,6 +749,12 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         borderRadius: 8,
     },
+    errorMessage: {
+        color: 'red',
+        fontSize: 14,
+        textAlign: 'center',
+        marginBottom: 10,
+      },
 
 });
 

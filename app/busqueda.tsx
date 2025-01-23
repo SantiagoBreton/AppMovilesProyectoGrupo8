@@ -34,6 +34,7 @@ export default function Busqueda() {
         id: number;
         name: string;
         email: string;
+        rating: Float;
     };
 
     const handleEventSearch = async () => {
@@ -181,7 +182,7 @@ export default function Busqueda() {
             <EventDetailModal
                 visible={isDetailsModalVisible}
                 eventDetails={eventDetails as CustomEvent | null}
-
+                showSuscribe = {true}
                 onClose={() => setIsDetailsModalVisible(false)}
             />
 

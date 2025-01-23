@@ -1,4 +1,3 @@
-// EventDetailModal.tsx
 import React, { useEffect, useState } from 'react';
 import { Modal, View, Text, TouchableOpacity, TouchableWithoutFeedback, StyleSheet, Alert } from 'react-native';
 import MapView, { Circle } from 'react-native-maps';
@@ -6,6 +5,7 @@ import { Float } from 'react-native/Libraries/Types/CodegenTypes';
 import { subscribeToEvent } from '@/apiCalls/subscribeToAnEvent';
 import { useEventContext } from '@/context/eventContext';
 import * as Location from 'expo-location';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface CustomEvent {
     id: number;
@@ -20,12 +20,14 @@ interface CustomEvent {
 };
 interface EventDetailModalProps {
     visible: boolean;
+    showSuscribe: boolean;
     eventDetails: CustomEvent | null;
     onClose: () => void;
 }
 
 const EventDetailModal: React.FC<EventDetailModalProps> = ({
     visible,
+    showSuscribe,
     eventDetails,
     onClose,
 
@@ -33,6 +35,24 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
     const { refreshEvents } = useEventContext();
     const [isMapVisible, setMapVisible] = useState(false);
     const [eventLocation, setEventLocation] = useState<string | null>(null);
+    const [userId, setUserId] = useState<number | null>(null);
+
+    useEffect(() => {
+        const fetchUserId = async () => {
+            try {
+                const storedUserId = await AsyncStorage.getItem('userId');
+                if (storedUserId) {
+                    setUserId(parseInt(storedUserId, 10)); // Convierte el ID de string a número
+                }
+            } catch (error) {
+                console.error('Error fetching userId:', error);
+            }
+        };
+
+        fetchUserId();
+    }, []);
+
+    const canSuscribe = eventDetails && (eventDetails.currentParticipants < eventDetails.maxParticipants && eventDetails.userId !== userId);
 
     useEffect(() => {
         const fetchLocation = async () => {
@@ -112,13 +132,16 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
                             >
                                 <Text style={styles.modalActionButtonText}>Ver en el Mapa</Text>
                             </TouchableOpacity>
+
                             <View style={styles.buttonRow}>
-                                <TouchableOpacity
-                                    style={[styles.modalActionButton, styles.subscribeButton]}
-                                    onPress={() => handleSubscribe(eventDetails.id)}
-                                >
-                                    <Text style={styles.modalActionButtonText} numberOfLines={1}>Suscribirse</Text>
-                                </TouchableOpacity>
+                                {showSuscribe && (
+                                    <TouchableOpacity
+                                        style={[styles.modalActionButton, styles.subscribeButton]}
+                                        onPress={() => {handleSubscribe(eventDetails.id)}}
+                                    >
+                                        <Text style={styles.modalActionButtonText} numberOfLines={1}>Suscribirse</Text>
+                                    </TouchableOpacity>
+                                )}
                                 <TouchableOpacity
                                     style={[styles.closeButton, styles.separatedButton]}
                                     onPress={onClose}
