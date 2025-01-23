@@ -5,19 +5,19 @@ import { Float } from 'react-native/Libraries/Types/CodegenTypes';
 import { getEventByName } from '@/apiCalls/getEventByName';
 import { getUserByName } from '@/apiCalls/getUserByName';
 import SpectatedUserModal from '@/components/SpectatedUserModal';
+import EventCard2 from '@/components/EventCard2';
 import EventDetailModal from '@/components/EventDetailModal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Busqueda() {
     const [query, setQuery] = useState('');
     const [isSearching, setIsSearching] = useState(false);
-    const [isDetailsModalVisible, setIsDetailsModalVisible] = useState(false);
-    const [eventDetails, setEventDetails] = useState<CustomEvent | null>(null);
     const [filteredEvents, setFilteredEvents] = useState<CustomEvent[]>([]);
     const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
     const [isSpectatedUserVisible, setIsSpectatedUserVisible] = useState(false);
     const [seeUser, setSeeUser] = useState<User | null>(null);
     const [userId, setUserId] = useState<number | null>(null);
+
 
     useEffect(() => {
         const fetchUserId = async () => {
@@ -99,32 +99,11 @@ export default function Busqueda() {
         setIsSpectatedUserVisible(true);
     }
 
-    const handleDetailsEvent = async (item: CustomEvent) => {
-        setEventDetails(item)
-        setIsDetailsModalVisible(true);
-    };
+
 
     const renderEventResult = ({ item }: { item: CustomEvent }) => (
-        <TouchableOpacity
-            style={styles.eventCard}
-            onPress={() => handleDetailsEvent(item)}
-        >
-            <View style={styles.cardContent}>
-                <Text style={styles.eventName} numberOfLines={2}>{item.name}</Text>
-                <Text style={styles.eventDate}>
-                    {item.date ? new Date(item.date).toLocaleDateString() : 'Fecha no disponible'}
-                </Text>
-                <Text style={styles.eventDescription}>{item.description}</Text>
-            </View>
-            <View style={styles.detailButtonContainer}>
-                <Button
-                    title="Detalles"
-                    onPress={() => handleDetailsEvent(item)}
-                    color="#FF7F50"
-                />
-            </View>
-        </TouchableOpacity>
-
+        <EventCard2
+            event={item}/>
     );
 
     const renderUserResult = ({ item }: { item: User }) => (
@@ -201,12 +180,7 @@ export default function Busqueda() {
                     />
                 </ScrollView>
             )}
-            <EventDetailModal
-                visible={isDetailsModalVisible}
-                eventDetails={eventDetails as CustomEvent | null}
-                showSuscribe = {true}
-                onClose={() => setIsDetailsModalVisible(false)}
-            />
+
 
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
 

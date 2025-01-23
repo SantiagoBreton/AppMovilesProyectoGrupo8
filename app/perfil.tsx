@@ -6,6 +6,7 @@ import { myEvents } from '@/apiCalls/myEvents';
 import { useEventContext } from '@/context/eventContext';
 import { Float } from 'react-native/Libraries/Types/CodegenTypes';
 import { useAuthContext } from '@/context/userLoginContext';  // Updated import
+import EventCard2 from '@/components/EventCard2';
 
 export default function Perfil() {
     const { nombre, email } = myData();
@@ -13,7 +14,6 @@ export default function Perfil() {
     const myUserEvents = myEvents(trigger);
     const eventsToDisplay = myUserEvents.myEvents;
     const { logout } = useAuthContext();
-    const [userLoaded, setUserLoaded] = useState(false); // To track if the map has loaded
     const [userId, setUserId] = useState<number | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -56,11 +56,6 @@ export default function Perfil() {
         userId: number;
     };
 
-    const handleEventPress = (event: { name: any; description: any; }) => {
-
-        Alert.alert('Detalles del Evento', `Nombre: ${event.name}\nDescripción: ${event.description}`);
-
-    };
 
     const handleLogout = async () => {
         await AsyncStorage.removeItem("userId");
@@ -69,9 +64,7 @@ export default function Perfil() {
         logout();
     }
 
-    const handleDetailsEvent = (item: Event) => {
-        Alert.alert('Detalles del Evento', `Nombre: ${item.name}\nDescripción: ${item.description}\nFecha: ${item.date}\nUbicación: ${item.latitude}, ${item.longitude}\nParticipantes: ${item.currentParticipants}/${item.maxParticipants}`);
-    };
+
 
     return (
         <ScrollView style={styles.container}>
@@ -99,29 +92,7 @@ export default function Perfil() {
                         data={eventsToDisplay}
                         scrollEnabled={false}
                         renderItem={({ item }) => (
-                            <TouchableOpacity
-                                style={styles.eventCard}
-                                onPress={() => handleEventPress(item)}
-                            >
-                                <View style={styles.eventHeader}>
-                                    <Text style={styles.eventName} numberOfLines={2}>{item.name}</Text>
-                                    <Text style={styles.eventDate}>
-                                        {item.date
-                                            ? new Date(item.date).toLocaleDateString()
-                                            : 'Fecha no disponible'}
-                                    </Text>
-                                </View>
-                                <Text style={styles.eventDescription}>{item.description}</Text>
-                                {userId !== null && item.userId !== userId && (
-                                    <View style={styles.detailButtonContainer}>
-                                        <Button
-                                            title="Detalles"
-                                            onPress={() => handleDetailsEvent(item.id)}
-                                            color="#FF7F50"
-                                        />
-                                    </View>
-                                )}
-                            </TouchableOpacity>
+                            <EventCard2 event={item} />
                         )}
                         keyExtractor={(item) => item.id.toString()}
                         ListFooterComponent={

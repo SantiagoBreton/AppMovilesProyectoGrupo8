@@ -25,7 +25,7 @@ export default function Index() {
 
 
   useEffect(() => {
-    if (location) {
+    if (location ) {
       setMapLoaded(true);
     }
 
