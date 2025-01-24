@@ -4,7 +4,6 @@ import { FontAwesome, FontAwesome5 } from '@expo/vector-icons'; // If you are us
 import { Float } from 'react-native/Libraries/Types/CodegenTypes';
 import EventDetailModal from './EventDetailModal';
 import { getAllEventsFromUser } from '@/apiCalls/getAllEventsFromUser';
-import { getUserRating } from '@/apiCalls/getUserRating';
 import ReviewModal from './RatingUserModal';
 import { getAllUserRatings } from '@/apiCalls/getAllUserRatings';
 import { StarRating } from './StarRating';
@@ -37,10 +36,7 @@ interface Rating {
     ritingUserId: number;
     comment: string;
     rating: number;
-
-
 }
-
 
 const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
     isVisible,
@@ -58,11 +54,7 @@ const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
     const filledStars = Math.floor(rating); // Fully filled stars
     const hasHalfStar = rating % 1 >= 0.5; // Determine if a half-star is needed
     const emptyStars = totalStars - filledStars - (hasHalfStar ? 1 : 0); // Remaining empty stars
-
     const [userRating, setUserRating] = useState<Rating[]>([]); // User rating
-
-
-
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -116,8 +108,6 @@ const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
         }
     };
 
-
-
     const handleEventPress = (event: CustomEvent) => {
 
         setEventDetails(event);
@@ -125,7 +115,6 @@ const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
     };
 
     if (!user) return null;
-
 
     return (
         <Modal visible={isVisible} animationType="slide">
@@ -219,7 +208,6 @@ const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
         </Modal >
     );
 };
-
 
 const styles = StyleSheet.create({
     header3: {

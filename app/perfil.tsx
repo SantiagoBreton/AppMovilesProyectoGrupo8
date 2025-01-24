@@ -1,39 +1,35 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, StyleSheet, Image, ScrollView, Button, FlatList, TouchableOpacity, Alert, Platform, ActivityIndicator } from 'react-native';
+import {
+    View, Text, TextInput, StyleSheet, Image, ScrollView, Button, FlatList,
+    TouchableOpacity, ActivityIndicator
+} from 'react-native';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { myEvents } from '@/apiCalls/myEvents';
 import { useEventContext } from '@/context/eventContext';
-import { Float } from 'react-native/Libraries/Types/CodegenTypes';
-import { useAuthContext } from '@/context/userLoginContext';  // Updated import
+import { getAllUserRatings } from '@/apiCalls/getAllUserRatings';
+import { useAuthContext } from '@/context/userLoginContext';
 import EventCard2 from '@/components/EventCard2';
-import { FontAwesome } from '@expo/vector-icons';
 import ReviewModal from '@/components/RatingUserModal';
 import { getMyUserData } from '@/apiCalls/getMyUserData';
-
+import { StarRating } from '@/components/StarRating';
 
 interface User {
     id: number;
     name: string;
     email: string;
     rating: number;
-};
+}
 
 export default function Perfil() {
-    const [user, setUser] = useState<User>({ id: 0, name: '', email: '', rating: 0 });
+    const [user, setUser] = useState<User | null>(null); // Allow null for uninitialized state
     const { trigger } = useEventContext();
     const myUserEvents = myEvents(trigger);
     const eventsToDisplay = myUserEvents.myEvents;
     const { logout } = useAuthContext();
     const [isLoading, setIsLoading] = useState(true);
-    const totalStars = 5;
-    const rating = user.rating !== undefined && user.rating !== null && !isNaN(user.rating) ? user.rating : 0; // Handle NaN or undefined ratings
-    const filledStars = Math.floor(rating); // Fully filled stars
-    const hasHalfStar = rating % 1 >= 0.5; // Determine if a half-star is needed
-    const emptyStars = totalStars - filledStars - (hasHalfStar ? 1 : 0); // Remaining empty stars
-    const [isRevieModalVisible, setIsReviewModalVisible] = useState(false);
+    const [isReviewModalVisible, setIsReviewModalVisible] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
-    const[filteredEvents, setFilteredEvents] = useState(eventsToDisplay);
-
+    const [filteredEvents, setFilteredEvents] = useState(eventsToDisplay);
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -41,25 +37,48 @@ export default function Perfil() {
                 const storedUserId = await AsyncStorage.getItem('userId');
                 if (storedUserId) {
                     const userData = await getMyUserData();
-                    setUser(userData);
+                    if (userData) {
+                        setUser(userData);
+                    }
                 }
             } catch (error) {
-                console.error('Error fetching userId:', error);
-            }
-            if (user) {
+                console.error('Error fetching user data:', error);
+            } finally {
                 setIsLoading(false);
             }
         };
 
         fetchUserData();
-    }, [user]);
+    }, []);
+
     useEffect(() => {
-        // Filter events based on the search query
         const results = eventsToDisplay.filter(event =>
             event.name.toLowerCase().includes(searchQuery.toLowerCase())
         );
         setFilteredEvents(results);
     }, [searchQuery, eventsToDisplay]);
+
+    const refreshUserRatings = async () => {
+        if (!user) return;
+        try {
+            const ratingResponse = await getAllUserRatings(user.id);
+            if (ratingResponse.data) {
+                const averageRating =
+                    ratingResponse.data.length > 0
+                        ? ratingResponse.data.reduce((acc: any, rating: { rating: any; }) => acc + (rating.rating || 0), 0) /
+                        ratingResponse.data.length
+                        : 0;
+                setUser({ ...user, rating: averageRating });
+            }
+        } catch (error) {
+            console.error('Error refreshing user ratings:', error);
+        }
+    };
+
+    const handleLogout = async () => {
+        await AsyncStorage.removeItem("userId");
+        logout();
+    };
 
     if (isLoading) {
         return (
@@ -70,70 +89,28 @@ export default function Perfil() {
         );
     }
 
-
-
-    const handleLogout = async () => {
-        await AsyncStorage.removeItem("userId");
-        const userId = await AsyncStorage.getItem('userId');
-        console.log('User token:', userId)
-        logout();
-    }
-
-
-
     return (
         <ScrollView style={styles.container}>
             <View style={styles.header}>
                 <Image source={{ uri: 'https://via.placeholder.com/150' }} style={styles.profileImage} />
-                <Text style={styles.name}>{user.name}</Text>
+                <Text style={styles.name}>{user?.name}</Text>
             </View>
-            <TouchableOpacity onPress={() => { setIsReviewModalVisible(true) }}>
+
+            <TouchableOpacity onPress={() => setIsReviewModalVisible(true)}>
                 <View style={styles.starContainer}>
-                    {/* Render fully filled stars */}
                     <Text style={styles.text}>Users Rating:  </Text>
-                    {Array.from({ length: filledStars }).map((_, index) => (
-                        <FontAwesome
-                            key={`filled-${index}`}
-                            name="star"
-                            size={24}
-                            color="#FFD700"
-                            style={styles.star}
-                        />
-                    ))}
-
-                    {/* Render a half-filled star, if needed */}
-                    {hasHalfStar && (
-                        <FontAwesome
-                            name="star-half"
-                            size={24}
-                            color="#FFD700"
-                            style={styles.star}
-                        />
-                    )}
-
-                    {/* Render empty stars */}
-                    {Array.from({ length: emptyStars }).map((_, index) => (
-                        <FontAwesome
-                            key={`empty-${index}`}
-                            name="star-o"
-                            size={24}
-                            color="#FFD700"
-                            style={styles.star}
-                        />
-                    ))}
-                    <Text style={styles.text}>{`(${user.rating === null || isNaN(user.rating) ? 0 : user.rating.toFixed(1)}) `}</Text>
-
-
-
+                    <StarRating rating={user?.rating || 0} size={24} />
+                    <Text style={styles.text}>{`(${isNaN(user?.rating || 0) ? 0 : (user?.rating || 0).toFixed(1)})`}</Text>
                 </View>
             </TouchableOpacity>
+
             <View style={styles.section}>
                 <Text style={styles.label}>Nombre:</Text>
-                <Text style={styles.input}>{user.name}</Text>
+                <Text style={styles.input}>{user?.name}</Text>
             </View>
             <View style={styles.section}>
                 <Text style={styles.label}>Email:</Text>
-                <Text style={styles.input}>{user.email}</Text>
+                <Text style={styles.input}>{user?.email}</Text>
             </View>
 
             <View style={styles.logoutContainer}>
@@ -142,12 +119,11 @@ export default function Perfil() {
 
             <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Eventos Creados</Text>
-                {/* Search bar */}
                 <TextInput
                     style={styles.searchBar}
                     placeholder="Buscar eventos por nombre"
                     value={searchQuery}
-                    onChangeText={setSearchQuery} // Update search query
+                    onChangeText={setSearchQuery}
                 />
                 {filteredEvents.length > 0 ? (
                     <FlatList
@@ -167,16 +143,17 @@ export default function Perfil() {
                     <Text style={styles.noEventsText}>No se han creado eventos aún.</Text>
                 )}
             </View>
+
             <ReviewModal
-                isVisible={isRevieModalVisible}
+                isVisible={isReviewModalVisible}
                 user={user}
-                refreshData={() => { }}
-                onClose={() => { setIsReviewModalVisible(false); }}
+                refreshData={refreshUserRatings}
+                onClose={() => { setIsReviewModalVisible(false); refreshUserRatings(); }}
             />
         </ScrollView>
-
     );
-};
+}
+
 
 const styles = StyleSheet.create({
     container: {
