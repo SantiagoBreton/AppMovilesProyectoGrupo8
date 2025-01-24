@@ -1,52 +1,67 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, StyleSheet, Image, ScrollView, Button, FlatList, TouchableOpacity, Alert, Platform } from 'react-native';
+import { View, Text, TextInput, StyleSheet, Image, ScrollView, Button, FlatList, TouchableOpacity, Alert, Platform, ActivityIndicator } from 'react-native';
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { myData } from '@/apiCalls/getMyUserData';
 import { myEvents } from '@/apiCalls/myEvents';
 import { useEventContext } from '@/context/eventContext';
 import { Float } from 'react-native/Libraries/Types/CodegenTypes';
 import { useAuthContext } from '@/context/userLoginContext';  // Updated import
+import EventCard2 from '@/components/EventCard2';
+import { FontAwesome } from '@expo/vector-icons';
+import ReviewModal from '@/components/RatingUserModal';
+import { getMyUserData } from '@/apiCalls/getMyUserData';
+
+
+interface User {
+    id: number;
+    name: string;
+    email: string;
+    rating: number;
+};
 
 export default function Perfil() {
-    const { nombre, email, dataError } = myData();
+    const [user, setUser] = useState<User>({ id: 0, name: '', email: '', rating: 0 });
     const { trigger } = useEventContext();
     const myUserEvents = myEvents(trigger);
     const eventsToDisplay = myUserEvents.myEvents;
     const { logout } = useAuthContext();
+    const [isLoading, setIsLoading] = useState(true);
+    const totalStars = 5;
+    const rating = user.rating !== undefined && user.rating !== null && !isNaN(user.rating) ? user.rating : 0; // Handle NaN or undefined ratings
+    const filledStars = Math.floor(rating); // Fully filled stars
+    const hasHalfStar = rating % 1 >= 0.5; // Determine if a half-star is needed
+    const emptyStars = totalStars - filledStars - (hasHalfStar ? 1 : 0); // Remaining empty stars
+    const [isRevieModalVisible, setIsReviewModalVisible] = useState(false);
 
-    const [userId, setUserId] = useState<number | null>(null);
 
     useEffect(() => {
-        const fetchUserId = async () => {
+        const fetchUserData = async () => {
             try {
                 const storedUserId = await AsyncStorage.getItem('userId');
                 if (storedUserId) {
-                    setUserId(parseInt(storedUserId, 10)); // Convierte el ID de string a número
+                    const userData = await getMyUserData();
+                    setUser(userData);
                 }
             } catch (error) {
                 console.error('Error fetching userId:', error);
             }
+            if (user) {
+                setIsLoading(false);
+            }
         };
 
-        fetchUserId();
-    }, []);
+        fetchUserData();
+    }, [user]);
 
-    interface Event {
-        name: String;
-        date: Date;
-        latitude: Float;
-        longitude: Float;
-        description: String;
-        maxParticipants: number;
-        currentParticipants: number;
-        userId: number;
-    };
+    if (isLoading) {
+        return (
+            <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#FF7F50" />
+                <Text style={styles.loadingText}>Cargando...</Text>
+            </View>
+        );
+    }
 
-    const handleEventPress = (event: { name: any; description: any; }) => {
-        // Aquí puedes navegar a la pantalla de detalles del evento
-        Alert.alert('Detalles del Evento', `Nombre: ${event.name}\nDescripción: ${event.description}`);
 
-    };
 
     const handleLogout = async () => {
         await AsyncStorage.removeItem("userId");
@@ -55,23 +70,61 @@ export default function Perfil() {
         logout();
     }
 
-    const handleDetailsEvent = (item: Event) => {
-        Alert.alert('Detalles del Evento', `Nombre: ${item.name}\nDescripción: ${item.description}\nFecha: ${item.date}\nUbicación: ${item.latitude}, ${item.longitude}\nParticipantes: ${item.currentParticipants}/${item.maxParticipants}`);
-    };
+
 
     return (
         <ScrollView style={styles.container}>
             <View style={styles.header}>
                 <Image source={{ uri: 'https://via.placeholder.com/150' }} style={styles.profileImage} />
-                <Text style={styles.name}>{nombre}</Text>
+                <Text style={styles.name}>{user.name}</Text>
             </View>
+            <TouchableOpacity onPress={() => { setIsReviewModalVisible(true) }}>
+                <View style={styles.starContainer}>
+                    {/* Render fully filled stars */}
+                    <Text style={styles.text}>Users Rating:  </Text>
+                    {Array.from({ length: filledStars }).map((_, index) => (
+                        <FontAwesome
+                            key={`filled-${index}`}
+                            name="star"
+                            size={24}
+                            color="#FFD700"
+                            style={styles.star}
+                        />
+                    ))}
+
+                    {/* Render a half-filled star, if needed */}
+                    {hasHalfStar && (
+                        <FontAwesome
+                            name="star-half"
+                            size={24}
+                            color="#FFD700"
+                            style={styles.star}
+                        />
+                    )}
+
+                    {/* Render empty stars */}
+                    {Array.from({ length: emptyStars }).map((_, index) => (
+                        <FontAwesome
+                            key={`empty-${index}`}
+                            name="star-o"
+                            size={24}
+                            color="#FFD700"
+                            style={styles.star}
+                        />
+                    ))}
+                    <Text style={styles.text}>{`(${user.rating === null || isNaN(user.rating) ? 0 : user.rating.toFixed(1)}) `}</Text>
+
+
+
+                </View>
+            </TouchableOpacity>
             <View style={styles.section}>
                 <Text style={styles.label}>Nombre:</Text>
-                <Text style={styles.input}>{nombre}</Text>
+                <Text style={styles.input}>{user.name}</Text>
             </View>
             <View style={styles.section}>
                 <Text style={styles.label}>Email:</Text>
-                <Text style={styles.input}>{email}</Text>
+                <Text style={styles.input}>{user.email}</Text>
             </View>
 
             <View style={styles.logoutContainer}>
@@ -85,29 +138,7 @@ export default function Perfil() {
                         data={eventsToDisplay}
                         scrollEnabled={false}
                         renderItem={({ item }) => (
-                            <TouchableOpacity
-                                style={styles.eventCard}
-                                onPress={() => handleEventPress(item)}
-                            >
-                                <View style={styles.eventHeader}>
-                                    <Text style={styles.eventName} numberOfLines={2}>{item.name}</Text>
-                                    <Text style={styles.eventDate}>
-                                        {item.date
-                                            ? new Date(item.date).toLocaleDateString()
-                                            : 'Fecha no disponible'}
-                                    </Text>
-                                </View>
-                                <Text style={styles.eventDescription}>{item.description}</Text>
-                                {userId !== null && item.userId !== userId && (
-                                    <View style={styles.detailButtonContainer}>
-                                        <Button
-                                            title="Detalles"
-                                            onPress={() => handleDetailsEvent(item.id)}
-                                            color="#FF7F50"
-                                        />
-                                    </View>
-                                )}
-                            </TouchableOpacity>
+                            <EventCard2 event={item} />
                         )}
                         keyExtractor={(item) => item.id.toString()}
                         ListFooterComponent={
@@ -120,6 +151,12 @@ export default function Perfil() {
                     <Text style={styles.noEventsText}>No se han creado eventos aún.</Text>
                 )}
             </View>
+            <ReviewModal
+                isVisible={isRevieModalVisible}
+                user={user}
+                refreshData={() => { }}
+                onClose={() => { setIsReviewModalVisible(false); }}
+            />
         </ScrollView>
 
     );
@@ -247,5 +284,36 @@ const styles = StyleSheet.create({
     detailButtonContainer: {
         alignSelf: 'flex-end',
         marginTop: 8,
+    },
+    loadingText: {
+        marginTop: 10,
+        fontSize: 16,
+        color: '#333',
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#fff',
+    },
+    starContainer: {
+        backgroundColor: '#fff',
+        padding: 16,
+        marginVertical: 12,
+        borderRadius: 12,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 6,
+        elevation: 4,
+        flexDirection: 'row',
+    },
+    star: {
+        marginHorizontal: 2,
+    },
+    text: {
+        marginLeft: 10,
+        fontSize: 16,
+        color: '#333',
     },
 });

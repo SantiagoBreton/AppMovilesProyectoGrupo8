@@ -102,73 +102,110 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
     return (
         <Modal visible={isVisible} transparent={true} animationType="fade">
             <View style={styles.modalOverlay}>
-                <View style={styles.modalContent}>
-                    {/* Title */}
-                    <Text style={styles.modalTitle}>Deja tu calificación</Text>
+                {user && user.id != userId ? (
+                    <View style={styles.modalContent}>
+                        {/* Title */}
 
-                    {/* Ratings Section */}
-                    <View style={styles.starsContainer}>
-                        {Array.from({ length: 5 }).map((_, index) => {
-                            const starIndex = index + 1;
-                            return (
-                                <TouchableOpacity
-                                    key={index}
-                                    onPress={() => handleRating(starIndex)}
-                                >
-                                    <FontAwesome
-                                        name={starIndex <= rating ? 'star' : 'star-o'}
-                                        size={40}
-                                        color={starIndex <= rating ? '#FFD700' : '#E0E0E0'}
-                                        style={styles.star}
-                                    />
-                                </TouchableOpacity>
-                            );
-                        })}
-                    </View>
+                        <Text style={styles.modalTitle}>Deja tu calificación</Text>
 
-                    {/* Review Input */}
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Escribe tu comentario aquí..."
-                        value={userComments}
-                        onChangeText={setUserComments}
-                        multiline={true}
-                    />
-                    <View style={styles.titleSeparator} />
+                        {/* Ratings Section */}
+                        <View style={styles.starsContainer}>
+                            {Array.from({ length: 5 }).map((_, index) => {
+                                const starIndex = index + 1;
+                                return (
+                                    <TouchableOpacity
+                                        key={index}
+                                        onPress={() => handleRating(starIndex)}
+                                    >
+                                        <FontAwesome
+                                            name={starIndex <= rating ? 'star' : 'star-o'}
+                                            size={40}
+                                            color={starIndex <= rating ? '#FFD700' : '#E0E0E0'}
+                                            style={styles.star}
+                                        />
+                                    </TouchableOpacity>
+                                );
+                            })}
+                        </View>
 
-                    {/* User Comments Section */}
-                    <View style={styles.commentsContainer}>
-                        <FlatList
-                            data={userRating}
-                            renderItem={({ item }) => (
-                                <View style={styles.commentCard}>
-                                    <Text style={styles.commentText}>{item.comment}</Text>
-                                    <View style={styles.commentRating}>
-                                        {Array.from({ length: 5 }).map((_, i) => (
-                                            <FontAwesome
-                                                key={i}
-                                                name={i < item.rating ? 'star' : 'star-o'}
-                                                size={16}
-                                                color="#FFD700"
-                                            />
-                                        ))}
-                                    </View>
-                                </View>
-                            )}
-                            keyExtractor={(item) => item.id.toString()}
+                        {/* Review Input */}
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Escribe tu comentario aquí..."
+                            value={userComments}
+                            onChangeText={setUserComments}
+                            multiline={true}
                         />
+                        <View style={styles.titleSeparator} />
+
+                        {/* User Comments Section */}
+                        <View style={styles.commentsContainer}>
+                            <FlatList
+                                data={userRating}
+                                renderItem={({ item }) => (
+                                    <View style={styles.commentCard}>
+                                        <Text style={styles.commentText}>{item.comment}</Text>
+                                        <View style={styles.commentRating}>
+                                            {Array.from({ length: 5 }).map((_, i) => (
+                                                <FontAwesome
+                                                    key={i}
+                                                    name={i < item.rating ? 'star' : 'star-o'}
+                                                    size={16}
+                                                    color="#FFD700"
+                                                />
+                                            ))}
+                                        </View>
+                                    </View>
+                                )}
+                                keyExtractor={(item) => item.id.toString()}
+                            />
+                        </View>
+
+                        {/* Submit Button */}
+                        <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+                            <Text style={styles.submitButtonText}>Enviar</Text>
+                        </TouchableOpacity>
+
+                        {/* Close Button */}
+                        <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+                            <FontAwesome name="times" size={24} color="#FFF" />
+                        </TouchableOpacity>
+                    </View>
+                ) : (
+                    <View style={styles.modalContent}>
+                        <Text style={styles.modalTitle}>Comentarios recibidos</Text>
+                        {userRating.length > 0 ? (
+                            <View style={styles.commentsContainer}>
+                                <FlatList
+                                    data={userRating}
+                                    renderItem={({ item }) => (
+                                        <View style={styles.commentCard}>
+                                            <Text style={styles.commentText}>{item.comment}</Text>
+                                            <View style={styles.commentRating}>
+                                                {Array.from({ length: 5 }).map((_, i) => (
+                                                    <FontAwesome
+                                                        key={i}
+                                                        name={i < item.rating ? 'star' : 'star-o'}
+                                                        size={16}
+                                                        color="#FFD700"
+                                                    />
+                                                ))}
+                                            </View>
+                                        </View>
+                                    )}
+                                    keyExtractor={(item) => item.id.toString()}
+                                />
+                            </View>
+                        ) : (
+                            <Text>No hay comentarios aún</Text>
+                        )}
+                        <TouchableOpacity style={styles.submitButton} onPress={onClose}>
+                            <Text style={styles.submitButtonText}>Cerrar</Text>
+                        </TouchableOpacity>
+
                     </View>
 
-                    {/* Submit Button */}
-                    <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-                        <Text style={styles.submitButtonText}>Enviar</Text>
-                    </TouchableOpacity>
-
-                    {/* Close Button */}
-                    <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-                        <FontAwesome name="times" size={24} color="#FFF" />
-                    </TouchableOpacity>
-                </View>
+                )}
             </View>
         </Modal>
     );
