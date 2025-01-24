@@ -1,27 +1,28 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, StyleSheet, Image, ScrollView, Button, FlatList, TouchableOpacity, Alert, Platform } from 'react-native';
+import { View, Text, TextInput, StyleSheet, Image, ScrollView, Button, FlatList, TouchableOpacity, Alert } from 'react-native';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { myData } from '@/apiCalls/getMyUserData';
 import { myEvents } from '@/apiCalls/myEvents';
 import { useEventContext } from '@/context/eventContext';
-import { Float } from 'react-native/Libraries/Types/CodegenTypes';
 import { useAuthContext } from '@/context/userLoginContext';  // Updated import
 
 export default function Perfil() {
-    const { nombre, email, dataError } = myData();
+    const { nombre, email } = myData();
     const { trigger } = useEventContext();
     const myUserEvents = myEvents(trigger);
     const eventsToDisplay = myUserEvents.myEvents;
     const { logout } = useAuthContext();
 
     const [userId, setUserId] = useState<number | null>(null);
+    const [searchQuery, setSearchQuery] = useState<string>(""); // State for search query
+    const [filteredEvents, setFilteredEvents] = useState(eventsToDisplay); // Filtered events
 
     useEffect(() => {
         const fetchUserId = async () => {
             try {
                 const storedUserId = await AsyncStorage.getItem('userId');
                 if (storedUserId) {
-                    setUserId(parseInt(storedUserId, 10)); // Convierte el ID de string a número
+                    setUserId(parseInt(storedUserId, 10)); // Convert the ID to a number
                 }
             } catch (error) {
                 console.error('Error fetching userId:', error);
@@ -31,31 +32,24 @@ export default function Perfil() {
         fetchUserId();
     }, []);
 
-    interface Event {
-        name: String;
-        date: Date;
-        latitude: Float;
-        longitude: Float;
-        description: String;
-        maxParticipants: number;
-        currentParticipants: number;
-        userId: number;
-    };
+    useEffect(() => {
+        // Filter events based on the search query
+        const results = eventsToDisplay.filter(event =>
+            event.name.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+        setFilteredEvents(results);
+    }, [searchQuery, eventsToDisplay]);
 
     const handleEventPress = (event: { name: any; description: any; }) => {
-        // Aquí puedes navegar a la pantalla de detalles del evento
         Alert.alert('Detalles del Evento', `Nombre: ${event.name}\nDescripción: ${event.description}`);
-
     };
 
     const handleLogout = async () => {
         await AsyncStorage.removeItem("userId");
-        const userId = await AsyncStorage.getItem('userId');
-        console.log('User token:', userId)
         logout();
-    }
+    };
 
-    const handleDetailsEvent = (item: Event) => {
+    const handleDetailsEvent = (item: any) => {
         Alert.alert('Detalles del Evento', `Nombre: ${item.name}\nDescripción: ${item.description}\nFecha: ${item.date}\nUbicación: ${item.latitude}, ${item.longitude}\nParticipantes: ${item.currentParticipants}/${item.maxParticipants}`);
     };
 
@@ -80,9 +74,17 @@ export default function Perfil() {
 
             <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Eventos Creados</Text>
-                {eventsToDisplay.length > 0 ? (
+
+                {/* Search bar */}
+                <TextInput
+                    style={styles.searchBar}
+                    placeholder="Buscar eventos por nombre"
+                    value={searchQuery}
+                    onChangeText={setSearchQuery} // Update search query
+                />
+                {filteredEvents.length > 0 ? (
                     <FlatList
-                        data={eventsToDisplay}
+                        data={filteredEvents}
                         scrollEnabled={false}
                         renderItem={({ item }) => (
                             <TouchableOpacity
@@ -102,7 +104,7 @@ export default function Perfil() {
                                     <View style={styles.detailButtonContainer}>
                                         <Button
                                             title="Detalles"
-                                            onPress={() => handleDetailsEvent(item.id)}
+                                            onPress={() => handleDetailsEvent(item)}
                                             color="#FF7F50"
                                         />
                                     </View>
@@ -112,16 +114,15 @@ export default function Perfil() {
                         keyExtractor={(item) => item.id.toString()}
                         ListFooterComponent={
                             <Text style={styles.footerText}>
-                                {`Total de eventos: ${eventsToDisplay.length}`}
+                                {`Total de eventos: ${filteredEvents.length}`}
                             </Text>
                         }
                     />
                 ) : (
-                    <Text style={styles.noEventsText}>No se han creado eventos aún.</Text>
+                    <Text style={styles.noEventsText}>No se encontraron eventos con ese nombre.</Text>
                 )}
             </View>
         </ScrollView>
-
     );
 };
 
@@ -247,5 +248,15 @@ const styles = StyleSheet.create({
     detailButtonContainer: {
         alignSelf: 'flex-end',
         marginTop: 8,
+    },
+    searchBar: {
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        fontSize: 16,
+        borderColor: '#ddd',
+        borderWidth: 1,
+        marginBottom: 16,
     },
 });
