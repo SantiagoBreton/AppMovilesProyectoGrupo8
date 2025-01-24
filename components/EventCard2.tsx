@@ -10,6 +10,7 @@ import EventDetailModal from "./EventDetailModal";
 interface EventCard2Props {
     event: EventWithId | null;
 };
+
 interface EventWithId {
     id: number;
     name: string;
