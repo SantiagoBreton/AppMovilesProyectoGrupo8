@@ -31,6 +31,8 @@ export default function Perfil() {
     const hasHalfStar = rating % 1 >= 0.5; // Determine if a half-star is needed
     const emptyStars = totalStars - filledStars - (hasHalfStar ? 1 : 0); // Remaining empty stars
     const [isRevieModalVisible, setIsReviewModalVisible] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const[filteredEvents, setFilteredEvents] = useState(eventsToDisplay);
 
 
     useEffect(() => {
@@ -50,7 +52,14 @@ export default function Perfil() {
         };
 
         fetchUserData();
-    });
+    }, [user]);
+    useEffect(() => {
+        // Filter events based on the search query
+        const results = eventsToDisplay.filter(event =>
+            event.name.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+        setFilteredEvents(results);
+    }, [searchQuery, eventsToDisplay]);
 
     if (isLoading) {
         return (
@@ -133,9 +142,16 @@ export default function Perfil() {
 
             <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Eventos Creados</Text>
-                {eventsToDisplay.length > 0 ? (
+                {/* Search bar */}
+                <TextInput
+                    style={styles.searchBar}
+                    placeholder="Buscar eventos por nombre"
+                    value={searchQuery}
+                    onChangeText={setSearchQuery} // Update search query
+                />
+                {filteredEvents.length > 0 ? (
                     <FlatList
-                        data={eventsToDisplay}
+                        data={filteredEvents}
                         scrollEnabled={false}
                         renderItem={({ item }) => (
                             <EventCard2 event={item} />
@@ -143,7 +159,7 @@ export default function Perfil() {
                         keyExtractor={(item) => item.id.toString()}
                         ListFooterComponent={
                             <Text style={styles.footerText}>
-                                {`Total de eventos: ${eventsToDisplay.length}`}
+                                {`Total de eventos: ${filteredEvents.length}`}
                             </Text>
                         }
                     />
@@ -316,4 +332,15 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#333',
     },
+    searchBar: {
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        fontSize: 16,
+        borderColor: '#ddd',
+        borderWidth: 1,
+        marginBottom: 16,
+    },
+
 });
