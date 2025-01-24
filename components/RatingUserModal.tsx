@@ -114,6 +114,7 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
     const renderComment = ({ item }: { item: Rating }) => (
       <View style={styles.commentCard}>
         <Text style={styles.commentText}>{item.comment}</Text>
+        <View style={styles.titleSeparator} />
         <View style={styles.commentHeader}>
           <View style={styles.commentRating}>
             {Array.from({ length: 5 }).map((_, i) =>
