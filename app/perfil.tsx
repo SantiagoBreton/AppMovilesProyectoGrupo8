@@ -50,7 +50,7 @@ export default function Perfil() {
         };
 
         fetchUserData();
-    }, [user]);
+    });
 
     if (isLoading) {
         return (

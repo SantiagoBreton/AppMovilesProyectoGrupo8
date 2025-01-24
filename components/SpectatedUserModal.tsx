@@ -7,6 +7,7 @@ import { getAllEventsFromUser } from '@/apiCalls/getAllEventsFromUser';
 import { getUserRating } from '@/apiCalls/getUserRating';
 import ReviewModal from './RatingUserModal';
 import { getAllUserRatings } from '@/apiCalls/getAllUserRatings';
+import { StarRating } from './StarRating';
 
 interface CustomEvent {
     id: number;
@@ -149,42 +150,9 @@ const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
                         </View>
                         <TouchableOpacity onPress={() => { setIsReviewModalVisible(true) }}>
                             <View style={styles.starContainer}>
-                                {/* Render fully filled stars */}
                                 <Text style={styles.text}>Users Rating:  </Text>
-                                {Array.from({ length: filledStars }).map((_, index) => (
-                                    <FontAwesome
-                                        key={`filled-${index}`}
-                                        name="star"
-                                        size={24}
-                                        color="#FFD700"
-                                        style={styles.star}
-                                    />
-                                ))}
-
-                                {/* Render a half-filled star, if needed */}
-                                {hasHalfStar && (
-                                    <FontAwesome
-                                        name="star-half"
-                                        size={24}
-                                        color="#FFD700"
-                                        style={styles.star}
-                                    />
-                                )}
-
-                                {/* Render empty stars */}
-                                {Array.from({ length: emptyStars }).map((_, index) => (
-                                    <FontAwesome
-                                        key={`empty-${index}`}
-                                        name="star-o"
-                                        size={24}
-                                        color="#FFD700"
-                                        style={styles.star}
-                                    />
-                                ))}
-                                <Text style={styles.text}>{`(${isNaN(user.rating) ? 0 : user.rating.toFixed(1)}) `}</Text>
-
-
-
+                                <StarRating rating={user.rating || 0} size={24} />
+                                <Text style={styles.text}>{`(${isNaN(user.rating) ? 0 : user.rating.toFixed(1)})`}</Text>
                             </View>
                         </TouchableOpacity>
                         <View style={styles.section}>

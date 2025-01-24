@@ -13,6 +13,7 @@ import {
 import { FontAwesome } from '@expo/vector-icons';
 import { getAllUserRatings } from '@/apiCalls/getAllUserRatings';
 import { createNewRating } from '@/apiCalls/createNewRating';
+import SpectatedUserModal from './SpectatedUserModal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
@@ -35,6 +36,7 @@ interface Rating {
     userId: number;
     rating: number;
     ritingUserId: number;
+    ratingUser: User;
 }
 
 const ReviewModal: React.FC<ReviewModalProps> = ({
@@ -43,171 +45,140 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
     refreshData,
     onClose,
 }) => {
-    const [rating, setRating] = useState<number>(user?.rating ?? 0); // User rating
-    const [modalVisible, setModalVisible] = useState(false); // Modal visibility
-    const [userComments, setUserComments] = useState<string>(''); // User input comments
-    const [userRating, setUserRating] = useState<Rating[]>([]); // User rating comments
-    const [userId, setUserId] = useState<number | null>(null); // User ID
-
+    const [rating, setRating] = useState<number>(0);
+    const [comments, setComments] = useState<string>('');
+    const [userRatings, setUserRatings] = useState<Rating[]>([]);
+    const [userId, setUserId] = useState<number | null>(null);
+    const [specModalVisible, setSpecModalVisible] = useState(false);
+  
+    // Fetch user ratings and userId when modal is visible
     useEffect(() => {
-        if (user) {
-            getAllUserRatings(user.id).then((response) => {
-                setUserRating(response.data);
-            });
-            const fetchUserId = async () => {
-                try {
-                    const storedUserId = await AsyncStorage.getItem('userId');
-                    if (storedUserId) {
-                        setUserId(parseInt(storedUserId, 10)); // Convierte el ID de string a número
-                    }
-                } catch (error) {
-                    console.error('Error fetching userId:', error);
-                }
-            };
-
-            fetchUserId();
+      if (user) {
+        fetchRatingsAndUserId(user.id);
+      }
+    }, [user, isVisible]);
+  
+    const fetchRatingsAndUserId = async (userId: number) => {
+      try {
+        const [ratingsResponse, storedUserId] = await Promise.all([
+          getAllUserRatings(userId),
+          AsyncStorage.getItem('userId'),
+        ]);
+  
+        setUserRatings(ratingsResponse.data);
+        if (storedUserId) {
+          setUserId(parseInt(storedUserId, 10));
         }
-    }
-        , [user]);
-
-    const handleSubmit = async () => {
-        if (userComments === '' || rating === 0) {
-            alert('Por favor, califica y deja un comentario');
-        }
-        else {
-            if (user && userId !== null) {
-                const newRating = {
-                    ratingUserId: userId,
-                    userId: user.id,
-                    comment: userComments,
-                    rating: rating,
-                };
-                const response = await createNewRating(newRating);
-                if (response) {
-                    setModalVisible(false);
-                    const newReview = { comment: userComments, rating, id: Date.now(), userId: user.id, ritingUserId: userId };
-                    setUserRating([...userRating, newReview]); // Update the state with the new review
-
-                    refreshData(); // Trigger data refresh
-                    onClose(); // Close the modal
-                }
-            }
-        }
-    }
-
-    const handleRating = (newRating: number) => {
-        setRating(newRating);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
     };
-
+  
+    const handleSubmit = async () => {
+      if (!comments || rating === 0) {
+        alert('Por favor, califica y deja un comentario');
+        return;
+      }
+  
+      if (user && userId !== null) {
+        const newRating = {
+          ratingUserId: userId,
+          userId: user.id,
+          comment: comments,
+          rating,
+        };
+  
+        try {
+          const response = await createNewRating(newRating);
+          if (response) {
+            refreshData();
+            onClose();
+          }
+        } catch (error) {
+          console.error('Error submitting rating:', error);
+        }
+      }
+    };
+  
+    const renderStar = (index: number, currentRating: number,size:number) => (
+      <TouchableOpacity key={index} onPress={() => setRating(index)}>
+        <FontAwesome
+          name={index <= currentRating ? 'star' : 'star-o'}
+          size={size}
+          color={index <= currentRating ? '#FFD700' : '#E0E0E0'}
+          style={styles.star}
+        />
+      </TouchableOpacity>
+    );
+  
+    const renderComment = ({ item }: { item: Rating }) => (
+      <View style={styles.commentCard}>
+        <Text style={styles.commentText}>{item.comment}</Text>
+        <View style={styles.titleSeparator} />
+        <View style={styles.commentHeader}>
+          <View style={styles.commentRating}>
+            {Array.from({ length: 5 }).map((_, i) =>
+              renderStar(i + 1, item.rating,15)
+            )}
+          </View>
+          <TouchableOpacity onPress={() => setSpecModalVisible(true)}>
+            <Text style={styles.commentUserName}>{item.ratingUser.name}</Text>
+          </TouchableOpacity>
+        </View>
+        <SpectatedUserModal
+          isVisible={specModalVisible}
+          user={item.ratingUser}
+          onClose={() => setSpecModalVisible(false)}
+        />
+      </View>
+    );
+  
     return (
-        <Modal visible={isVisible} transparent={true} animationType="fade">
-            <View style={styles.modalOverlay}>
-                {user && user.id != userId ? (
-                    <View style={styles.modalContent}>
-                        {/* Title */}
-
-                        <Text style={styles.modalTitle}>Deja tu calificación</Text>
-
-                        {/* Ratings Section */}
-                        <View style={styles.starsContainer}>
-                            {Array.from({ length: 5 }).map((_, index) => {
-                                const starIndex = index + 1;
-                                return (
-                                    <TouchableOpacity
-                                        key={index}
-                                        onPress={() => handleRating(starIndex)}
-                                    >
-                                        <FontAwesome
-                                            name={starIndex <= rating ? 'star' : 'star-o'}
-                                            size={40}
-                                            color={starIndex <= rating ? '#FFD700' : '#E0E0E0'}
-                                            style={styles.star}
-                                        />
-                                    </TouchableOpacity>
-                                );
-                            })}
-                        </View>
-
-                        {/* Review Input */}
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Escribe tu comentario aquí..."
-                            value={userComments}
-                            onChangeText={setUserComments}
-                            multiline={true}
-                        />
-                        <View style={styles.titleSeparator} />
-
-                        {/* User Comments Section */}
-                        <View style={styles.commentsContainer}>
-                            <FlatList
-                                data={userRating}
-                                renderItem={({ item }) => (
-                                    <View style={styles.commentCard}>
-                                        <Text style={styles.commentText}>{item.comment}</Text>
-                                        <View style={styles.commentRating}>
-                                            {Array.from({ length: 5 }).map((_, i) => (
-                                                <FontAwesome
-                                                    key={i}
-                                                    name={i < item.rating ? 'star' : 'star-o'}
-                                                    size={16}
-                                                    color="#FFD700"
-                                                />
-                                            ))}
-                                        </View>
-                                    </View>
-                                )}
-                                keyExtractor={(item) => item.id.toString()}
-                            />
-                        </View>
-
-                        {/* Submit Button */}
-                        <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-                            <Text style={styles.submitButtonText}>Enviar</Text>
-                        </TouchableOpacity>
-
-                        {/* Close Button */}
-                        <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-                            <FontAwesome name="times" size={24} color="#FFF" />
-                        </TouchableOpacity>
-                    </View>
-                ) : (
-                    <View style={styles.modalContent}>
-                        <Text style={styles.modalTitle}>Comentarios recibidos</Text>
-                        {userRating.length > 0 ? (
-                            <View style={styles.commentsContainer}>
-                                <FlatList
-                                    data={userRating}
-                                    renderItem={({ item }) => (
-                                        <View style={styles.commentCard}>
-                                            <Text style={styles.commentText}>{item.comment}</Text>
-                                            <View style={styles.commentRating}>
-                                                {Array.from({ length: 5 }).map((_, i) => (
-                                                    <FontAwesome
-                                                        key={i}
-                                                        name={i < item.rating ? 'star' : 'star-o'}
-                                                        size={16}
-                                                        color="#FFD700"
-                                                    />
-                                                ))}
-                                            </View>
-                                        </View>
-                                    )}
-                                    keyExtractor={(item) => item.id.toString()}
-                                />
-                            </View>
-                        ) : (
-                            <Text>No hay comentarios aún</Text>
-                        )}
-                        <TouchableOpacity style={styles.submitButton} onPress={onClose}>
-                            <Text style={styles.submitButtonText}>Cerrar</Text>
-                        </TouchableOpacity>
-
-                    </View>
-
-                )}
-            </View>
-        </Modal>
+      <Modal visible={isVisible} transparent={true} animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            {user && user.id !== userId ? (
+              <>
+                <Text style={styles.modalTitle}>Deja tu calificación</Text>
+                <View style={styles.starsContainer}>
+                  {Array.from({ length: 5 }).map((_, index) =>
+                    renderStar(index + 1, rating,40)
+                  )}
+                </View>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Escribe tu comentario aquí..."
+                  value={comments}
+                  onChangeText={setComments}
+                  multiline
+                />
+                <FlatList
+                  data={userRatings}
+                  renderItem={renderComment}
+                  keyExtractor={(item) => item.id.toString()}
+                  style={styles.commentsContainer}
+                />
+                <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+                  <Text style={styles.submitButtonText}>Enviar</Text>
+                </TouchableOpacity>
+              </>
+            ) : (
+              <>
+                <Text style={styles.modalTitle}>Comentarios recibidos</Text>
+                <FlatList
+                  data={userRatings}
+                  renderItem={renderComment}
+                  keyExtractor={(item) => item.id.toString()}
+                  style={styles.commentsContainer}
+                />
+              </>
+            )}
+            <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+              <FontAwesome name="times" size={24} color="#FFF" />
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     );
 };
 
@@ -272,6 +243,7 @@ const styles = StyleSheet.create({
     },
     commentRating: {
         flexDirection: 'row',
+        alignItems: 'center', // Align stars vertically
     },
     submitButton: {
         backgroundColor: '#FF6F61',
@@ -299,6 +271,17 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1, // Creates the horizontal line
         borderBottomColor: '#ddd', // Light gray color for the line
         marginVertical: 15, // Space around the line to keep separation clean
+    },
+    commentUserName: {
+        fontSize: 12,
+        color: '#555',
+        textAlign: 'right', // Ensure the text aligns properly
+    },
+    commentHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 10, // Add some spacing between the header and the comment
     },
 });
 
