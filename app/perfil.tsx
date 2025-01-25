@@ -16,6 +16,7 @@ import { StarRating } from '@/components/StarRating';
 import ImageUploader from '@/components/ImageUploader';
 import { getUserProfileImage } from '@/apiCalls/getUserProfileImage';
 import { getUserBannerImage } from '@/apiCalls/getUserBannerImage';
+import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 
 interface User {
     id: number;
@@ -37,6 +38,7 @@ export default function Perfil() {
     const [isImageModalVisible, setIsImageModalVisible] = useState(false);
     const [profileImage, setProfileImage] = useState<string | null>(null);
     const [bannerImage, setBannerImage] = useState<string | null>(null);
+    const [userId, setUserId] = useState<number | null>(null);
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -57,22 +59,30 @@ export default function Perfil() {
 
         fetchUserData();
     }, []);
+
     useEffect(() => {
-        const getUserImage = async () => {
-            const result = await getUserProfileImage();
-            if (result.data) {
-                setProfileImage(result.data.imageUrl);
-            }
-        }
+
         const getUserBanner = async () => {
             const result = await getUserBannerImage();
             if (result.data) {
                 setBannerImage(result.data.imageUrl);
             }
         }
+
+        const getUserImage = async () => {
+            const storedUserId = await AsyncStorage.getItem('userId');
+            if (storedUserId) {
+                setUserId(parseInt(storedUserId, 10));
+            }
+            const result = await getUserProfileImage(userId || 0);
+            if (result.data) {
+                setProfileImage(result.data.imageUrl);
+            }
+        }
+
         getUserImage();
         getUserBanner();
-    }, [isImageModalVisible]);
+    }, [isImageModalVisible, userId]);
 
     useEffect(() => {
         const results = eventsToDisplay.filter(event =>

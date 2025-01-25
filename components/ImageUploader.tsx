@@ -21,6 +21,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { uploadUserProfileImage } from '@/apiCalls/uploadUserProfileImage';
 import { getUserProfileImage } from '@/apiCalls/getUserProfileImage';
 import { uploadUserBannerImage } from '@/apiCalls/uploadUserBannerImage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 
@@ -55,7 +56,8 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
     useEffect(() => {
         loadImages();
         const fetchImage = async () => {
-            const result = await getUserProfileImage();
+            setUserId(parseInt(await AsyncStorage.getItem('userId') || '0'));
+            const result = await getUserProfileImage(userId || 0);
             if (result.data) {
                 setImageUrl(result.data.imageUrl);
             }
