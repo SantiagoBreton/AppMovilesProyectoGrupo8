@@ -19,17 +19,10 @@ import * as FileSystem from 'expo-file-system';
 import { Ionicons } from '@expo/vector-icons';
 import { uploadUserProfileImage } from '@/apiCalls/uploadUserProfileImage';
 import { getUserProfileImage } from '@/apiCalls/getUserProfileImage';
-import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { uploadUserBannerImage } from '@/apiCalls/uploadUserBannerImage';
 
 
 
-interface User {
-    id: number;
-    name: string;
-    email: string;
-    rating: number;
-};
 interface ImageUploaderProps {
     isVisible: boolean;
     onClose: () => void;
@@ -106,11 +99,24 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
     };
 
     // Upload image to server
-    const uploadImage = async (uri: string) => {
+    const uploadProfileImage = async (uri: string) => {
         setUploading(true);
         console.log('Uploading image:', uri);
 
         const success = await uploadUserProfileImage(uri);
+        if (success) {
+            console.log('Image uploaded successfully');
+        } else {
+            console.error('Failed to upload image');
+        }
+
+        setUploading(false);
+    };
+    const uploadBanner = async (uri: string) => {
+        setUploading(true);
+        console.log('Uploading image:', uri);
+
+        const success = await uploadUserBannerImage(uri);
         if (success) {
             console.log('Image uploaded successfully');
         } else {
@@ -126,18 +132,28 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
         setImages(images.filter((i) => i !== uri));
     };
 
-    const renderItem = ({ item }: { item: any }) => {
+    const renderProfileImage = ({ item }: { item: any }) => {
         const filename = item.split('/').pop();
         return (
             <View style={{ flexDirection: 'row', margin: 1, alignItems: 'center', gap: 5 }}>
                 <Image style={{ width: 80, height: 80 }} source={{ uri: item }} />
                 <Text style={{ flex: 1 }}>{filename}</Text>
-                <Ionicons.Button name="cloud-upload" onPress={() => uploadImage(item)} />
+                <Ionicons.Button name="cloud-upload" onPress={() => uploadProfileImage(item)} />
                 <Ionicons.Button name="trash" onPress={() => deleteImage(item)} />
             </View>
         );
     };
-    const userProfileImage = getUserProfileImage();
+    const renderBanner = ({ item }: { item: any }) => {
+        const filename = item.split('/').pop();
+        return (
+            <View style={{ flexDirection: 'row', margin: 1, alignItems: 'center', gap: 5 }}>
+                <Image style={{ width: 80, height: 80 }} source={{ uri: item }} />
+                <Text style={{ flex: 1 }}>{filename}</Text>
+                <Ionicons.Button name="cloud-upload" onPress={() => uploadBanner(item)} />
+                <Ionicons.Button name="trash" onPress={() => deleteImage(item)} />
+            </View>
+        );
+    };
 
 
     return (
@@ -148,8 +164,22 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
                     <Button title="Capture Image" onPress={() => selectImage(false)} color="#FF6F61" />
                 </View>
 
-                <Text style={styles.title}>My Images</Text>
-                <FlatList data={images} renderItem={renderItem} />
+                <Text style={styles.title}>My Profile Images</Text>
+                <FlatList data={images} renderItem={renderProfileImage} />
+
+                {uploading && (
+                    <View style={styles.loadingOverlay}>
+                        <ActivityIndicator color="#fff" animating size="large" />
+                    </View>
+                )}
+            </SafeAreaView>
+            <SafeAreaView style={styles.safeArea}>
+                <View style={styles.buttonContainer}>
+                    <Button title="Photo Library" onPress={() => selectImage(true)} color="#FF6F61" />
+                    <Button title="Capture Image" onPress={() => selectImage(false)} color="#FF6F61" />
+                </View>
+                <Text style={styles.title}>My Banners</Text>
+                <FlatList data={images} renderItem={renderBanner} />
 
                 {uploading && (
                     <View style={styles.loadingOverlay}>
@@ -161,14 +191,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
             <TouchableOpacity style={styles.closeButton} onPress={onClose}>
                 <FontAwesome name="times" size={24} color="#FFF" />
             </TouchableOpacity>
-            <View>
-            {imageUrl && (
-                <Image
-                    source={{ uri: imageUrl }}
-                    style={{ width: 200, height: 200, borderRadius: 100 }}
-                />
-            )}
-        </View>
+
         </Modal>
     );
 };

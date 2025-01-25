@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import {
     View, Text, TextInput, StyleSheet, Image, ScrollView, Button, FlatList,
     TouchableOpacity, ActivityIndicator, Platform,
-    SafeAreaView
+    SafeAreaView,
+    ImageBackground
 } from 'react-native';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { myEvents } from '@/apiCalls/myEvents';
@@ -14,6 +15,8 @@ import ReviewModal from '@/components/RatingUserModal';
 import { getMyUserData } from '@/apiCalls/getMyUserData';
 import { StarRating } from '@/components/StarRating';
 import ImageUploader from '@/components/ImageUploader';
+import { getUserProfileImage } from '@/apiCalls/getUserProfileImage';
+import { getUserBannerImage } from '@/apiCalls/getUserBannerImage';
 
 
 
@@ -39,6 +42,8 @@ export default function Perfil() {
     const [searchQuery, setSearchQuery] = useState('');
     const [filteredEvents, setFilteredEvents] = useState(eventsToDisplay);
     const [isImageModalVisible, setIsImageModalVisible] = useState(false);
+    const [profileImage, setProfileImage] = useState<string | null>(null);
+    const [bannerImage, setBannerImage] = useState<string | null>(null);
 
 
     useEffect(() => {
@@ -57,8 +62,25 @@ export default function Perfil() {
                 setIsLoading(false);
             }
         };
+
         fetchUserData();
     }, []);
+    useEffect(() => {
+        const getUserImage = async () => {
+            const result = await getUserProfileImage();
+            if (result.data) {
+                setProfileImage(result.data.imageUrl);
+            }
+        }
+        const getUserBanner = async () => {
+            const result = await getUserBannerImage();
+            if (result.data) {
+                setBannerImage(result.data.imageUrl);
+            }
+        }
+        getUserImage();
+        getUserBanner();
+    }, [isImageModalVisible]);
 
     useEffect(() => {
         const results = eventsToDisplay.filter(event =>
@@ -107,8 +129,25 @@ export default function Perfil() {
 
     return (
         <ScrollView style={styles.container}>
-            <View style={styles.header}>
-                <Image source={{ uri: 'https://via.placeholder.com/150' }} style={styles.profileImage} />
+
+            <View style={styles.container}>
+                {/* Banner as background */}
+                <ImageBackground
+                    source={{ uri: profileImage || 'https://www.gravatar.com/avatar/2c7d99fe281ecd3bcd65ab915bac6dd5?s=250' }} // Replace with your banner URL
+                    style={styles.banner}
+                >
+
+                </ImageBackground>
+
+                {/* Profile Image in the foreground */}
+                <View style={styles.profileContainer}>
+                    <Image
+                        source={{ uri: bannerImage || 'https://www.gravatar.com/avatar/2c7d99fe281ecd3bcd65ab915bac6dd5?s=250' }} // Replace with the user profile URL
+                        style={styles.profileImage}
+                    />
+                </View>
+            </View>
+            <View style={styles.userName}>
                 <Text style={styles.name}>{user?.name}</Text>
             </View>
 
@@ -158,7 +197,7 @@ export default function Perfil() {
                 ) : (
                     <Text style={styles.noEventsText}>No se han creado eventos aún.</Text>
                 )}
-                <Button title="Subir imagen" onPress={() => {setIsImageModalVisible(true) }} />
+                <Button title="Subir imagen" onPress={() => { setIsImageModalVisible(true) }} />
             </View>
 
             <ReviewModal
@@ -167,7 +206,7 @@ export default function Perfil() {
                 refreshData={refreshUserRatings}
                 onClose={() => { setIsReviewModalVisible(false); refreshUserRatings(); }}
             />
-            <ImageUploader isVisible={isImageModalVisible} onClose={()=>setIsImageModalVisible(false)} />
+            <ImageUploader isVisible={isImageModalVisible} onClose={() => setIsImageModalVisible(false)} />
 
         </ScrollView>
     );
@@ -179,7 +218,7 @@ const styles = StyleSheet.create({
         marginTop: 30,
         flex: 1,
         backgroundColor: '#F9F9F9',
-        paddingHorizontal: 16,
+        paddingHorizontal: 10,
         paddingVertical: 24,
     },
     footerText: {
@@ -202,18 +241,18 @@ const styles = StyleSheet.create({
         borderRadius: 16,
     },
     profileImage: {
-        width: 100,
+        width: 100, // Profile image size
         height: 100,
-        borderRadius: 50,
-        borderWidth: 2,
-        borderColor: '#fff',
-        marginBottom: 8,
-    },
-    name: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: '#fff',
-    },
+        borderRadius: 50, // Makes the image circular
+        borderWidth: 3,
+        borderColor: '#fff', // Add a border to separate it from the background
+      },
+      name: {
+        fontSize: 18, // Tamaño del texto
+        fontWeight: 'bold', // Negrita
+        color: '#333', // Color del texto
+        textAlign: 'center', // Centrado
+      },
     section: {
         backgroundColor: '#fff',
         padding: 16,
@@ -240,6 +279,18 @@ const styles = StyleSheet.create({
         marginVertical: 16,
         alignItems: 'center',
     },
+    userName: {
+        alignItems: 'center', // Centra el contenido horizontalmente
+        marginTop: 20, // Espacio entre la imagen y el texto
+        padding: 10, // Espaciado interno
+        backgroundColor: 'rgba(255, 255, 255, 0.8)', // Fondo blanco semitransparente
+        borderRadius: 10, // Bordes redondeados
+        shadowColor: '#000', // Sombra
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 5, // Sombra para Android
+      },
     sectionTitle: {
         fontSize: 20,
         fontWeight: 'bold',
@@ -311,7 +362,7 @@ const styles = StyleSheet.create({
     starContainer: {
         backgroundColor: '#fff',
         padding: 16,
-        marginVertical: 12,
+        marginVertical: 16,
         borderRadius: 12,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
@@ -338,6 +389,26 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         marginBottom: 16,
     },
+    banner: {
+        width: '100%',
+        height: 200, // Adjust to your desired banner height
+        justifyContent: 'flex-end', // Align overlay content to the bottom
+    },
+      overlay: {
+        backgroundColor: 'rgba(0, 0, 0, 0.4)', // Semi-transparent overlay
+        padding: 10,
+      },
+      bannerText: {
+        color: '#fff',
+        fontSize: 20,
+        fontWeight: 'bold',
+        textAlign: 'center',
+      },
+      profileContainer: {
+        alignItems: 'center',
+        marginTop: -150, // Adjust to overlap the banner
+      },
+
 
 });
 
