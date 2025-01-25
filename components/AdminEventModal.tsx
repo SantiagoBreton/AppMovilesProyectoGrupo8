@@ -70,6 +70,8 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
         
     }, [subscribedUsers, requestingUsers]);
 
+    
+
     const handleDateChange = (event: any, date?: Date) => {
         setDatePickerVisible(false);
 
