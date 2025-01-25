@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import {
     View, Text, TextInput, StyleSheet, Image, ScrollView, Button, FlatList,
-    TouchableOpacity, ActivityIndicator
+    TouchableOpacity, ActivityIndicator, Platform,
+    SafeAreaView
 } from 'react-native';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { myEvents } from '@/apiCalls/myEvents';
@@ -12,6 +13,11 @@ import EventCard2 from '@/components/EventCard2';
 import ReviewModal from '@/components/RatingUserModal';
 import { getMyUserData } from '@/apiCalls/getMyUserData';
 import { StarRating } from '@/components/StarRating';
+import ImageUploader from '@/components/ImageUploader';
+
+
+
+
 
 interface User {
     id: number;
@@ -19,6 +25,8 @@ interface User {
     email: string;
     rating: number;
 }
+
+
 
 export default function Perfil() {
     const [user, setUser] = useState<User | null>(null); // Allow null for uninitialized state
@@ -30,6 +38,8 @@ export default function Perfil() {
     const [isReviewModalVisible, setIsReviewModalVisible] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [filteredEvents, setFilteredEvents] = useState(eventsToDisplay);
+    const [isImageModalVisible, setIsImageModalVisible] = useState(false);
+
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -47,7 +57,6 @@ export default function Perfil() {
                 setIsLoading(false);
             }
         };
-
         fetchUserData();
     }, []);
 
@@ -57,6 +66,13 @@ export default function Perfil() {
         );
         setFilteredEvents(results);
     }, [searchQuery, eventsToDisplay]);
+
+
+
+
+
+
+
 
     const refreshUserRatings = async () => {
         if (!user) return;
@@ -142,6 +158,7 @@ export default function Perfil() {
                 ) : (
                     <Text style={styles.noEventsText}>No se han creado eventos aún.</Text>
                 )}
+                <Button title="Subir imagen" onPress={() => {setIsImageModalVisible(true) }} />
             </View>
 
             <ReviewModal
@@ -150,6 +167,8 @@ export default function Perfil() {
                 refreshData={refreshUserRatings}
                 onClose={() => { setIsReviewModalVisible(false); refreshUserRatings(); }}
             />
+            <ImageUploader isVisible={isImageModalVisible} onClose={()=>setIsImageModalVisible(false)} />
+
         </ScrollView>
     );
 }
@@ -321,3 +340,4 @@ const styles = StyleSheet.create({
     },
 
 });
+

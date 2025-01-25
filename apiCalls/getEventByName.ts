@@ -1,6 +1,6 @@
 export const getEventByName = async (userId: number, eventName: string) => {
     try {
-        console.log(userId, eventName);
+        
         const response = await fetch(`http://${process.env.EXPO_PUBLIC_SERVER_IP}:3000/getEventByPartialName/${userId}/${eventName}`);
 
         if (!response.ok) { 
