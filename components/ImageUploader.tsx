@@ -10,7 +10,8 @@ import {
     FlatList,
     Image,
     SafeAreaView,
-    ActivityIndicator
+    ActivityIndicator,
+    Animated
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 
@@ -48,6 +49,9 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
     const [images, setImages] = useState<any[]>([]);
     const [imageUrl, setImageUrl] = useState<string | null>(null);
     const [userId, setUserId] = useState<number | null>(null);
+    const [activeTab, setActiveTab] = useState(0); // 0 = Profile Image, 1 = Banner
+    const tabUnderline = new Animated.Value(0); // Animation for the underline
+
     useEffect(() => {
         loadImages();
         const fetchImage = async () => {
@@ -132,66 +136,112 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
         setImages(images.filter((i) => i !== uri));
     };
 
-    const renderProfileImage = ({ item }: { item: any }) => {
+
+
+    const handleTabSwitch = (index: number) => {
+        setActiveTab(index);
+        Animated.timing(tabUnderline, {
+            toValue: index,
+            duration: 300,
+            useNativeDriver: false,
+        }).start();
+    };
+    const renderImageItem = (item: any, isProfile: boolean) => {
         const filename = item.split('/').pop();
+        const handleUpload = isProfile ? uploadProfileImage : uploadBanner;
         return (
-            <View style={{ flexDirection: 'row', margin: 1, alignItems: 'center', gap: 5 }}>
-                <Image style={{ width: 80, height: 80 }} source={{ uri: item }} />
-                <Text style={{ flex: 1 }}>{filename}</Text>
-                <Ionicons.Button name="cloud-upload" onPress={() => uploadProfileImage(item)} />
-                <Ionicons.Button name="trash" onPress={() => deleteImage(item)} />
+            <View style={styles.imageRow}>
+                <Image style={styles.image} source={{ uri: item }} />
+                <Text style={styles.imageText}>{filename}</Text>
+                <Ionicons.Button
+                    name="cloud-upload"
+                    backgroundColor="transparent"
+                    color="#4CAF50"
+                    size={22}
+                    onPress={() => handleUpload(item)}
+                />
+                <Ionicons.Button
+                    name="trash"
+                    backgroundColor="transparent"
+                    color="#FF5252"
+                    size={22}
+                    onPress={() => deleteImage(item)}
+                />
             </View>
         );
-    };
-    const renderBanner = ({ item }: { item: any }) => {
-        const filename = item.split('/').pop();
-        return (
-            <View style={{ flexDirection: 'row', margin: 1, alignItems: 'center', gap: 5 }}>
-                <Image style={{ width: 80, height: 80 }} source={{ uri: item }} />
-                <Text style={{ flex: 1 }}>{filename}</Text>
-                <Ionicons.Button name="cloud-upload" onPress={() => uploadBanner(item)} />
-                <Ionicons.Button name="trash" onPress={() => deleteImage(item)} />
-            </View>
-        );
-    };
+    }
 
 
     return (
-        <Modal visible={isVisible} transparent={false} animationType="fade">
+        <Modal visible={isVisible} transparent={false} animationType="slide">
+            
             <SafeAreaView style={styles.safeArea}>
-                <View style={styles.buttonContainer}>
-                    <Button title="Photo Library" onPress={() => selectImage(true)} color="#FF6F61" />
-                    <Button title="Capture Image" onPress={() => selectImage(false)} color="#FF6F61" />
+                {/* Header with Tabs */}
+                <View style={styles.header}>
+                    <TouchableOpacity style={styles.tab} onPress={() => handleTabSwitch(0)}>
+                        <Text style={[styles.tabText, activeTab === 0 && styles.activeTabText]}>
+                            Profile Images
+                        </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.tab} onPress={() => handleTabSwitch(1)}>
+                        <Text style={[styles.tabText, activeTab === 1 && styles.activeTabText]}>
+                            Banners
+                        </Text>
+                    </TouchableOpacity>
                 </View>
 
-                <Text style={styles.title}>My Profile Images</Text>
-                <FlatList data={images} renderItem={renderProfileImage} />
+                {/* Animated underline */}
+                <Animated.View
+                    style={[
+                        styles.tabUnderline,
+                        {
+                            left: tabUnderline.interpolate({
+                                inputRange: [0, 1],
+                                outputRange: ['5%', '55%'], // Adjust based on tab widths
+                            }),
+                        },
+                    ]}
+                />
 
+                {/* Content */}
+                
+                <View style={styles.content}>
+                    {activeTab === 0 ? (
+                        <>
+                            <Text style={styles.title}>Upload Your Profile Image</Text>
+                            <Button title="Select Image" onPress={() => selectImage(true)} color="#4CAF50" />
+                            <FlatList
+                                data={images}
+                                renderItem={({ item }) => renderImageItem(item, true)}
+                                keyExtractor={(item, index) => index.toString()}
+                            />
+                        </>
+                    ) : (
+                        <>
+                            <Text style={styles.title}>Upload Your Banner</Text>
+                            <Button title="Select Banner" onPress={() => selectImage(true)} color="#4CAF50" />
+                            <FlatList
+                                data={images}
+                                renderItem={({ item }) => renderImageItem(item, false)}
+                                keyExtractor={(item, index) => index.toString()}
+                            />
+                        </>
+                    )}
+                </View>
+
+                {/* Loader */}
                 {uploading && (
                     <View style={styles.loadingOverlay}>
                         <ActivityIndicator color="#fff" animating size="large" />
                     </View>
                 )}
+
+                {/* Close Button */}
+                <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+                    <Text style={{ color: '#FFF', fontSize: 16, fontWeight: 'bold' }}>Close</Text>
+                </TouchableOpacity>
+
             </SafeAreaView>
-            <SafeAreaView style={styles.safeArea}>
-                <View style={styles.buttonContainer}>
-                    <Button title="Photo Library" onPress={() => selectImage(true)} color="#FF6F61" />
-                    <Button title="Capture Image" onPress={() => selectImage(false)} color="#FF6F61" />
-                </View>
-                <Text style={styles.title}>My Banners</Text>
-                <FlatList data={images} renderItem={renderBanner} />
-
-                {uploading && (
-                    <View style={styles.loadingOverlay}>
-                        <ActivityIndicator color="#fff" animating size="large" />
-                    </View>
-                )}
-            </SafeAreaView>
-
-            <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-                <FontAwesome name="times" size={24} color="#FFF" />
-            </TouchableOpacity>
-
         </Modal>
     );
 };
@@ -199,35 +249,86 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
 const styles = StyleSheet.create({
     safeArea: {
         flex: 1,
-        backgroundColor: '#FFF',  // Solid white background for the modal
-        padding: 20,
+        backgroundColor: '#F8F9FA',
+        paddingHorizontal: 20,
     },
-    buttonContainer: {
+    header: {
         flexDirection: 'row',
         justifyContent: 'space-evenly',
-        marginVertical: 20,
+        borderBottomWidth: 1,
+        borderBottomColor: '#E0E0E0',
+        marginBottom: 10,
+    },
+    tab: {
+        flex: 1,
+        alignItems: 'center',
+        paddingVertical: 10,
+    },
+    tabText: {
+        fontSize: 18,
+        color: '#757575',
+    },
+    activeTabText: {
+        color: '#000',
+        fontWeight: '600',
+    },
+    tabUnderline: {
+        position: 'absolute',
+        bottom: 0, // Ensure it's at the bottom of the tabs, not the screen
+        width: '40%',
+        height: 3,
+        backgroundColor: '#4CAF50',
+    },
+    
+    content: {
+        flex: 1,
     },
     title: {
+        fontSize: 20,
         textAlign: 'center',
-        fontSize: 22,
-        fontWeight: '500',
-        color: '#333',  // Darker text for better contrast
-        marginBottom: 20,
+        marginBottom: 10,
+        color: '#333',
+    },
+    imageRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginVertical: 5,
+        padding: 10,
+        backgroundColor: '#FFF',
+        borderRadius: 10,
+        shadowColor: '#000',
+        shadowOpacity: 0.1,
+        shadowRadius: 5,
+        elevation: 2,
+    },
+    image: {
+        width: 80,
+        height: 80,
+        borderRadius: 10,
+    },
+    imageText: {
+        flex: 1,
+        marginLeft: 10,
+        fontSize: 16,
+        color: '#333',
     },
     loadingOverlay: {
         ...StyleSheet.absoluteFillObject,
-        backgroundColor: '#00000090',  // Semi-transparent black overlay for loading
+        backgroundColor: 'rgba(0,0,0,0.6)',
         alignItems: 'center',
         justifyContent: 'center',
     },
     closeButton: {
         position: 'absolute',
-        top: 20,
-        right: 20,
-        backgroundColor: 'rgba(0,0,0,0.3)',
-        borderRadius: 50,
-        padding: 10,
+        bottom: 20, // Positioned 20 pixels from the bottom
+        alignSelf: 'center', // Centers the button horizontally
+        backgroundColor: '#00000090', // Semi-transparent black background
+        paddingVertical: 10, // Adjust the vertical padding for a rectangle
+        paddingHorizontal: 20, // Adjust the horizontal padding for width
+        borderRadius: 10, // Subtle rounding for a rectangular shape
+        zIndex: 10, // Ensures the button stays on top
     },
+
 });
 
 export default ImageUploader;
