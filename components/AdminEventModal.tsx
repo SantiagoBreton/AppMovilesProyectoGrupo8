@@ -9,6 +9,7 @@ import { updateEvent } from '@/apiCalls/updateEvent';
 import DeleteConfirmationModal from './DeleteConfirmationModal';
 import { confirmSubscriptionToAnEvent } from '@/apiCalls/confirmSubscriptionToAnEvent';
 import { denySubscriptionToAnEvent } from '@/apiCalls/denySubscriptionToAnEvent';
+import { getUserProfileImage } from '@/apiCalls/getUserProfileImage';
 
 interface EventWithId {
     id: number;
@@ -55,20 +56,48 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
     const [isSpectatedUserVisible, setIsSpectatedUserVisible] = useState(false);
     const { refreshEvents } = useEventContext();
     const [updatedSubscribedUsers, setUpdatedSubscribedUsers] = useState<User[]>(subscribedUsers);
-    const[updatedRequestingUsers, setUpdatedRequestingUsers] = useState<User[]>(requestingUsers);
+    const [updatedRequestingUsers, setUpdatedRequestingUsers] = useState<User[]>(requestingUsers);
     const [isDeleteConfirmationVisible, setIsDeleteConfirmationVisible] = useState(false);
     const [errorMessageTitle, setErrorMessageTitle] = useState('');
     const [errorMessageDescription, setErrorMessageDescription] = useState('');
     const [errorMessageParticipants, setErrorMessageParticipants] = useState('');
     const [errorMessageDate, setErrorMessageDate] = useState('');
-    const [activeTab, setActiveTab] = useState<'inscritos' | 'pendientes'>('inscritos');
+    const [activeTab, setActiveTab] = useState<'inscriptos' | 'pendientes'>('inscriptos');
+    const [isLoading, setIsLoading] = useState(false);
+    const[loadingMessage, setLoadingMessage] = useState('');
+    const [userImages, setUserImages] = useState<{ [key: number]: string }>({});
+
 
 
     useEffect(() => {
         setUpdatedSubscribedUsers(subscribedUsers);
         setUpdatedRequestingUsers(requestingUsers);
-        
+
+        const fetchUserImages = async () => {
+            const updatedImages: { [key: number]: string } = {};
+
+            // Loop through subscribed users
+            for (const user of subscribedUsers) {
+                const { data } = await getUserProfileImage(user.id);
+                // Check if the URL is valid and assign it, otherwise use a default image
+                updatedImages[user.id] = data?.imageUrl || 'default_image_url';
+            }
+
+            // Loop through requesting users
+            for (const user of requestingUsers) {
+                const { data } = await getUserProfileImage(user.id);
+                // Check if the URL is valid and assign it, otherwise use a default image
+                updatedImages[user.id] = data?.imageUrl || 'default_image_url';
+            }
+
+            setUserImages(updatedImages);
+        }
+
+        fetchUserImages();
+
     }, [subscribedUsers, requestingUsers]);
+
+
 
     const handleDateChange = (event: any, date?: Date) => {
         setDatePickerVisible(false);
@@ -113,6 +142,8 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
             setSelectedDate(adminEventDetails?.date ?? null);
         }
         try {
+            setIsLoading(true);
+            setLoadingMessage('Actualizando detalles del evento...');
             console.log(`newName: ${newName}, newDescription: ${newDescription}, selectedDate: ${selectedDate}`);
 
             // Fallback to default values if inputs are empty
@@ -128,6 +159,7 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
             setNewName('');
             setNewDescription('');
             setSelectedDate(new Date());
+            setIsLoading(false);
             onClose();
 
             Alert.alert('Éxito', 'El evento se actualizó.');
@@ -160,18 +192,20 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
     const handleAcceptUser = async (userId: number) => {
         try {
             if (adminEventDetails?.id !== undefined) {
+                setIsLoading(true);
+                setLoadingMessage('Aceptando usuario en el evento...');
                 const response = await confirmSubscriptionToAnEvent(adminEventDetails.id, userId);
                 if (response) {
-                    Alert.alert('Éxito', 'Usuario aceptado en el evento correctamente.');
                     setUpdatedSubscribedUsers((prevUsers) => [...prevUsers, requestingUsers.find((user) => user.id === userId) ?? { id: 0, name: '', email: '', rating: 0 }]);
                     setUpdatedRequestingUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
                     requestingUsers = requestingUsers.filter((user) => user.id !== userId);
-                    refreshEvents();}
-            } 
+                }
+                setIsLoading(false);
+            }
             else {
                 Alert.alert('Error', 'No se pudo obtener el ID del evento.');
             }
-            
+
 
         } catch (error: any) {
             Alert.alert('Error', 'No se pudo aceptar al usuario en el evento.');
@@ -186,17 +220,31 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
                     Alert.alert('Éxito', 'Usuario denegado en el evento correctamente.');
                     setUpdatedRequestingUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
                     requestingUsers = requestingUsers.filter((user) => user.id !== userId);
-                    refreshEvents();}
-            } 
+                    refreshEvents();
+                }
+            }
             else {
                 Alert.alert('Error', 'No se pudo obtener el ID del evento.');
             }
-            
+
 
         } catch (error: any) {
             Alert.alert('Error', 'No se pudo denegar al usuario en el evento.');
         }
     };
+
+
+
+
+    if (isLoading) {
+        return (
+            <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#007AFF" />
+                <Text style={styles.loadingText}>{loadingMessage}</Text>
+            </View>
+        );
+    }
+
 
 
 
@@ -387,11 +435,11 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
                         {/* Tabs */}
                         <View style={styles.tabContainer}>
                             <TouchableOpacity
-                                style={[styles.tabButton, activeTab === 'inscritos' && styles.activeTabButton]}
-                                onPress={() => setActiveTab('inscritos')}
+                                style={[styles.tabButton, activeTab === 'inscriptos' && styles.activeTabButton]}
+                                onPress={() => setActiveTab('inscriptos')}
                             >
-                                <Text style={[styles.tabText, activeTab === 'inscritos' && styles.activeTabText]}>
-                                    Usuarios Inscritos
+                                <Text style={[styles.tabText, activeTab === 'inscriptos' && styles.activeTabText]}>
+                                    Usuarios inscriptos
                                 </Text>
                             </TouchableOpacity>
                             <TouchableOpacity
@@ -405,18 +453,18 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
                         </View>
 
                         {/* Contenido basado en la pestaña activa */}
-                        {activeTab === 'inscritos' && (
+                        {activeTab === 'inscriptos' && (
                             <View>
                                 <Text style={styles.sectionTitle}>Usuarios Inscriptos:</Text>
                                 {updatedSubscribedUsers.length === 0 ? (
-                                    <Text style={styles.noSubscribedUsersText}>No hay usuarios inscritos.</Text>
+                                    <Text style={styles.noSubscribedUsersText}>No hay usuarios inscriptos.</Text>
                                 ) : (
                                     updatedSubscribedUsers.map((user) => (
                                         <View key={user.id} style={styles.userCard}>
                                             <TouchableOpacity onPress={() => handleSeeUserProfile(user)}>
                                                 <Image
                                                     source={{
-                                                        uri: 'https://www.gravatar.com/avatar/2c7d99fe281ecd3bcd65ab915bac6dd5?s=250',
+                                                        uri: userImages[user.id] || 'default_image_url',
                                                     }}
                                                     style={styles.profilePicture}
                                                 />
@@ -461,7 +509,7 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
                                             <TouchableOpacity onPress={() => handleSeeUserProfile(user)}>
                                                 <Image
                                                     source={{
-                                                        uri: 'https://www.gravatar.com/avatar/2c7d99fe281ecd3bcd65ab915bac6dd5?s=250',
+                                                        uri: userImages[user.id] || 'default_image_url',
                                                     }}
                                                     style={styles.profilePicture}
                                                 />
@@ -508,6 +556,11 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
                         </TouchableOpacity>
                     </View>
                 </ScrollView>
+                <SpectatedUserModal
+                    isVisible={isSpectatedUserVisible}
+                    user={seeUser}
+                    onClose={() => setIsSpectatedUserVisible(false)}
+                />
             </View>
         </Modal>
 
@@ -923,6 +976,23 @@ const styles = StyleSheet.create({
         color: 'gray',
         textAlign: 'center',
         marginTop: 20,
+    },
+    loadingContainer: {
+        flex: 1,
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#F4F4F4',
+    },
+    loadingText: {
+        marginTop: 10,
+        fontSize: 16,
+        color: '#333',
     },
 
 });

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Button, StyleSheet, FlatList, Modal, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, Button, StyleSheet, FlatList, Modal, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import * as Location from 'expo-location';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Float } from 'react-native/Libraries/Types/CodegenTypes';
@@ -18,7 +18,6 @@ export default function CreacionEvento() {
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [selectedView, setSelectedView] = useState('inscriptos'); // 'inscriptos' o 'creados'
     const [isDetailsModalVisible, setIsDetailsModalVisible] = useState(false);
-
     const [eventDetails, setEventDetails] = useState<EventWithId | null>(null);
     const [eventLocation, setEventLocation] = useState<string | null>(null);
     const { trigger } = useEventContext();
@@ -30,6 +29,8 @@ export default function CreacionEvento() {
     const [subscribedUsers, setSubscribedUsers] = useState<User[]>([]);
     const [requestingUsers, setRequestingUsers] = useState<User[]>([]);
     const [userId, setUserId] = useState<number | null>(null);
+    const [isAdminEventLoading, setIsAdminEventLoading] = useState(false);
+    
 
     useEffect(() => {
         const fetchUserId = async () => {
@@ -45,6 +46,8 @@ export default function CreacionEvento() {
 
         fetchUserId();
     }, []);
+
+
 
     interface EventWithId {
         id: number;
@@ -67,6 +70,7 @@ export default function CreacionEvento() {
 
     const handleDetailsEvent = async (item: EventWithId) => {
         try {
+            
             const addresses = await Location.reverseGeocodeAsync({
                 latitude: item.latitude,
                 longitude: item.longitude,
@@ -79,6 +83,7 @@ export default function CreacionEvento() {
 
             setEventDetails(item);
             setEventLocation(location);
+        
             setIsDetailsModalVisible(true);
         } catch (error) {
             console.error('Error fetching address:', error);
@@ -94,6 +99,7 @@ export default function CreacionEvento() {
 
     const handleAdministrarEvent = async (event: EventWithId) => {
         try {
+            setIsAdminEventLoading(true);
             const allSubscribedUser = await getAllUsersSubscribedToAnEvent(event.id);
             const allRequestingUsers = await getAllRequestingUsersToAnEvent(event.id);
 
@@ -103,12 +109,21 @@ export default function CreacionEvento() {
             } else {
                 Alert.alert('Error', 'No se pudo cargar la información de los usuarios inscriptos.');
             }
+            setIsAdminEventLoading(false);
             setAdminEventDetails(event);
             setIsAdminModalVisible(true);
         } catch (error) {
             Alert.alert('Error', 'No se pudo cargar la información del evento.');
         }
     };
+    if (isAdminEventLoading) {
+        return (
+            <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#007AFF" />
+                <Text style={styles.loadingText}>Cargando pantalla de administarcion...</Text>
+            </View>
+        );
+    }
 
 
 
@@ -184,7 +199,7 @@ export default function CreacionEvento() {
                 isModalVisible={isModalVisible}
                 onClose={() => setIsModalVisible(false)}
             />
-            
+
             <EventDetailModal
                 visible={isDetailsModalVisible}
                 eventDetails={eventDetails}
@@ -193,7 +208,7 @@ export default function CreacionEvento() {
             />
 
 
-           
+
             {/* Modal para administrar eventos */}
 
             <AdminEventModal
@@ -433,5 +448,15 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: '600',
         textTransform: 'uppercase',
-    }
+    }, loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#F4F4F4',
+    },
+    loadingText: {
+        marginTop: 10,
+        fontSize: 16,
+        color: '#333',
+    },
 });

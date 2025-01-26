@@ -50,6 +50,7 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
     const [errorMessageDescription, setErrorMessageDescription] = useState('');
     const [errorMessageParticipants, setErrorMessageParticipants] = useState('');
     const [errorMessageDate, setErrorMessageDate] = useState('');
+    const [isCreationLoading, setIsCreationLoading] = useState(false);
 
 
 
@@ -76,6 +77,7 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
             return;
         }
         try {
+            setIsCreationLoading(true);
             const currentUserId = await AsyncStorage.getItem('userId');
             const event: Event = {
                 name: titulo,
@@ -91,9 +93,11 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
             };
             await createEvent(event);
             resetEvetCreationInfo();
+            setIsCreationLoading(false);
+            refreshEvents();
             onClose();
 
-            refreshEvents();
+            
         } catch (error) {
             refreshEvents();
         }
@@ -179,6 +183,15 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
         setMaxParticipants(isNaN(numericValue) ? 0 : numericValue);
         setErrorMessageParticipants('');
     };
+    if (isCreationLoading) {
+        return (
+            <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#007AFF" />
+                <Text style={styles.loadingText}>Creando nuevo evento...</Text>
+            </View>
+        );
+    }
+
 
 
 
@@ -189,7 +202,7 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
         <Modal visible={isModalVisible} animationType="slide">
             <ScrollView contentContainerStyle={styles.scrollContainer}>
                 <Text style={styles.title}>Crear Evento</Text>
-                
+
 
                 {/* Event Title */}
                 <View style={styles.section}>
@@ -593,7 +606,24 @@ const styles = StyleSheet.create({
         fontSize: 14,
         textAlign: 'center',
         marginBottom: 10,
-      },
+    },
+    loadingContainer: {
+        flex: 1,
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#F4F4F4',
+    },
+    loadingText: {
+        marginTop: 10,
+        fontSize: 16,
+        color: '#333',
+    },
 });
 
 export default EventCreationModal;

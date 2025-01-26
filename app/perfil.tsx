@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import {
     View, Text, TextInput, StyleSheet, Image, ScrollView, Button, FlatList,
     TouchableOpacity, ActivityIndicator,
-    ImageBackground
+    ImageBackground,
+    Alert
 } from 'react-native';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { myEvents } from '@/apiCalls/myEvents';
@@ -16,6 +17,7 @@ import { StarRating } from '@/components/StarRating';
 import ImageUploader from '@/components/ImageUploader';
 import { getUserProfileImage } from '@/apiCalls/getUserProfileImage';
 import { getUserBannerImage } from '@/apiCalls/getUserBannerImage';
+import AdminProfileModal from '@/components/AdminProfileModal';
 
 interface User {
     id: number;
@@ -25,18 +27,19 @@ interface User {
 }
 
 export default function Perfil() {
-    const [user, setUser] = useState<User | null>(null); 
+    const [user, setUser] = useState<User | null>(null);
     const { trigger } = useEventContext();
     const myUserEvents = myEvents(trigger);
     const eventsToDisplay = myUserEvents.myEvents;
     const { logout } = useAuthContext();
     const [isLoading, setIsLoading] = useState(true);
     const [isReviewModalVisible, setIsReviewModalVisible] = useState(false);
+    const [isAdminModalVisible, setIsAdminModalVisible] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [filteredEvents, setFilteredEvents] = useState(eventsToDisplay);
-    const [isImageModalVisible, setIsImageModalVisible] = useState(false);
     const [profileImage, setProfileImage] = useState<string | null>(null);
     const [bannerImage, setBannerImage] = useState<string | null>(null);
+    const [userId, setUserId] = useState<number | null>(null);
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -57,22 +60,30 @@ export default function Perfil() {
 
         fetchUserData();
     }, []);
+
     useEffect(() => {
-        const getUserImage = async () => {
-            const result = await getUserProfileImage();
-            if (result.data) {
-                setProfileImage(result.data.imageUrl);
-            }
-        }
+
         const getUserBanner = async () => {
             const result = await getUserBannerImage();
             if (result.data) {
                 setBannerImage(result.data.imageUrl);
             }
         }
+
+        const getUserImage = async () => {
+            const storedUserId = await AsyncStorage.getItem('userId');
+            if (storedUserId) {
+                setUserId(parseInt(storedUserId, 10));
+            }
+            const result = await getUserProfileImage(userId || 0);
+            if (result.data) {
+                setProfileImage(result.data.imageUrl);
+            }
+        } 
+
         getUserImage();
         getUserBanner();
-    }, [isImageModalVisible]);
+    }, [isAdminModalVisible, userId]);
 
     useEffect(() => {
         const results = eventsToDisplay.filter(event =>
@@ -101,6 +112,10 @@ export default function Perfil() {
     const handleLogout = async () => {
         await AsyncStorage.removeItem("userId");
         logout();
+    };
+
+    const handleEditarPerfil = () => {
+        setIsAdminModalVisible(true);
     };
 
     if (isLoading) {
@@ -151,7 +166,8 @@ export default function Perfil() {
 
             <View style={styles.buttonContainer}>
                 <Button title="Cerrar Sesión" onPress={handleLogout} color="#007AFF" />
-                <Button title="Subir Imagen" onPress={() => { setIsImageModalVisible(true) }} color="#34C759" />
+                
+                <Button title="Editar Perfil" onPress={() => { handleEditarPerfil() }} color="#FF9500" />
             </View>
 
             <View style={styles.section}>
@@ -180,6 +196,10 @@ export default function Perfil() {
                     <Text style={styles.noEventsText}>No se han creado eventos aún.</Text>
                 )}
             </View>
+            <AdminProfileModal
+                isVisible={isAdminModalVisible}
+                adminProfileDetails={user?.id ? { id: user.id, name: user.name, email: user.email } : null}
+                onClose={() => setIsAdminModalVisible(false)} />
 
             <ReviewModal
                 isVisible={isReviewModalVisible}
@@ -187,7 +207,7 @@ export default function Perfil() {
                 refreshData={refreshUserRatings}
                 onClose={() => { setIsReviewModalVisible(false); refreshUserRatings(); }}
             />
-            <ImageUploader isVisible={isImageModalVisible} onClose={() => setIsImageModalVisible(false)} />
+
 
         </ScrollView>
     );

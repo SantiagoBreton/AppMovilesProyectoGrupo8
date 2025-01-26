@@ -1,8 +1,8 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-export const getUserProfileImage = async () => {
+export const getUserProfileImage = async (userId:number) => {
     try {
-        const userId = await AsyncStorage.getItem('userId');
+        
         const response = await fetch(
             `http://${process.env.EXPO_PUBLIC_SERVER_IP}:3000/getUserProfileImage/${userId}`
         );
