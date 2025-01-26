@@ -1,7 +1,6 @@
-import React, { useEffect, useState, } from 'react';
+import React, { useState, } from 'react';
 import { Modal, View, Text, TouchableOpacity, Image, Platform, ScrollView, StyleSheet, Button, Alert, ActivityIndicator, Pressable, TextInput } from 'react-native';
 import { useEventContext } from '@/context/eventContext';
-import { getUserProfileImage } from '@/apiCalls/getUserProfileImage';
 import { updateProfile } from '@/apiCalls/updateProfile';
 import ImageUploader from './ImageUploader';
 
@@ -84,7 +83,6 @@ const AdminProfileModal: React.FC<AdminProfileModalProps> = ({
             setErrorMessagePassword('La contraseña no puede tener más de 15 caracteres y menos de 6');
         }
     };
-
 
     return (
         <Modal
@@ -297,11 +295,6 @@ const styles = StyleSheet.create({
         marginBottom: 15,
         textTransform: 'uppercase', // Dar estilo más formal
     },
-    modalText2: {
-        fontSize: 16,
-        color: '#555',
-        marginBottom: 10,
-    },
     actionButtons2: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -349,24 +342,6 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: 'bold',
     },
-    sectionTitle: {
-        fontSize: 22,
-        fontWeight: 'bold',
-        color: '#FF7F50',
-    },
-    deleteUserButton: {
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#FF6347',
-        paddingVertical: 8,
-        paddingHorizontal: 15,
-        borderRadius: 5,
-    },
-    deleteUserText: {
-        color: '#fff',
-        fontSize: 14,
-        fontWeight: 'bold',
-    },
     updateButton: {
         backgroundColor: '#007E33', // Verde oscuro
         padding: 12,
@@ -386,11 +361,6 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 16,
         fontWeight: 'bold',
-    },
-    userName: {
-        fontSize: 18,
-        color: '#333',
-        marginBottom: 5, // Space between name and button
     },
     updateButtonText: {
         color: '#fff',
@@ -483,15 +453,6 @@ const styles = StyleSheet.create({
         color: '#333',                   // Elegant text color
         textAlign: 'center',
     },
-    userCard: {
-        flexDirection: 'row', // Align image and info in a row
-        alignItems: 'center',
-        marginBottom: 15,
-        borderRadius: 8,
-        backgroundColor: '#f8f8f8',
-        padding: 10,
-        elevation: 2, // Add a slight shadow
-    },
     input: {
         height: 50,
         borderColor: '#FF7F50', // Orange border
@@ -501,86 +462,15 @@ const styles = StyleSheet.create({
         backgroundColor: '#f9f9f9', // Light background
         marginBottom: 20, // Margin below the input
     },
-    userInfoContainer: {
-        flexDirection: 'row',
-        flex: 1, // Take up available space
-        alignItems: 'stretch',
-        marginRight: 15,
-    },
     modalButtons: {
         flexDirection: 'row',
         justifyContent: 'space-around',
         marginTop: 20,
     },
-    profilePicture: {
-        width: 50,
-        height: 50,
-        borderRadius: 25,
-        marginRight: 15,
-    },
-    nameContainer: {
-        flex: 1,
-        justifyContent: 'space-between', // Distribute content vertically
-        alignItems: 'flex-start',
-    },
-    userInfo: {
-        flexDirection: 'column', // Align name and button vertically
-        flex: 1, // Take up available space next to the image
-    },
     titleSeparator: {
         borderBottomWidth: 1, // Creates the horizontal line
         borderBottomColor: '#ddd', // Light gray color for the line
         marginVertical: 15, // Space around the line to keep separation clean
-    },
-    textContainer: {
-        flex: 1,
-    },
-    divider: {
-        height: 1,
-        backgroundColor: '#e5e5e5',
-        marginVertical: 10,
-    },
-    eventEmail: {
-        fontSize: 16,
-        color: '#4b5563',
-        lineHeight: 22,
-        marginBottom: 12,
-        textAlign: 'justify',
-    },
-    actionButtons: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginTop: 10,
-    },
-    adminButton: {
-        backgroundColor: '#3b82f6',
-        paddingVertical: 10,
-        paddingHorizontal: 16,
-        borderRadius: 8,
-    },
-    adminButtonText: {
-        color: '#fff',
-        fontSize: 14,
-        fontWeight: '600',
-        textTransform: 'uppercase',
-    },
-    deleteButton: {
-        backgroundColor: '#ef4444',
-        paddingVertical: 10,
-        paddingHorizontal: 16,
-        borderRadius: 8,
-    },
-    deleteButtonText: {
-        color: '#fff',
-        fontSize: 14,
-        fontWeight: '600',
-        textTransform: 'uppercase',
-    },
-    detailsButton: {
-        backgroundColor: '#6366f1',
-        paddingVertical: 10,
-        paddingHorizontal: 16,
-        borderRadius: 8,
     },
     errorMessage: {
         color: 'red',
@@ -588,80 +478,6 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginBottom: 10,
     },
-    container: {
-        flex: 1,
-        padding: 20,
-    },
-    tabContainer: {
-        flexDirection: 'row',
-        marginBottom: 20,
-    },
-    tabButton: {
-        flex: 1,
-        padding: 10,
-        borderBottomWidth: 2,
-        borderBottomColor: 'lightgray',
-        alignItems: 'center',
-    },
-    activeTabButton: {
-        borderBottomColor: '#FF7F50',
-    },
-    tabText: {
-        fontSize: 16,
-        color: 'gray',
-    },
-    activeTabText: {
-        color: '#FF7F50',
-        fontWeight: 'bold',
-    },
-
-
-    acceptButton: {
-        backgroundColor: 'green',
-        padding: 5,
-        borderRadius: 5,
-    },
-    acceptButtonText: {
-        color: 'white',
-    },
-    denyButton: {
-        backgroundColor: 'red',
-        padding: 5,
-        borderRadius: 5,
-    },
-    denyButtonText: {
-        color: 'white',
-    },
-    noPendingUsersText: {
-        fontSize: 16,
-        color: 'gray',
-        textAlign: 'center',
-        marginTop: 20,
-    },
-    noSubscribedUsersText: {
-        fontSize: 16,
-        color: 'gray',
-        textAlign: 'center',
-        marginTop: 20,
-    },
-    loadingContainer: {
-        flex: 1,
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#F4F4F4',
-    },
-    loadingText: {
-        marginTop: 10,
-        fontSize: 16,
-        color: '#333',
-    },
-
 });
 
 export default AdminProfileModal;
