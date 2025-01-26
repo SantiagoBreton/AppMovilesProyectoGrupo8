@@ -62,7 +62,7 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
     const [errorMessageDescription, setErrorMessageDescription] = useState('');
     const [errorMessageParticipants, setErrorMessageParticipants] = useState('');
     const [errorMessageDate, setErrorMessageDate] = useState('');
-    const [activeTab, setActiveTab] = useState<'inscritos' | 'pendientes'>('inscritos');
+    const [activeTab, setActiveTab] = useState<'inscriptos' | 'pendientes'>('inscriptos');
     const [isLoading, setIsLoading] = useState(false);
     const[loadingMessage, setLoadingMessage] = useState('');
     const [userImages, setUserImages] = useState<{ [key: number]: string }>({});
@@ -435,11 +435,11 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
                         {/* Tabs */}
                         <View style={styles.tabContainer}>
                             <TouchableOpacity
-                                style={[styles.tabButton, activeTab === 'inscritos' && styles.activeTabButton]}
-                                onPress={() => setActiveTab('inscritos')}
+                                style={[styles.tabButton, activeTab === 'inscriptos' && styles.activeTabButton]}
+                                onPress={() => setActiveTab('inscriptos')}
                             >
-                                <Text style={[styles.tabText, activeTab === 'inscritos' && styles.activeTabText]}>
-                                    Usuarios Inscritos
+                                <Text style={[styles.tabText, activeTab === 'inscriptos' && styles.activeTabText]}>
+                                    Usuarios inscriptos
                                 </Text>
                             </TouchableOpacity>
                             <TouchableOpacity
@@ -453,11 +453,11 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
                         </View>
 
                         {/* Contenido basado en la pestaña activa */}
-                        {activeTab === 'inscritos' && (
+                        {activeTab === 'inscriptos' && (
                             <View>
                                 <Text style={styles.sectionTitle}>Usuarios Inscriptos:</Text>
                                 {updatedSubscribedUsers.length === 0 ? (
-                                    <Text style={styles.noSubscribedUsersText}>No hay usuarios inscritos.</Text>
+                                    <Text style={styles.noSubscribedUsersText}>No hay usuarios inscriptos.</Text>
                                 ) : (
                                     updatedSubscribedUsers.map((user) => (
                                         <View key={user.id} style={styles.userCard}>
@@ -556,6 +556,11 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
                         </TouchableOpacity>
                     </View>
                 </ScrollView>
+                <SpectatedUserModal
+                    isVisible={isSpectatedUserVisible}
+                    user={seeUser}
+                    onClose={() => setIsSpectatedUserVisible(false)}
+                />
             </View>
         </Modal>
 

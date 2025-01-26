@@ -57,6 +57,9 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
         loadImages();
         const fetchImage = async () => {
             setUserId(parseInt(await AsyncStorage.getItem('userId') || '0'));
+            if (!userId) {
+                return;
+            }
             const result = await getUserProfileImage(userId || 0);
             if (result.data) {
                 setImageUrl(result.data.imageUrl);
