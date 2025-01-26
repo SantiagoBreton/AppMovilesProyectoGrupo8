@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, View, Text, TouchableOpacity, TouchableWithoutFeedback, StyleSheet, Alert } from 'react-native';
+import { Modal, View, Text, TouchableOpacity, TouchableWithoutFeedback, StyleSheet, Alert, Image } from 'react-native';
 import MapView, { Circle } from 'react-native-maps';
 import { Float } from 'react-native/Libraries/Types/CodegenTypes';
 import { subscribeToEvent } from '@/apiCalls/subscribeToAnEvent';
 import { useEventContext } from '@/context/eventContext';
 import * as Location from 'expo-location';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getHostInfoByEventId } from '@/apiCalls/getHostInfoByEventId';
+import { getUserDataById } from '@/apiCalls/getUserDataById';
+import { getUserProfileImage } from '@/apiCalls/getUserProfileImage';
 
 interface CustomEvent {
     id: number;
@@ -24,6 +27,12 @@ interface EventDetailModalProps {
     eventDetails: CustomEvent | null;
     onClose: () => void;
 }
+interface User {
+    id: number;
+    name: string;
+    email: string;
+    rating: Float;
+};
 
 const EventDetailModal: React.FC<EventDetailModalProps> = ({
     visible,
@@ -36,6 +45,10 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
     const [isMapVisible, setMapVisible] = useState(false);
     const [eventLocation, setEventLocation] = useState<string | null>(null);
     const [userId, setUserId] = useState<number | null>(null);
+    const [hostInfo, setHostInfo] = useState<User | null>(null);
+    const [seeUser, setSeeUser] = useState<User | null>(null);
+    const [isSpectatedUserVisible, setIsSpectatedUserVisible] = useState(false);
+    const [userImages, setUserImages] = useState<{ [key: number]: string }>({});
 
     useEffect(() => {
         const fetchUserId = async () => {
@@ -51,8 +64,6 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
 
         fetchUserId();
     }, []);
-
-    const canSuscribe = eventDetails && (eventDetails.currentParticipants < eventDetails.maxParticipants && eventDetails.userId !== userId);
 
     useEffect(() => {
         const fetchLocation = async () => {
@@ -75,24 +86,47 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
             }
         };
 
+        const fetchHostInfo = async () => {
+            if (eventDetails) {
+                try {
+                    const updatedImages: { [key: number]: string } = {};
+                    const hostId = await getHostInfoByEventId(eventDetails.id);
+                    if (hostId && hostId.data) {
+                        const hostData = await getUserDataById(hostId.data.user.id);
+                        setHostInfo(hostData);
+                        const { data } = await getUserProfileImage(hostId.data.user.id);
+                        updatedImages[hostId.data.user.id] = data?.imageUrl || 'default_image_url';
+                        setUserImages(updatedImages);
+                    }
+                } catch (error) {
+                    console.error('Error fetching host info:', error);
+                }
+            }
+        };
+
         fetchLocation();
+        fetchHostInfo();
     }, [eventDetails]);
 
     if (!eventDetails) return null;
-    
+
     const handleCloseMap = () => setMapVisible(false);
 
     const handleSubscribe = async (eventId: number) => {
-            try {
-                await subscribeToEvent(eventId);
-                Alert.alert('Subscribed', 'You have successfully subscribed to the event');
-                onClose();
-                eventDetails.currentParticipants++; //no deberia ser necesario
-                refreshEvents(); //FIXME: No se actualiza el contador de participantes
-            } catch (error: any) {
-                Alert.alert('Error subscribing to event:', error.message);
-            }
-        };
+        try {
+            await subscribeToEvent(eventId);
+            Alert.alert('Subscribed', 'You have successfully subscribed to the event');
+            onClose();
+            refreshEvents();
+        } catch (error: any) {
+            Alert.alert('Error subscribing to event:', error.message);
+        }
+    };
+
+    const handleSeeUserProfile = (user: { id: number; name: string; email: string; rating: number }) => {
+        setSeeUser(user)
+        setIsSpectatedUserVisible(true);
+    }
 
     return (
         <Modal
@@ -126,9 +160,29 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
                                     {eventDetails.currentParticipants}/{eventDetails.maxParticipants}
                                 </Text>
                             </View>
+                            <View style={styles.modalSection}>
+                                <Text style={styles.modalLabel}>Host del evento:</Text>
+                                {hostInfo && (
+                                    <View key={hostInfo.id} style={styles.userCard}>
+                                        <TouchableOpacity onPress={() => handleSeeUserProfile(hostInfo)}>
+                                            <Image
+                                                source={{
+                                                    uri: userImages[hostInfo.id] || 'default_image_url',
+                                                }}
+                                                style={styles.profilePicture}
+                                            />
+                                        </TouchableOpacity>
+                                        <View style={styles.userInfo}>
+                                            <TouchableOpacity onPress={() => handleSeeUserProfile(hostInfo)}>
+                                                <Text style={styles.userName}>{hostInfo.name}</Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                    </View>
+                                )}
+                            </View>
                             <TouchableOpacity
                                 style={[styles.modalActionButton, styles.largeButton]}
-                                onPress={()=>setMapVisible(true)}
+                                onPress={() => setMapVisible(true)}
                             >
                                 <Text style={styles.modalActionButtonText}>Ver en el Mapa</Text>
                             </TouchableOpacity>
@@ -137,7 +191,7 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
                                 {showSuscribe && (
                                     <TouchableOpacity
                                         style={[styles.modalActionButton, styles.subscribeButton]}
-                                        onPress={() => {handleSubscribe(eventDetails.id)}}
+                                        onPress={() => { handleSubscribe(eventDetails.id) }}
                                     >
                                         <Text style={styles.modalActionButtonText} numberOfLines={1}>Suscribirse</Text>
                                     </TouchableOpacity>
@@ -170,7 +224,7 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
                                 longitudeDelta: 0.015,
                             }}
                         >
-                            <Circle //cambiar a marker para que se vea el punto
+                            <Circle
                                 center={{
                                     latitude: (eventDetails?.latitude ?? 0) + 0.001, // Offset latitude
                                     longitude: (eventDetails?.longitude ?? 0) + 0.001, // Offset longitude
@@ -192,13 +246,10 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
                 </View>
             </Modal>
         </Modal>
-
-        
     );
 };
 
 const styles = StyleSheet.create({
-    // Same styles as before, define them here
     modalContainer: {
         flex: 1,
         justifyContent: 'center',
@@ -318,7 +369,30 @@ const styles = StyleSheet.create({
         width: '100%',
         height: '100%',
     },
-
+    userCard: {
+        flexDirection: 'row', // Align image and info in a row
+        alignItems: 'center',
+        marginBottom: 15,
+        borderRadius: 8,
+        backgroundColor: '#f8f8f8',
+        padding: 10,
+        elevation: 2, // Add a slight shadow
+    },
+    userInfo: {
+        flexDirection: 'column', // Align name and button vertically
+        flex: 1, // Take up available space next to the image
+    },
+    userName: {
+        fontSize: 18,
+        color: '#333',
+        marginBottom: 5, // Space between name and button
+    },
+    profilePicture: {
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        marginRight: 15,
+    },
 });
 
 export default EventDetailModal;

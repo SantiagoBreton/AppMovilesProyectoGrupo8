@@ -171,7 +171,7 @@ export default function Index() {
             <View style={styles.modalDetails}>
               <Ionicons name="people" size={16} color="#FF7F50" />
               <Text style={styles.modalDetailText}>
-                {selectedEvent.currentParticipants}/{selectedEvent.maxParticipants} participants
+                {selectedEvent.currentParticipants}/{selectedEvent.maxParticipants} Participantes
               </Text>
             </View>
             <View style={styles.modalButtonContainer}>
@@ -179,7 +179,7 @@ export default function Index() {
                 style={[styles.modalButton, styles.subscribeButton]}
                 onPress={() => handleSubscribe(Number(selectedEvent.id))}
               >
-                <Text style={styles.buttonText}>Subscribe</Text>
+                <Text style={styles.buttonText}>Quiero ir!</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.modalButton, styles.closeButton]}

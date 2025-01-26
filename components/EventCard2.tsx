@@ -1,9 +1,5 @@
-import { deleteEventById } from "@/apiCalls/deleteEventById";
-import { unsubscribeUserFromAnEvent } from "@/apiCalls/unsubscribeUserFromEvent";
-import { useEventContext } from "@/context/eventContext";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import React, { useEffect, useState } from "react";
-import { Modal, TouchableOpacity, View, Text, StyleSheet, Alert, Button } from "react-native";
+import React, { useState } from "react";
+import { TouchableOpacity, View, Text, StyleSheet, Button } from "react-native";
 import { Float } from "react-native/Libraries/Types/CodegenTypes";
 import EventDetailModal from "./EventDetailModal";
 
@@ -107,6 +103,5 @@ const styles = StyleSheet.create({
     detailButtonContainer: {
         alignSelf: 'flex-end',
         marginTop: 8,
-    },
-
+    }
 });

@@ -6,7 +6,6 @@ import { getEventByName } from '@/apiCalls/getEventByName';
 import { getUserByName } from '@/apiCalls/getUserByName';
 import SpectatedUserModal from '@/components/SpectatedUserModal';
 import EventCard2 from '@/components/EventCard2';
-import EventDetailModal from '@/components/EventDetailModal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Busqueda() {
