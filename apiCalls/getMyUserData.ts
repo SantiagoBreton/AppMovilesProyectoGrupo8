@@ -1,10 +1,6 @@
-
-import { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export const getMyUserData = async () => {
-
-
 
   try {
     const id = await AsyncStorage.getItem('userId');

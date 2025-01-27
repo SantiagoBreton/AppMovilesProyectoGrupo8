@@ -1,4 +1,3 @@
-
 export const getUserRating = async (userId: number) => {
     try {
         const response = await fetch(`http://${process.env.EXPO_PUBLIC_SERVER_IP}:3000/getUserRating/${userId}`);
