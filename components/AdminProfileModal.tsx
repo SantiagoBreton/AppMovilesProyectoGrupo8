@@ -8,6 +8,7 @@ interface User {
     id: number;
     name: string;
     email: string;
+    description: string;
 };
 
 interface AdminProfileModalProps {
@@ -24,36 +25,41 @@ const AdminProfileModal: React.FC<AdminProfileModalProps> = ({
 
     const [isUpdateNameModalVisible, setIsNameModalVisible] = useState(false);
     const [isUpdatePasswordModalVisible, setIsPasswordModalVisible] = useState(false);
+    const [isUpdateDescriptionModalVisible, setIsDescriptionModalVisible] = useState(false);
     const [newName, setNewName] = useState('');
     const [newPassword, setNewPassword] = useState('');
+    const [newDescription, setNewDescription] = useState('');
     const { refreshEvents } = useEventContext();
     const [errorMessageTitle, setErrorMessageTitle] = useState('');
     const [errorMessagePassword, setErrorMessagePassword] = useState('');
+    const [errorMessageDescription, setErrorMessageDescription] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
     const [isImageUploader, setIsImageUploader] = useState(false);
 
     const handleProfileUpdate = async () => {
-        if ((!newName && !newPassword)) {
+        if ((!newName && !newPassword && !newDescription)) {
             Alert.alert('Error', 'Por favor, complete al menos un campo para actualizar.');
             return;
         }
         try {
             setIsLoading(true);
             setLoadingMessage('Actualizando detalles del evento...');
-            console.log(`newName: ${newName}, newPassword: ${newPassword}`);
+            console.log(`newName: ${newName}, newPassword: ${newPassword}, newDescription: ${newDescription}`);
 
             // Fallback to default values if inputs are empty
             const updatedName = newName || adminProfileDetails?.name || '';
             const updatedPassword = newPassword || '';
+            const updatedDescription = newDescription || adminProfileDetails?.description || '';
 
             // Call the update function with the resolved values
-            await updateProfile(adminProfileDetails?.id ?? 0, updatedName, updatedPassword);
+            await updateProfile(adminProfileDetails?.id ?? 0, updatedName, updatedPassword, updatedDescription);
 
             // Refresh and reset
             refreshEvents();
             setNewName('');
             setNewPassword('');
+            setNewDescription('');
             setIsLoading(false);
             onClose();
 
@@ -84,6 +90,16 @@ const AdminProfileModal: React.FC<AdminProfileModalProps> = ({
         }
     };
 
+    const handleDescriptionChange = (text: string) => {
+        if (text.length <= 150) {
+            setNewDescription(text);
+            setErrorMessageDescription('');
+        }
+        else {
+            setErrorMessageDescription('La descripción de usuario no puede tener más de 150 caracteres');
+        }
+    };
+
     return (
         <Modal
             visible={isVisible}
@@ -111,6 +127,11 @@ const AdminProfileModal: React.FC<AdminProfileModalProps> = ({
                                 <View style={styles.detailBlock}>
                                     <Text style={styles.detailLabel}>📄 Email:</Text>
                                     <Text style={styles.detailValue}>{adminProfileDetails.email}</Text>
+                                </View>
+                                {/* Email del perfil */}
+                                <View style={styles.detailBlock}>
+                                    <Text style={styles.detailLabel}>📄 Descripción:</Text>
+                                    <Text style={styles.detailValue}>{adminProfileDetails.description}</Text>
                                 </View>
                             </View>
 
@@ -157,6 +178,20 @@ const AdminProfileModal: React.FC<AdminProfileModalProps> = ({
                                         <Text style={styles.cardIcon}>📝</Text>
                                     </View>
                                     <Text style={styles.cardTitle}>Cambiar Contraseña</Text>
+                                </Pressable>
+
+                                {/* Cambiar descripcion */}
+                                <Pressable
+                                    style={({ pressed }) => [
+                                        styles.actionCard,
+                                        pressed && styles.actionCardPressed,
+                                    ]}
+                                    onPress={() => setIsDescriptionModalVisible(true)}
+                                >
+                                    <View style={styles.cardIconContainer}>
+                                        <Text style={styles.cardIcon}>📝</Text>
+                                    </View>
+                                    <Text style={styles.cardTitle}>Cambiar Descripción</Text>
                                 </Pressable>
                             </View>
                         </>
@@ -238,6 +273,47 @@ const AdminProfileModal: React.FC<AdminProfileModalProps> = ({
                                     </TouchableOpacity>
                                 </View>
                                 {errorMessagePassword ? <Text style={styles.errorMessage}>{errorMessagePassword}</Text> : null}
+                            </View>
+                        </View>
+                    </Modal>
+
+                    {/* Modal for changing descrption */}
+                    <Modal
+                        visible={isUpdateDescriptionModalVisible}
+                        transparent={true}
+                        animationType="slide"
+                        onRequestClose={() => setIsDescriptionModalVisible(false)}
+                    >
+                        <View style={styles.modalContainer2}>
+                            <View style={styles.modalContent2}>
+                                <Text style={styles.modalTitle2}>Cambiar Descripción</Text>
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder="Nueva Descripción"
+                                    value={newPassword}
+                                    onChangeText={handleDescriptionChange}
+                                />
+                                <View style={styles.modalButtons}>
+                                    <TouchableOpacity
+                                        style={styles.saveButton}
+                                        onPress={() => {
+                                            setIsDescriptionModalVisible(false);
+                                            // Handle Save Logic
+                                        }}
+                                    >
+                                        <Text style={styles.saveButtonText}>Guardar</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        style={styles.cancelButton}
+                                        onPress={() => {
+                                            setIsDescriptionModalVisible(false);
+                                            setNewDescription(''); // Clear the input
+                                        }}
+                                    >
+                                        <Text style={styles.cancelButtonText}>Cancelar</Text>
+                                    </TouchableOpacity>
+                                </View>
+                                {errorMessageDescription ? <Text style={styles.errorMessage}>{errorMessageDescription}</Text> : null}
                             </View>
                         </View>
                     </Modal>

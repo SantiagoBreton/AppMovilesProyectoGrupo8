@@ -49,6 +49,7 @@ export default function Busqueda() {
         id: number;
         name: string;
         email: string;
+        description: string;
         rating: Float;
     };
 
@@ -97,8 +98,6 @@ export default function Busqueda() {
         setSeeUser( user )
         setIsSpectatedUserVisible(true);
     }
-
-
 
     const renderEventResult = ({ item }: { item: CustomEvent }) => (
         <EventCard2

@@ -2,8 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {
     View, Text, TextInput, StyleSheet, Image, ScrollView, Button, FlatList,
     TouchableOpacity, ActivityIndicator,
-    ImageBackground,
-    Alert
+    ImageBackground
 } from 'react-native';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { myEvents } from '@/apiCalls/myEvents';
@@ -14,7 +13,6 @@ import EventCard2 from '@/components/EventCard2';
 import ReviewModal from '@/components/RatingUserModal';
 import { getMyUserData } from '@/apiCalls/getMyUserData';
 import { StarRating } from '@/components/StarRating';
-import ImageUploader from '@/components/ImageUploader';
 import { getUserProfileImage } from '@/apiCalls/getUserProfileImage';
 import { getUserBannerImage } from '@/apiCalls/getUserBannerImage';
 import AdminProfileModal from '@/components/AdminProfileModal';
@@ -24,6 +22,7 @@ interface User {
     name: string;
     email: string;
     rating: number;
+    description: string;
 }
 
 export default function Perfil() {
@@ -163,6 +162,10 @@ export default function Perfil() {
                 <Text style={styles.label}>Email:</Text>
                 <Text style={styles.input}>{user?.email}</Text>
             </View>
+            <View style={styles.section}>
+                <Text style={styles.label}>Descripción:</Text>
+                <Text style={styles.input}>{user?.description}</Text>
+            </View>
 
             <View style={styles.buttonContainer}>
                 <Button title="Cerrar Sesión" onPress={handleLogout} color="#007AFF" />
@@ -198,7 +201,7 @@ export default function Perfil() {
             </View>
             <AdminProfileModal
                 isVisible={isAdminModalVisible}
-                adminProfileDetails={user?.id ? { id: user.id, name: user.name, email: user.email } : null}
+                adminProfileDetails={user?.id ? { id: user.id, name: user.name, email: user.email , description: user.description} : null}
                 onClose={() => setIsAdminModalVisible(false)} />
 
             <ReviewModal

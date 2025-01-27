@@ -1,7 +1,7 @@
-export const updateProfile = async (userId: number, newName: string, newEmail: string) => {
+export const updateProfile = async (userId: number, newName: string, newPassword: string, newDescription: string) => {
     try {
         // Ensure the date is converted to ISO format
-        const response = await fetch(`http://${process.env.EXPO_PUBLIC_SERVER_IP}:3000/updateEvent/${userId}/${newName}/${newEmail}`, {
+        const response = await fetch(`http://${process.env.EXPO_PUBLIC_SERVER_IP}:3000/updateProfile/${userId}/${newName}/${newPassword}/${newDescription}`, {
             method: 'GET', // Replace with 'PUT' if you're following REST conventions
         });
 
