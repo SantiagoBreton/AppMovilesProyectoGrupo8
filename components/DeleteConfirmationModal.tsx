@@ -8,7 +8,9 @@ import { Modal, View, Text, TouchableOpacity, Image, FlatList, ScrollView, Style
 interface DeleteConfirmationModalProps {
     isVisible: boolean;
     confirmDelete: () => void;
+    mensaje: string;
     onClose: () => void;
+    
 }
 
 
@@ -16,10 +18,11 @@ interface DeleteConfirmationModalProps {
 const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
     isVisible,
     confirmDelete,
+    mensaje,
     onClose,
 }) => {
 
-    const [isDetailsModalVisible, setIsDetailsModalVisible] = useState(false);
+
 
 
 
@@ -29,7 +32,7 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
                 <View style={modalStyles.modalContainer}>
                     <Text style={modalStyles.modalTitle}>Confirmar Eliminación</Text>
                     <Text style={modalStyles.modalMessage}>
-                        ¿Estás seguro de que deseas eliminar este evento? Esta acción no se puede deshacer.
+                        {mensaje}
                     </Text>
                     <View style={modalStyles.modalButtons}>
                         <TouchableOpacity
