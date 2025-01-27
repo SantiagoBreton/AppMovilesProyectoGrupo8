@@ -12,16 +12,16 @@ export default function Index() {
   const { location, locationError } = useLocation();
   const { trigger } = useEventContext();
   const { events, loading, eventsError } = useAllEvents(trigger);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null); // Mensaje de error
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { refreshEvents } = useEventContext();
-  const [modalVisible, setModalVisible] = useState(false); // Modal visibility state
+  const [modalVisible, setModalVisible] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<{ id: string; name: string; description: string; date: string; currentParticipants: number; maxParticipants: number; latitude: number; longitude: number; } | null>(null); // Selected event state
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [nameFilter, setNameFilter] = useState<string>('');
   const [proximityFilter, setProximityFilter] = useState<number>(50);
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [mapLoaded, setMapLoaded] = useState(false); // To track if the map has loaded
+  const [mapLoaded, setMapLoaded] = useState(false);
 
   useEffect(() => {
     if (location) {
@@ -42,11 +42,10 @@ export default function Index() {
   const handleSubscribe = async (eventId: number) => {
     try {
       await subscribeToEvent(eventId);
-      console.log('Successfully subscribed to event:', eventId);
-      handleCloseModal(); // Cerrar el modal después de una suscripción exitosa
-      refreshEvents(); // Actualizar la lista de eventos
+      handleCloseModal();
+      refreshEvents();
     } catch (error: any) {
-      setErrorMessage(error.message || 'Que lastima, no te has podido subscribir Zorra.');
+      setErrorMessage(error.message || 'Que lastima, no te has podido subscribir.');
     }
   };
 
@@ -196,7 +195,7 @@ export default function Index() {
           transparent={true}
           visible={!!errorMessage}
           animationType="fade"
-          onRequestClose={() => setErrorMessage(null)} // Cerrar el modal al presionar fuera
+          onRequestClose={() => setErrorMessage(null)}
         >
           <View style={styles.errorModalContainer}>
             <View style={styles.errorModalCard}>
@@ -205,7 +204,7 @@ export default function Index() {
               <Button
                 title="Cerrar"
                 color="#FF6347"
-                onPress={() => setErrorMessage(null)} // Cerrar el modal de error
+                onPress={() => setErrorMessage(null)}
               />
             </View>
           </View>
@@ -260,11 +259,6 @@ export default function Index() {
                 {/* Date Picker */}
                 <View style={styles.inputGroup}>
                   <Text style={styles.inputLabel}>Select Date</Text>
-                  {/* <Button
-                    title={selectedDate ? selectedDate.toDateString() : "Choose Date"}
-                    onPress={() => setShowDatePicker(true)}
-                    color="#4CAF50"
-                  /> */}
                   <TouchableOpacity
                     style={styles.datePickerButton}
                     onPress={() => setShowDatePicker(true)}
@@ -318,19 +312,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    zIndex: 1000, // Ensure the modal appears above other elements
+    zIndex: 1000, 
   },
   modalCard: {
     backgroundColor: '#fff',
-    borderRadius: 20, // Adjusted for a softer, rounded look
+    borderRadius: 20, 
     padding: 20,
-    width: '90%', // Use relative width for responsiveness
+    width: '90%', 
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2, // Reduced shadow for a modern look
+    shadowOpacity: 0.2, 
     shadowRadius: 5,
-    elevation: 10, // Elevation for Android shadow
+    elevation: 10, 
   },
   selectedDateText: { fontSize: 14, marginBottom: 10 },
   errorModalContainer: {
@@ -433,7 +427,7 @@ const styles = StyleSheet.create({
     elevation: 15,
   },
   modalTitle: {
-    fontSize: 24, // Increased size for better visibility
+    fontSize: 24, 
     fontWeight: "700",
     color: "#333",
     textAlign: "center",
@@ -443,7 +437,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   inputLabel: {
-    fontSize: 18, // Enlarged label text
+    fontSize: 18, 
     fontWeight: "600",
     color: "#666",
     marginBottom: 5,
@@ -458,7 +452,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#f9f9f9",
   },
   datePickerButton: {
-    backgroundColor: "#1E90FF", // Stylish blue button
+    backgroundColor: "#1E90FF", 
     padding: 12,
     borderRadius: 10,
     alignItems: "center",
@@ -486,7 +480,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   applyButton: {
-    backgroundColor: "#1E90FF", // Changed to blue for consistency
+    backgroundColor: "#1E90FF", 
   },
   clearButton: {
     backgroundColor: "#FF6347",
