@@ -2,7 +2,9 @@ import React, { useEffect, useState } from 'react';
 import {
     View, Text, TextInput, StyleSheet, Image, ScrollView, Button, FlatList,
     TouchableOpacity, ActivityIndicator,
-    ImageBackground
+    ImageBackground,
+    Modal,
+    Pressable
 } from 'react-native';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { myEvents } from '@/apiCalls/myEvents';
@@ -16,7 +18,6 @@ import { StarRating } from '@/components/StarRating';
 import { getUserProfileImage } from '@/apiCalls/getUserProfileImage';
 import { getUserBannerImage } from '@/apiCalls/getUserBannerImage';
 import AdminProfileModal from '@/components/AdminProfileModal';
-import { Float } from 'react-native/Libraries/Types/CodegenTypes';
 
 interface User {
     id: number;
@@ -25,20 +26,6 @@ interface User {
     rating: number;
     description: string;
 }
-interface EventWithId {
-    id: number;
-    name: string;
-    date: Date;
-    latitude: Float;
-    longitude: Float;
-    description: string;
-    maxParticipants: number;
-    currentParticipants: number;
-    time:string;
-    category: any;
-    userId: number;
-};
-
 
 export default function Perfil() {
     const [user, setUser] = useState<User | null>(null);
@@ -54,8 +41,9 @@ export default function Perfil() {
     const [profileImage, setProfileImage] = useState<string | null>(null);
     const [bannerImage, setBannerImage] = useState<string | null>(null);
     const [userId, setUserId] = useState<number | null>(null);
-
-    
+    const [categories, setCategories] = useState<string[]>(['Todo', 'Musica', 'Deporte', 'Arte', 'Comida', 'NetWorking', 'Fiesta', 'Voluntariado']);
+    const [selectedCategory, setSelectedCategory] = useState('All');
+    const [isCategoryModalVisible, setIsCategoryModalVisible] = useState(false);
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -99,7 +87,7 @@ export default function Perfil() {
             if (result.data) {
                 setProfileImage(result.data.imageUrl);
             }
-        } 
+        }
 
         getUserImage();
         getUserBanner();
@@ -136,6 +124,12 @@ export default function Perfil() {
 
     const handleEditarPerfil = () => {
         setIsAdminModalVisible(true);
+    };
+
+    const handleCategorySelection = (category: string) => {
+        setSelectedCategory(category);
+        setFilteredEvents(category === 'All' ? eventsToDisplay : eventsToDisplay.filter(event => event.category.name === category));
+        setIsCategoryModalVisible(false);
     };
 
     if (isLoading) {
@@ -190,11 +184,13 @@ export default function Perfil() {
 
             <View style={styles.buttonContainer}>
                 <Button title="Cerrar Sesión" onPress={handleLogout} color="#007AFF" />
-                
+
                 <Button title="Editar Perfil" onPress={() => { handleEditarPerfil() }} color="#FF9500" />
             </View>
 
             <View style={styles.section}>
+                {/* Add button to filter by category */}
+
                 <Text style={styles.sectionTitle}>Eventos Creados</Text>
                 <TextInput
                     style={styles.searchBar}
@@ -202,6 +198,13 @@ export default function Perfil() {
                     value={searchQuery}
                     onChangeText={setSearchQuery}
                 />
+                <TouchableOpacity
+                    style={styles.filterButton}
+                    onPress={() => setIsCategoryModalVisible(true)}
+                >
+                    <Text style={styles.filterButtonText}>Categoría: {selectedCategory}</Text>
+                </TouchableOpacity>
+
                 {filteredEvents.length > 0 ? (
                     <FlatList
                         data={filteredEvents}
@@ -219,10 +222,38 @@ export default function Perfil() {
                 ) : (
                     <Text style={styles.noEventsText}>No se han creado eventos aún.</Text>
                 )}
+
+                <Modal
+                    visible={isCategoryModalVisible}
+                    animationType="slide"
+                    transparent={true}
+                    onRequestClose={() => setIsCategoryModalVisible(false)}
+                >
+                    <View style={styles.modalContainer}>
+                        <View style={styles.modalContent}>
+                            <Text style={styles.modalTitle}>Seleccionar Categoría</Text>
+                            {categories.map((category) => (
+                                <TouchableOpacity
+                                    key={category}
+                                    style={styles.modalOption}
+                                    onPress={() => handleCategorySelection(category)}
+                                >
+                                    <Text style={styles.modalOptionText}>{category}</Text>
+                                </TouchableOpacity>
+                            ))}
+                            <Pressable
+                                style={styles.closeButton}
+                                onPress={() => setIsCategoryModalVisible(false)}
+                            >
+                                <Text style={styles.closeButtonText}>Cerrar</Text>
+                            </Pressable>
+                        </View>
+                    </View>
+                </Modal>
             </View>
             <AdminProfileModal
                 isVisible={isAdminModalVisible}
-                adminProfileDetails={user?.id ? { id: user.id, name: user.name, email: user.email , description: user.description} : null}
+                adminProfileDetails={user?.id ? { id: user.id, name: user.name, email: user.email, description: user.description } : null}
                 onClose={() => setIsAdminModalVisible(false)} />
 
             <ReviewModal
@@ -349,5 +380,56 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#999',
         marginTop: 16,
+    },
+    filterButton: {
+        backgroundColor: '#007AFF',
+        borderRadius: 12,
+        padding: 10,
+        alignItems: 'center',
+        marginBottom: 16,
+    },
+    filterButtonText: {
+        color: '#FFFFFF',
+        fontWeight: 'bold',
+        fontSize: 16,
+    },
+    modalContent: {
+        backgroundColor: '#FFFFFF',
+        padding: 20,
+        borderRadius: 12,
+        width: '80%',
+        alignItems: 'center',
+    },
+    modalTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 20,
+        color: '#007AFF',
+    },
+    modalContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    },
+    modalOption: {
+        paddingVertical: 10,
+        width: '100%',
+        alignItems: 'center',
+    },
+    modalOptionText: {
+        fontSize: 16,
+        color: '#333',
+    },
+    closeButton: {
+        marginTop: 20,
+        padding: 10,
+        backgroundColor: '#FF3B30',
+        borderRadius: 12,
+    },
+    closeButtonText: {
+        color: '#FFFFFF',
+        fontWeight: 'bold',
+        fontSize: 16,
     },
 });

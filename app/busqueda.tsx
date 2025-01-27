@@ -43,6 +43,8 @@ export default function Busqueda() {
         maxParticipants: number;
         currentParticipants: number;
         userId: number;
+        time: string;
+        category: any;
     };
 
     interface User {
