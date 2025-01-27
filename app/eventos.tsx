@@ -30,7 +30,7 @@ export default function CreacionEvento() {
     const [requestingUsers, setRequestingUsers] = useState<User[]>([]);
     const [userId, setUserId] = useState<number | null>(null);
     const [isAdminEventLoading, setIsAdminEventLoading] = useState(false);
-    
+
 
     useEffect(() => {
         const fetchUserId = async () => {
@@ -58,6 +58,8 @@ export default function CreacionEvento() {
         description: string;
         maxParticipants: number;
         currentParticipants: number;
+        time: string;
+        categoryName: string;
         userId: number;
     };
 
@@ -70,7 +72,7 @@ export default function CreacionEvento() {
 
     const handleDetailsEvent = async (item: EventWithId) => {
         try {
-            
+
             const addresses = await Location.reverseGeocodeAsync({
                 latitude: item.latitude,
                 longitude: item.longitude,
@@ -83,7 +85,7 @@ export default function CreacionEvento() {
 
             setEventDetails(item);
             setEventLocation(location);
-        
+
             setIsDetailsModalVisible(true);
         } catch (error) {
             console.error('Error fetching address:', error);

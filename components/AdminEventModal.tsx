@@ -9,7 +9,6 @@ import { updateEvent } from '@/apiCalls/updateEvent';
 import DeleteConfirmationModal from './DeleteConfirmationModal';
 import { confirmSubscriptionToAnEvent } from '@/apiCalls/confirmSubscriptionToAnEvent';
 import { denySubscriptionToAnEvent } from '@/apiCalls/denySubscriptionToAnEvent';
-import { getUserProfileImage } from '@/apiCalls/getUserProfileImage';
 
 interface EventWithId {
     id: number;
@@ -20,6 +19,8 @@ interface EventWithId {
     description: string;
     maxParticipants: number;
     currentParticipants: number;
+    time: string;
+    categoryName: string;
     userId: number;
 };
 
@@ -62,10 +63,9 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
     const [errorMessageDescription, setErrorMessageDescription] = useState('');
     const [errorMessageParticipants, setErrorMessageParticipants] = useState('');
     const [errorMessageDate, setErrorMessageDate] = useState('');
-    const [activeTab, setActiveTab] = useState<'inscriptos' | 'pendientes'>('inscriptos');
-    const [isLoading, setIsLoading] = useState(false);
-    const[loadingMessage, setLoadingMessage] = useState('');
-    const [userImages, setUserImages] = useState<{ [key: number]: string }>({});
+    const [activeTab, setActiveTab] = useState<'inscritos' | 'pendientes'>('inscritos');
+    const [showTimePicker, setShowTimePicker] = useState(false);
+    const [time, setTime] = useState<string>(''); // La hora guardada como string
 
 
 
@@ -73,31 +73,7 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
         setUpdatedSubscribedUsers(subscribedUsers);
         setUpdatedRequestingUsers(requestingUsers);
 
-        const fetchUserImages = async () => {
-            const updatedImages: { [key: number]: string } = {};
-
-            // Loop through subscribed users
-            for (const user of subscribedUsers) {
-                const { data } = await getUserProfileImage(user.id);
-                // Check if the URL is valid and assign it, otherwise use a default image
-                updatedImages[user.id] = data?.imageUrl || 'default_image_url';
-            }
-
-            // Loop through requesting users
-            for (const user of requestingUsers) {
-                const { data } = await getUserProfileImage(user.id);
-                // Check if the URL is valid and assign it, otherwise use a default image
-                updatedImages[user.id] = data?.imageUrl || 'default_image_url';
-            }
-
-            setUserImages(updatedImages);
-        }
-
-        fetchUserImages();
-
     }, [subscribedUsers, requestingUsers]);
-
-
 
     const handleDateChange = (event: any, date?: Date) => {
         setDatePickerVisible(false);
@@ -134,7 +110,7 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
     };
 
     const handleEventUpdate = async () => {
-        if ((!newName && !newDescription && !selectedDate)) {
+        if ((!newName && !newDescription && !selectedDate && !time)) {
             Alert.alert('Error', 'Por favor, complete al menos un campo para actualizar.');
             return;
         }
@@ -142,24 +118,22 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
             setSelectedDate(adminEventDetails?.date ?? null);
         }
         try {
-            setIsLoading(true);
-            setLoadingMessage('Actualizando detalles del evento...');
-            console.log(`newName: ${newName}, newDescription: ${newDescription}, selectedDate: ${selectedDate}`);
+            console.log(`newName: ${newName}, newDescription: ${newDescription}, selectedDate: ${selectedDate}, time: ${time}`);
 
             // Fallback to default values if inputs are empty
             const updatedName = newName || adminEventDetails?.name || '';
             const updatedDescription = newDescription || adminEventDetails?.description || '';
             const updatedDate = selectedDate || adminEventDetails?.date || new Date();
+            const updatedTime = time || adminEventDetails?.time || '';
 
             // Call the update function with the resolved values
-            await updateEvent(adminEventDetails?.id ?? 0, updatedName, updatedDescription, updatedDate);
+            await updateEvent(adminEventDetails?.id ?? 0, updatedName, updatedDescription, updatedDate, updatedTime);
 
             // Refresh and reset
             refreshEvents();
             setNewName('');
             setNewDescription('');
             setSelectedDate(new Date());
-            setIsLoading(false);
             onClose();
 
             Alert.alert('Éxito', 'El evento se actualizó.');
@@ -192,15 +166,14 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
     const handleAcceptUser = async (userId: number) => {
         try {
             if (adminEventDetails?.id !== undefined) {
-                setIsLoading(true);
-                setLoadingMessage('Aceptando usuario en el evento...');
                 const response = await confirmSubscriptionToAnEvent(adminEventDetails.id, userId);
                 if (response) {
+                    Alert.alert('Éxito', 'Usuario aceptado en el evento correctamente.');
                     setUpdatedSubscribedUsers((prevUsers) => [...prevUsers, requestingUsers.find((user) => user.id === userId) ?? { id: 0, name: '', email: '', rating: 0 }]);
                     setUpdatedRequestingUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
                     requestingUsers = requestingUsers.filter((user) => user.id !== userId);
+                    refreshEvents();
                 }
-                setIsLoading(false);
             }
             else {
                 Alert.alert('Error', 'No se pudo obtener el ID del evento.');
@@ -232,18 +205,15 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
             Alert.alert('Error', 'No se pudo denegar al usuario en el evento.');
         }
     };
-
-
-
-
-    if (isLoading) {
-        return (
-            <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#007AFF" />
-                <Text style={styles.loadingText}>{loadingMessage}</Text>
-            </View>
-        );
-    }
+     const onTimeChange = (event: any, selectedTime?: Date) => {
+        setShowTimePicker(false); // Cierra el picker después de seleccionar
+        if (selectedTime) {
+            // Convierte la hora seleccionada en un string en formato "HH:mm"
+            const hours = selectedTime.getHours().toString().padStart(2, '0');
+            const minutes = selectedTime.getMinutes().toString().padStart(2, '0');
+            setTime(`${hours}:${minutes}`);
+        }
+    };
 
 
 
@@ -288,6 +258,10 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
                                             day: 'numeric',
                                         })}
                                     </Text>
+                                </View>
+                                <View style={styles.detailBlock}>
+                                    <Text style={styles.detailLabel}>🕒 Hora:</Text>
+                                    <Text style={styles.detailValue}>{adminEventDetails.time}</Text>
                                 </View>
                             </View>
 
@@ -336,6 +310,29 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
                                     <Text style={styles.cardTitle}>Cambiar Fecha</Text>
                                 </Pressable>
                                 {errorMessageDate ? <Text style={styles.errorMessage}>{errorMessageDate}</Text> : null}
+
+
+                                {/* Cambiar hora */}
+                                <Pressable
+                                    style={({ pressed }) => [
+                                        styles.actionCard,
+                                        pressed && styles.actionCardPressed,
+                                    ]}
+                                    onPress={() => setShowTimePicker(true)}
+                                >
+                                    <View style={styles.cardIconContainer}>
+                                        <Text style={styles.cardIcon}>🕒</Text>
+                                    </View>
+                                    <Text style={styles.cardTitle}>Cambiar Hora</Text>
+                                    {showTimePicker && (
+                                        <DateTimePicker
+                                            value={new Date()}
+                                            mode="time"
+                                            display="default"
+                                            onChange={onTimeChange}
+                                        />
+                                    )}
+                                </Pressable>
                             </View>
 
                             {datePickerVisible && (
@@ -435,11 +432,11 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
                         {/* Tabs */}
                         <View style={styles.tabContainer}>
                             <TouchableOpacity
-                                style={[styles.tabButton, activeTab === 'inscriptos' && styles.activeTabButton]}
-                                onPress={() => setActiveTab('inscriptos')}
+                                style={[styles.tabButton, activeTab === 'inscritos' && styles.activeTabButton]}
+                                onPress={() => setActiveTab('inscritos')}
                             >
-                                <Text style={[styles.tabText, activeTab === 'inscriptos' && styles.activeTabText]}>
-                                    Usuarios inscriptos
+                                <Text style={[styles.tabText, activeTab === 'inscritos' && styles.activeTabText]}>
+                                    Usuarios Inscritos
                                 </Text>
                             </TouchableOpacity>
                             <TouchableOpacity
@@ -453,18 +450,18 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
                         </View>
 
                         {/* Contenido basado en la pestaña activa */}
-                        {activeTab === 'inscriptos' && (
+                        {activeTab === 'inscritos' && (
                             <View>
                                 <Text style={styles.sectionTitle}>Usuarios Inscriptos:</Text>
                                 {updatedSubscribedUsers.length === 0 ? (
-                                    <Text style={styles.noSubscribedUsersText}>No hay usuarios inscriptos.</Text>
+                                    <Text style={styles.noSubscribedUsersText}>No hay usuarios inscritos.</Text>
                                 ) : (
                                     updatedSubscribedUsers.map((user) => (
                                         <View key={user.id} style={styles.userCard}>
                                             <TouchableOpacity onPress={() => handleSeeUserProfile(user)}>
                                                 <Image
                                                     source={{
-                                                        uri: userImages[user.id] || 'default_image_url',
+                                                        uri: 'https://www.gravatar.com/avatar/2c7d99fe281ecd3bcd65ab915bac6dd5?s=250',
                                                     }}
                                                     style={styles.profilePicture}
                                                 />
@@ -509,7 +506,7 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
                                             <TouchableOpacity onPress={() => handleSeeUserProfile(user)}>
                                                 <Image
                                                     source={{
-                                                        uri: userImages[user.id] || 'default_image_url',
+                                                        uri: 'https://www.gravatar.com/avatar/2c7d99fe281ecd3bcd65ab915bac6dd5?s=250',
                                                     }}
                                                     style={styles.profilePicture}
                                                 />
@@ -556,11 +553,6 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
                         </TouchableOpacity>
                     </View>
                 </ScrollView>
-                <SpectatedUserModal
-                    isVisible={isSpectatedUserVisible}
-                    user={seeUser}
-                    onClose={() => setIsSpectatedUserVisible(false)}
-                />
             </View>
         </Modal>
 
@@ -976,23 +968,6 @@ const styles = StyleSheet.create({
         color: 'gray',
         textAlign: 'center',
         marginTop: 20,
-    },
-    loadingContainer: {
-        flex: 1,
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#F4F4F4',
-    },
-    loadingText: {
-        marginTop: 10,
-        fontSize: 16,
-        color: '#333',
     },
 
 });

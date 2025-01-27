@@ -21,6 +21,8 @@ interface EventWithId {
     description: string;
     maxParticipants: number;
     currentParticipants: number;
+    time:string;
+    categoryName: string;
     userId: number;
 };
 
