@@ -3,7 +3,7 @@ import { unsubscribeUserFromAnEvent } from "@/apiCalls/unsubscribeUserFromEvent"
 import { useEventContext } from "@/context/eventContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useEffect, useState } from "react";
-import { Modal, TouchableOpacity, View, Text, StyleSheet, Alert } from "react-native";
+import { TouchableOpacity, View, Text, StyleSheet, Alert } from "react-native";
 import { Float } from "react-native/Libraries/Types/CodegenTypes";
 
 interface EventCardProps {
@@ -21,7 +21,7 @@ interface EventWithId {
     description: string;
     maxParticipants: number;
     currentParticipants: number;
-    time:string;
+    time: string;
     category: any;
     userId: number;
 };
@@ -35,7 +35,6 @@ const EventCard: React.FC<EventCardProps> = ({
     const { refreshEvents } = useEventContext();
     const isEventOngoing = event?.date ? new Date(event.date) > new Date() : false;
     const [isConfirmaDeletionModalVisible, setIsConfirmaDeletionModalVisible] = useState(false);
-
 
     useEffect(() => {
         const fetchUserId = async () => {
@@ -51,7 +50,6 @@ const EventCard: React.FC<EventCardProps> = ({
 
         fetchUserId();
     }, []);
-
 
     const openDeleteModal = (eventId: number) => {
         setIsConfirmaDeletionModalVisible(true);
@@ -82,32 +80,61 @@ const EventCard: React.FC<EventCardProps> = ({
         }
     };
 
+    const getBackgroundColor = () => {
+        if (event?.category?.name === 'Deporte') {
+            return '#7FBF6E'; //light green
+        }
+        if (event?.category?.name === 'Musica') {
+            return '#F76D8C'; //light pink
+        }
+        if (event?.category?.name === 'Arte') {
+            return '#65B9D3'; //light blue
+        }
+        if (event?.category?.name === 'Comida') {
+            return '#FF4E50'; //light red
+        }
+        if (event?.category?.name === 'NetWorking') {
+            return '#F9D616'; //light yellow
+        }
+        if (event?.category?.name === 'Fiesta') {
+            return '#F0BB62'; //light orange
+        }
+        if (event?.category?.name === 'Voluntariado') {
+            return '#D2B48C'; //light brown
+        }
+        return '#fef6f2';
+    }
 
+    const backgroundColor = getBackgroundColor();
 
     return (
-        <TouchableOpacity style={styles.eventCard}>
+        <TouchableOpacity style={[styles.eventCard, { borderColor: backgroundColor }]}>
 
             {event && (
                 <>
                     <View style={styles.headerSection}>
                         <Text style={styles.eventName} numberOfLines={2} >{event.name}</Text>
-
-
                         <Text style={styles.eventDate}>
                             {event.date ? new Date(event.date).toLocaleDateString() : 'Fecha no disponible'}
                         </Text>
 
-                        <Text>{event.time}</Text>
-                        <Text>{event.category.name}</Text>
                     </View>
 
-
-                    <View style={styles.divider} />
-
+                    <View style={[styles.divider, { backgroundColor: backgroundColor }]} />
 
                     <Text style={styles.eventDescription} numberOfLines={3}>
                         {event.description || 'No hay descripción disponible para este evento.'}
                     </Text>
+
+                    <View style={[styles.divider, { backgroundColor: backgroundColor }]} />
+
+                    <View style={styles.headerSection}>
+                        <Text style={[styles.eventCategory, { backgroundColor: backgroundColor }]}>{event.category.name}</Text>
+                        <Text style={styles.eventTime}>{event.time}</Text>
+                    </View>
+
+                    <View style={[styles.divider, { backgroundColor: backgroundColor }]} />
+
                     <View style={styles.actionButtons}>
                         {userId !== null && event.userId === userId && isEventOngoing && (
                             <>
@@ -156,12 +183,10 @@ const EventCard: React.FC<EventCardProps> = ({
                                     <Text style={styles.unsubscribeButtonText}>Borrar</Text>
                                 </TouchableOpacity>
                             </>
-
                         )}
                     </View>
                 </>
             )}
-
         </TouchableOpacity>
     );
 };
@@ -236,7 +261,7 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     buttonWrapper: {
-        width: '45%',               // Controla el ancho de cada botón
+        width: '45%',
     },
     mapModalContainer: {
         flex: 1,
@@ -260,23 +285,23 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)', // Overlay for modal
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
     },
     modalContent: {
-        width: '80%', // Adjust width if needed
-        backgroundColor: '#ffffff', // White background
-        borderRadius: 15, // Rounded edges
+        width: '80%',
+        backgroundColor: '#ffffff',
+        borderRadius: 15,
         padding: 20,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.25,
         shadowRadius: 4,
-        elevation: 5, // For Android shadow
+        elevation: 5,
     },
     modalTitle: {
         fontSize: 22,
         fontWeight: 'bold',
-        color: '#FF7F50', // Orange color for title
+        color: '#FF7F50',
         textAlign: 'center',
         marginBottom: 15,
     },
@@ -292,31 +317,40 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     eventCard: {
-        backgroundColor: '#f9f9f9',
-        borderRadius: 15,
-        marginVertical: 10,
+        backgroundColor: '#ffffff',
+        borderRadius: 20,
+        marginVertical: 15,
         marginHorizontal: 16,
-        padding: 16,
+        padding: 20,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 6 },
+        shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.1,
-        shadowRadius: 10,
-        elevation: 5,
-        borderWidth: 1,
-        borderColor: '#e6e6e6',
+        shadowRadius: 8,
+        elevation: 6,
+        borderWidth: 1
     },
     headerSection: {
         flexDirection: 'row',
-        justifyContent: 'space-between', // Pushes name and date to opposite ends
+        justifyContent: 'space-between',
         alignItems: 'center',
         marginBottom: 8,
     },
     eventName: {
-        fontSize: 20,
+        fontSize: 22,
         fontWeight: '700',
         color: '#333',
         textTransform: 'capitalize',
-        flex: 1, // Ensures the name takes up available space
+        marginBottom: 8,
+        width: '60%',
+    },
+    eventCategory: {
+        fontSize: 16,
+        fontWeight: '700',
+        color: '#fff',
+        padding: 4,
+        borderRadius: 5,
+        textAlign: 'center',
+        maxWidth: '40%',
     },
     eventDate: {
         fontSize: 14,
@@ -325,72 +359,91 @@ const styles = StyleSheet.create({
         backgroundColor: '#f1f1f1',
         padding: 4,
         borderRadius: 5,
-        textAlign: 'right', // Aligns text to the right
-        maxWidth: '40%', // Ensures it doesn’t take too much space
+        textAlign: 'right',
+        maxWidth: '40%',
+    },
+    eventTime: {
+        fontSize: 14,
+        fontStyle: 'italic',
+        color: 'black',
+        backgroundColor: '#f1f1f1',
+        padding: 4,
+        borderRadius: 5,
+        textAlign: 'right',
     },
     divider: {
-        height: 1,
-        backgroundColor: '#e5e5e5',
-        marginVertical: 10,
+        height: 2,
+        borderRadius: 1,
+        marginVertical: 16,
     },
     eventDescription: {
         fontSize: 16,
         color: '#4b5563',
-        lineHeight: 22,
-        marginBottom: 12,
+        lineHeight: 24,
         textAlign: 'justify',
+        alignSelf: 'center',
+        marginBottom: 16,
     },
     actionButtons: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
+        justifyContent: 'space-evenly',
+        flexWrap: 'wrap',
         marginTop: 10,
     },
     adminButton: {
-        backgroundColor: '#3b82f6',
-        paddingVertical: 10,
-        paddingHorizontal: 16,
-        borderRadius: 8,
+        backgroundColor: '#2563eb',
+        paddingVertical: 12,
+        paddingHorizontal: 20,
+        borderRadius: 10,
+        marginBottom: 10,
     },
     adminButtonText: {
         color: '#fff',
         fontSize: 14,
         fontWeight: '600',
         textTransform: 'uppercase',
+        textAlign: 'center',
     },
     deleteButton: {
-        backgroundColor: '#ef4444',
-        paddingVertical: 10,
-        paddingHorizontal: 16,
-        borderRadius: 8,
+        backgroundColor: '#dc2626',
+        paddingVertical: 12,
+        paddingHorizontal: 20,
+        borderRadius: 10,
+        marginBottom: 10,
     },
     deleteButtonText: {
         color: '#fff',
         fontSize: 14,
         fontWeight: '600',
         textTransform: 'uppercase',
+        textAlign: 'center',
     },
     detailsButton: {
-        backgroundColor: '#6366f1',
-        paddingVertical: 10,
-        paddingHorizontal: 16,
-        borderRadius: 8,
+        backgroundColor: '#4f46e5',
+        paddingVertical: 12,
+        paddingHorizontal: 20,
+        borderRadius: 10,
+        marginBottom: 10,
     },
     detailsButtonText: {
         color: '#fff',
         fontSize: 14,
         fontWeight: '600',
         textTransform: 'uppercase',
+        textAlign: 'center',
     },
     unsubscribeButton: {
-        backgroundColor: '#f59e0b',
-        paddingVertical: 10,
-        paddingHorizontal: 16,
-        borderRadius: 8,
+        backgroundColor: '#f97316',
+        paddingVertical: 12,
+        paddingHorizontal: 20,
+        borderRadius: 10,
+        marginBottom: 10,
     },
     unsubscribeButtonText: {
         color: '#fff',
         fontSize: 14,
         fontWeight: '600',
         textTransform: 'uppercase',
-    }
+        textAlign: 'center',
+    },
 });
