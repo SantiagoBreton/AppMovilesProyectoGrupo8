@@ -23,6 +23,7 @@ interface EventCard2Props {
 
 
 
+
 const EventCard2: React.FC<EventCard2Props> = ({
     event,
 }) => {
@@ -33,13 +34,41 @@ const EventCard2: React.FC<EventCard2Props> = ({
         setEventDetails(item)
         setIsDetailsModalVisible(true);
     };
+    const getBackgroundColor = () => {
+        if (event?.category?.name === 'Deporte') {
+            return '#7FBF6E'; //light green
+        }
+        if (event?.category?.name === 'Musica') {
+            return '#F76D8C'; //light pink
+        }
+        if (event?.category?.name === 'Arte') {
+            return '#65B9D3'; //light blue
+        }
+        if (event?.category?.name === 'Comida') {
+            return '#FF4E50'; //light red
+        }
+        if (event?.category?.name === 'NetWorking') {
+            return '#F9D616'; //light yellow
+        }
+        if (event?.category?.name === 'Fiesta') {
+            return '#F0BB62'; //light orange
+        }
+        if (event?.category?.name === 'Voluntariado') {
+            return '#D2B48C'; //light brown
+        }
+        return '#fef6f2';
+    }
+    const backgroundColor = getBackgroundColor();
     return (
         <TouchableOpacity
-            style={styles.eventCard}
+            style={[styles.eventCard, { borderLeftColor: backgroundColor }]}
             onPress={() => event && handleDetailsEvent(event)}
         >
-            <View style={styles.cardContent}>
-                <Text style={styles.eventName} numberOfLines={2}>{event?.name}</Text>
+            <View style={[styles.cardContent]}>
+                <Text style={[styles.eventCategory, { backgroundColor: backgroundColor }]}>
+                    {event?.category ? event.category.name : 'Categoría no disponible'}
+                </Text>
+                <Text style={[styles.eventName, {color: backgroundColor}]} numberOfLines={2}>{event?.name}</Text>
                 <View style={styles.dateTimeContainer}>
                     <Text style={styles.eventDate}>
                         {event?.date ? new Date(event.date).toLocaleDateString() : 'Fecha no disponible'}
@@ -48,9 +77,7 @@ const EventCard2: React.FC<EventCard2Props> = ({
                         {event?.time ? event.time : 'Hora no disponible'}
                     </Text>
                 </View>
-                <Text style={styles.eventCategory}>
-                    {event?.category ? event.category.name : 'Categoría no disponible'}
-                </Text>
+
                 <Text style={styles.eventDescription}>{event?.description}</Text>
             </View>
 
@@ -58,7 +85,7 @@ const EventCard2: React.FC<EventCard2Props> = ({
                 <Button
                     title="Ver Detalles"
                     onPress={() => event && handleDetailsEvent(event)}
-                    color="#FF7F50"
+                    color={backgroundColor}
                 />
             </View>
 
@@ -82,7 +109,7 @@ const styles = StyleSheet.create({
         padding: 16,
         marginBottom: 12,
         borderLeftWidth: 4,
-        borderLeftColor: '#FF7F50',
+        //borderLeftColor: '#FF7F50',
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.15,
@@ -95,7 +122,7 @@ const styles = StyleSheet.create({
     eventName: {
         fontSize: 20,
         fontWeight: 'bold',
-        color: '#FF7F50',
+        //color: '#FF7F50',
         marginBottom: 8,
     },
     // Contenedor de la fecha y hora
@@ -104,7 +131,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between', // Separa la fecha y la hora
         marginBottom: 10, // Aumenté el espacio para más claridad
     },
-    
+
     // Fecha
     eventDate: {
         fontSize: 15,
@@ -113,7 +140,7 @@ const styles = StyleSheet.create({
         textAlign: 'left',
         marginRight: 10, // Un poco de separación entre la fecha y la hora
     },
-    
+
     // Hora
     eventTime: {
         fontSize: 15,
@@ -122,21 +149,21 @@ const styles = StyleSheet.create({
         textAlign: 'right',
         fontWeight: 'bold', // Hice la hora más destacada
     },
-    
+
     // Categoría
     eventCategory: {
         fontSize: 16,
         fontWeight: '700',
         color: '#fff',
-        backgroundColor: '#FF7F50', // Fondo más llamativo
-        paddingVertical: 5,
-        paddingHorizontal: 15,
+        //backgroundColor: '#F0BB62', // Fondo más llamativo
+        paddingVertical: 8,
+        paddingHorizontal: 20,
         borderRadius: 25, // Borde redondeado para un look más moderno
-        marginBottom: 12,
         textAlign: 'center',
         letterSpacing: 1, // Espaciado de letras para darle más estilo
+        marginBottom: 15, // Espacio entre la categoría y el siguiente contenido
     },
-    
+
     eventDescription: {
         fontSize: 14,
         color: '#333',
@@ -144,7 +171,7 @@ const styles = StyleSheet.create({
         textAlign: 'justify',  // Mejor alineación para la descripción
         lineHeight: 20, // Aumento de altura de línea para mejorar la legibilidad
     },
-    
+
     detailButtonContainer: {
         alignSelf: 'flex-end',
     }
