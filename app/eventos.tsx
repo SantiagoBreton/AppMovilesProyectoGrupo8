@@ -59,7 +59,7 @@ export default function CreacionEvento() {
         maxParticipants: number;
         currentParticipants: number;
         time: string;
-        categoryName: string;
+        category: any;
         userId: number;
     };
 

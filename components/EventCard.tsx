@@ -22,7 +22,7 @@ interface EventWithId {
     maxParticipants: number;
     currentParticipants: number;
     time:string;
-    categoryName: string;
+    category: any;
     userId: number;
 };
 
@@ -35,6 +35,7 @@ const EventCard: React.FC<EventCardProps> = ({
     const { refreshEvents } = useEventContext();
     const isEventOngoing = event?.date ? new Date(event.date) > new Date() : false;
     const [isConfirmaDeletionModalVisible, setIsConfirmaDeletionModalVisible] = useState(false);
+
 
     useEffect(() => {
         const fetchUserId = async () => {
@@ -95,6 +96,9 @@ const EventCard: React.FC<EventCardProps> = ({
                         <Text style={styles.eventDate}>
                             {event.date ? new Date(event.date).toLocaleDateString() : 'Fecha no disponible'}
                         </Text>
+
+                        <Text>{event.time}</Text>
+                        <Text>{event.category.name}</Text>
                     </View>
 
 

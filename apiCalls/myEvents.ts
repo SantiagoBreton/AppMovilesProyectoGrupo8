@@ -1,9 +1,23 @@
 
 import { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
+import { Float } from "react-native/Libraries/Types/CodegenTypes";
+interface Event {
+    id: number
+    name: string;
+    date: Date;
+    latitude: Float;
+    longitude: Float;
+    description: string;
+    maxParticipants: number;
+    currentParticipants: number;
+    rating: number;
+    time: string;
+    category: any;
+    userId: number;
+};
 export const myEvents = (trigger: boolean) => {
-    const [myEvents, setMyEvents] = useState<any[]>([]);
+    const [myEvents, setMyEvents] = useState<Event[]>([]);
     const [loading, setLoading] = useState(true);
     const [eventsError, setEventsError] = useState<string | null>(null);
   
@@ -15,8 +29,10 @@ export const myEvents = (trigger: boolean) => {
             throw new Error('User ID not found');
           }
           const response = await fetch(`http://${process.env.EXPO_PUBLIC_SERVER_IP}:3000/getEventsByUserId/${id}`);
+        
           if (response.ok) {
             const data = await response.json();
+            
             setMyEvents(data);
           } else {
             throw new Error('Failed to fetch events');
@@ -32,6 +48,7 @@ export const myEvents = (trigger: boolean) => {
       getEventsByUserId();
       
     }, [trigger]);
+    
   
     return { myEvents, loading, eventsError }; // Return state and loading/error status
   };

@@ -3,9 +3,6 @@ import { TouchableOpacity, View, Text, StyleSheet, Button } from "react-native";
 import { Float } from "react-native/Libraries/Types/CodegenTypes";
 import EventDetailModal from "./EventDetailModal";
 
-interface EventCard2Props {
-    event: EventWithId | null;
-};
 
 interface EventWithId {
     id: number;
@@ -16,10 +13,15 @@ interface EventWithId {
     description: string;
     maxParticipants: number;
     currentParticipants: number;
-    time:String;
-    categoryName: String;
+    time: string;
+    category: any;
     userId: number;
 };
+interface EventCard2Props {
+    event: EventWithId | null;
+};
+
+
 
 const EventCard2: React.FC<EventCard2Props> = ({
     event,
@@ -38,14 +40,23 @@ const EventCard2: React.FC<EventCard2Props> = ({
         >
             <View style={styles.cardContent}>
                 <Text style={styles.eventName} numberOfLines={2}>{event?.name}</Text>
-                <Text style={styles.eventDate}>
-                    {event?.date ? new Date(event.date).toLocaleDateString() : 'Fecha no disponible'}
+                <View style={styles.dateTimeContainer}>
+                    <Text style={styles.eventDate}>
+                        {event?.date ? new Date(event.date).toLocaleDateString() : 'Fecha no disponible'}
+                    </Text>
+                    <Text style={styles.eventTime}>
+                        {event?.time ? event.time : 'Hora no disponible'}
+                    </Text>
+                </View>
+                <Text style={styles.eventCategory}>
+                    {event?.category ? event.category.name : 'Categoría no disponible'}
                 </Text>
                 <Text style={styles.eventDescription}>{event?.description}</Text>
             </View>
+
             <View style={styles.detailButtonContainer}>
                 <Button
-                    title="Detalles"
+                    title="Ver Detalles"
                     onPress={() => event && handleDetailsEvent(event)}
                     color="#FF7F50"
                 />
@@ -54,11 +65,11 @@ const EventCard2: React.FC<EventCard2Props> = ({
             <EventDetailModal
                 visible={isDetailsModalVisible}
                 eventDetails={eventDetails as EventWithId | null}
-                showSuscribe = {true}
+                showSuscribe={true}
                 onClose={() => setIsDetailsModalVisible(false)}
             />
         </TouchableOpacity>
-        
+
     );
 };
 
@@ -79,31 +90,62 @@ const styles = StyleSheet.create({
         elevation: 3,
     },
     cardContent: {
-        flex: 1,
+        marginBottom: 12,
     },
     eventName: {
-        fontSize: 18,
+        fontSize: 20,
         fontWeight: 'bold',
         color: '#FF7F50',
+        marginBottom: 8,
     },
+    // Contenedor de la fecha y hora
+    dateTimeContainer: {
+        flexDirection: 'row', // Organiza la fecha y hora en una fila
+        justifyContent: 'space-between', // Separa la fecha y la hora
+        marginBottom: 10, // Aumenté el espacio para más claridad
+    },
+    
+    // Fecha
     eventDate: {
-        fontSize: 14,
-        color: '#666',
+        fontSize: 15,
+        color: '#888',  // Cambié el color a algo más suave
         fontStyle: 'italic',
-        flexShrink: 0, // Prevents the date from shrinking
-        marginTop: 5, // Adds a small gap between the name and the date if it moves to the next line
-        marginLeft: 8, // Moves the date a bit more to the left (closer to the name)
-        textAlign: 'right', // Aligns the date to the left if it wraps
-        width: '100%', // Ensures it takes up the full width on the next line
-        paddingTop: 5,
+        textAlign: 'left',
+        marginRight: 10, // Un poco de separación entre la fecha y la hora
     },
+    
+    // Hora
+    eventTime: {
+        fontSize: 15,
+        color: '#888',
+        fontStyle: 'italic',
+        textAlign: 'right',
+        fontWeight: 'bold', // Hice la hora más destacada
+    },
+    
+    // Categoría
+    eventCategory: {
+        fontSize: 16,
+        fontWeight: '700',
+        color: '#fff',
+        backgroundColor: '#FF7F50', // Fondo más llamativo
+        paddingVertical: 5,
+        paddingHorizontal: 15,
+        borderRadius: 25, // Borde redondeado para un look más moderno
+        marginBottom: 12,
+        textAlign: 'center',
+        letterSpacing: 1, // Espaciado de letras para darle más estilo
+    },
+    
     eventDescription: {
         fontSize: 14,
         color: '#333',
-        marginBottom: 8,
+        marginBottom: 20,
+        textAlign: 'justify',  // Mejor alineación para la descripción
+        lineHeight: 20, // Aumento de altura de línea para mejorar la legibilidad
     },
+    
     detailButtonContainer: {
         alignSelf: 'flex-end',
-        marginTop: 8,
     }
 });

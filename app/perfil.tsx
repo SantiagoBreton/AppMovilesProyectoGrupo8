@@ -16,6 +16,7 @@ import { StarRating } from '@/components/StarRating';
 import { getUserProfileImage } from '@/apiCalls/getUserProfileImage';
 import { getUserBannerImage } from '@/apiCalls/getUserBannerImage';
 import AdminProfileModal from '@/components/AdminProfileModal';
+import { Float } from 'react-native/Libraries/Types/CodegenTypes';
 
 interface User {
     id: number;
@@ -24,6 +25,20 @@ interface User {
     rating: number;
     description: string;
 }
+interface EventWithId {
+    id: number;
+    name: string;
+    date: Date;
+    latitude: Float;
+    longitude: Float;
+    description: string;
+    maxParticipants: number;
+    currentParticipants: number;
+    time:string;
+    category: any;
+    userId: number;
+};
+
 
 export default function Perfil() {
     const [user, setUser] = useState<User | null>(null);
@@ -39,6 +54,8 @@ export default function Perfil() {
     const [profileImage, setProfileImage] = useState<string | null>(null);
     const [bannerImage, setBannerImage] = useState<string | null>(null);
     const [userId, setUserId] = useState<number | null>(null);
+
+    
 
     useEffect(() => {
         const fetchUserData = async () => {

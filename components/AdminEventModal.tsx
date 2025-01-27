@@ -20,7 +20,7 @@ interface EventWithId {
     maxParticipants: number;
     currentParticipants: number;
     time: string;
-    categoryName: string;
+    category: any;
     userId: number;
 };
 
