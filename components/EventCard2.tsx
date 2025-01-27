@@ -34,6 +34,7 @@ const EventCard2: React.FC<EventCard2Props> = ({
         setEventDetails(item)
         setIsDetailsModalVisible(true);
     };
+
     const getBackgroundColor = () => {
         if (event?.category?.name === 'Deporte') {
             return '#7FBF6E'; //light green
@@ -58,7 +59,9 @@ const EventCard2: React.FC<EventCard2Props> = ({
         }
         return '#fef6f2';
     }
+    
     const backgroundColor = getBackgroundColor();
+
     return (
         <TouchableOpacity
             style={[styles.eventCard, { borderLeftColor: backgroundColor }]}
