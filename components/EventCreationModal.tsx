@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Modal, View, Text, TouchableOpacity, ScrollView, StyleSheet, Button, Alert, TextInput, Platform, ActivityIndicator } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Modal, View, Text, TouchableOpacity, ScrollView, StyleSheet, Button, Alert, TextInput, Platform, ActivityIndicator, FlatList } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Float } from 'react-native/Libraries/Types/CodegenTypes';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -8,6 +8,8 @@ import { useEventContext } from '@/context/eventContext';
 import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { useLocation } from '@/hooks/useLocation';
+import { getAllCategories } from '@/apiCalls/getAllCategories';
+import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 
 
 interface Event {
@@ -19,6 +21,8 @@ interface Event {
     maxParticipants: number;
     currentParticipants: number;
     rating: number;
+    time: string;
+    categoryName: string;
     userId: number;
 };
 
@@ -40,6 +44,9 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
     const [titulo, setTitulo] = useState('');
     const [descripcion, setDescripcion] = useState('');
     const [ubicacion, setUbicacion] = useState('');
+    const [time, setTime] = useState<string>(''); // La hora guardada como string
+    const [showTimePicker, setShowTimePicker] = useState(false);
+
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedLocation, setSelectedLocation] = useState<{ latitude: number; longitude: number } | null>(null);
     const [selectedLatitude, setLatitude] = useState<number | null>(null);
@@ -51,8 +58,24 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
     const [errorMessageParticipants, setErrorMessageParticipants] = useState('');
     const [errorMessageDate, setErrorMessageDate] = useState('');
     const [isCreationLoading, setIsCreationLoading] = useState(false);
+    const [categories, setCategories] = useState<string[]>([]);
 
 
+    const [selectedCategory, setSelectedCategory] = useState('');
+    const [showCategories, setShowCategories] = useState(false);
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            const result = await getAllCategories();
+            if (result.data) {
+                setCategories(result.data);
+            } else {
+                Alert.alert('Error', result.error || 'Error fetching categories');
+            }
+        };
+
+        fetchCategories();
+    }, []);
 
     const resetEvetCreationInfo = () => {
         setTitulo('');
@@ -72,7 +95,7 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
     };
 
     const createNewEvent = async function createNewEvent() {
-        if (!titulo || !descripcion || !selectedDate || !selectedLocation || maxParticipants <= 0) {
+        if (!titulo || !descripcion || !selectedDate || !selectedLocation || maxParticipants <= 0 || !time || !selectedCategory) {
             Alert.alert('Error', 'Por favor, complete todos los campos.');
             return;
         }
@@ -88,7 +111,8 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
                 maxParticipants: maxParticipants,
                 rating: 0,
                 currentParticipants: 0,
-
+                time: time,
+                categoryName: selectedCategory,
                 userId: currentUserId ? parseInt(currentUserId, 10) : 0,
             };
             await createEvent(event);
@@ -97,7 +121,7 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
             refreshEvents();
             onClose();
 
-            
+
         } catch (error) {
             refreshEvents();
         }
@@ -193,6 +217,31 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
     }
 
 
+    const toggleCategories = () => {
+        setShowCategories(!showCategories);
+    };
+
+    const selectCategory = (category: string) => {
+        setSelectedCategory(category);
+        setShowCategories(false);
+    };
+
+    const openTimePicker = () => {
+        setShowTimePicker(true);
+    };
+
+    const onTimeChange = (event: any, selectedTime?: Date) => {
+        setShowTimePicker(false); // Cierra el picker después de seleccionar
+        if (selectedTime) {
+            // Convierte la hora seleccionada en un string en formato "HH:mm"
+            const hours = selectedTime.getHours().toString().padStart(2, '0');
+            const minutes = selectedTime.getMinutes().toString().padStart(2, '0');
+            setTime(`${hours}:${minutes}`);
+        }
+    };
+
+
+
 
 
 
@@ -229,6 +278,48 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
                         multiline
                     />
                     {errorMessageDescription ? <Text style={styles.errorMessage}>{errorMessageDescription}</Text> : null}
+                </View>
+
+                {/* Category */}
+                <View style={styles.section}>
+                    <Text style={styles.label}>Categoría</Text>
+                    <TouchableOpacity style={styles.button} onPress={toggleCategories}>
+                        <Text style={styles.buttonText}>
+                            {selectedCategory ? `Categoría: ${selectedCategory}` : 'Seleccionar categoría'}
+                        </Text>
+                    </TouchableOpacity>
+
+                    {showCategories && (
+                        <FlatList
+                            data={categories}
+                            keyExtractor={(item, index) => index.toString()}
+                            renderItem={({ item }) => (
+                                <TouchableOpacity style={styles.categoryItem} onPress={() => selectCategory(item)}>
+                                    <Text style={styles.categoryText}>{item}</Text>
+                                </TouchableOpacity>
+                            )}
+                        />
+                    )}
+                </View>
+                
+                {/* Time */}
+
+                <View style={styles.section}>
+                    <Text style={styles.label}>Hora</Text>
+                    <TouchableOpacity style={styles.button} onPress={openTimePicker}>
+                        <Text style={styles.buttonText}>
+                            {time ? `Hora seleccionada: ${time}` : 'Seleccionar hora'}
+                        </Text>
+                    </TouchableOpacity>
+
+                    {showTimePicker && (
+                        <DateTimePicker
+                            value={new Date()}
+                            mode="time"
+                            display="default"
+                            onChange={onTimeChange}
+                        />
+                    )}
                 </View>
 
                 {/* Maximum Participants */}
@@ -623,6 +714,14 @@ const styles = StyleSheet.create({
         marginTop: 10,
         fontSize: 16,
         color: '#333',
+    },
+    categoryItem: {
+        padding: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: '#DDD',
+    },
+    categoryText: {
+        fontSize: 16,
     },
 });
 

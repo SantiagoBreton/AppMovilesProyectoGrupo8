@@ -12,6 +12,8 @@ interface Event {
     maxParticipants: number;
     currentParticipants: number;
     rating: number;
+    time:String;
+    categoryName: String;
     userId: number;
 };
 
