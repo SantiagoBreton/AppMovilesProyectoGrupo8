@@ -3,7 +3,6 @@ import { TouchableOpacity, View, Text, StyleSheet, Button } from "react-native";
 import { Float } from "react-native/Libraries/Types/CodegenTypes";
 import EventDetailModal from "./EventDetailModal";
 
-
 interface EventWithId {
     id: number;
     name: string;
@@ -17,12 +16,10 @@ interface EventWithId {
     category: any;
     userId: number;
 };
+
 interface EventCard2Props {
     event: EventWithId | null;
 };
-
-
-
 
 const EventCard2: React.FC<EventCard2Props> = ({
     event,
@@ -84,14 +81,6 @@ const EventCard2: React.FC<EventCard2Props> = ({
                 <Text style={styles.eventDescription}>{event?.description}</Text>
             </View>
 
-            <View style={styles.detailButtonContainer}>
-                <Button
-                    title="Ver Detalles"
-                    onPress={() => event && handleDetailsEvent(event)}
-                    color={backgroundColor}
-                />
-            </View>
-
             <EventDetailModal
                 visible={isDetailsModalVisible}
                 eventDetails={eventDetails as EventWithId | null}
@@ -112,7 +101,6 @@ const styles = StyleSheet.create({
         padding: 16,
         marginBottom: 12,
         borderLeftWidth: 4,
-        //borderLeftColor: '#FF7F50',
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.15,

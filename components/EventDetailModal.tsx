@@ -20,6 +20,8 @@ interface CustomEvent {
     maxParticipants: number;
     currentParticipants: number;
     userId: number;
+    time: string;
+    category: any;
 };
 interface EventDetailModalProps {
     visible: boolean;
@@ -145,10 +147,18 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
                                 <Text style={styles.modalText}>{eventDetails.description}</Text>
                             </View>
                             <View style={styles.modalSection}>
+                                <Text style={styles.modalLabel}>Categoría:</Text>
+                                <Text style={styles.modalText}>{eventDetails.category.name}</Text>
+                            </View>
+                            <View style={styles.modalSection}>
                                 <Text style={styles.modalLabel}>Fecha:</Text>
                                 <Text style={styles.modalText}>
                                     {new Date(eventDetails.date).toLocaleDateString()}
                                 </Text>
+                            </View>
+                            <View style={styles.modalSection}>
+                                <Text style={styles.modalLabel}>Hora:</Text>
+                                <Text style={styles.modalText}>{eventDetails.time}</Text>
                             </View>
                             <View style={styles.modalSection}>
                                 <Text style={styles.modalLabel}>Ubicación:</Text>
@@ -193,7 +203,7 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
                                         style={[styles.modalActionButton, styles.subscribeButton]}
                                         onPress={() => { handleSubscribe(eventDetails.id) }}
                                     >
-                                        <Text style={styles.modalActionButtonText} numberOfLines={1}>Suscribirse</Text>
+                                        <Text style={styles.modalActionButtonText} numberOfLines={1}>Quiero ir!</Text>
                                     </TouchableOpacity>
                                 )}
                                 <TouchableOpacity

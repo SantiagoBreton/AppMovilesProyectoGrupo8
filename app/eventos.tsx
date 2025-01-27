@@ -47,8 +47,6 @@ export default function CreacionEvento() {
         fetchUserId();
     }, []);
 
-
-
     interface EventWithId {
         id: number;
         name: string;
@@ -97,8 +95,6 @@ export default function CreacionEvento() {
         setSelectedView(view);
     };
 
-
-
     const handleAdministrarEvent = async (event: EventWithId) => {
         try {
             setIsAdminEventLoading(true);
@@ -126,8 +122,6 @@ export default function CreacionEvento() {
             </View>
         );
     }
-
-
 
     return (
         <View style={styles.container}>
@@ -169,7 +163,6 @@ export default function CreacionEvento() {
                     keyExtractor={(item) => item.id.toString()}
                 />
 
-
                 <Text style={styles.subHeader}>Eventos Finalizados</Text>
 
                 {/* Lista de eventos finalizados */}
@@ -209,8 +202,6 @@ export default function CreacionEvento() {
                 onClose={() => setIsDetailsModalVisible(false)}
             />
 
-
-
             {/* Modal para administrar eventos */}
 
             <AdminEventModal
@@ -220,8 +211,6 @@ export default function CreacionEvento() {
                 requestingUsers={requestingUsers}
                 onClose={() => setIsAdminModalVisible(false)}
             />
-
-
         </View>
     );
 }
