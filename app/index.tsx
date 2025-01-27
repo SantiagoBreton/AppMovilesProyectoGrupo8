@@ -1,12 +1,31 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, Text, ActivityIndicator, Button, Modal, TouchableOpacity, TextInput, TouchableWithoutFeedback } from 'react-native';
+import { StyleSheet, View, Text, ActivityIndicator, Button, Modal, TouchableOpacity, TextInput, TouchableWithoutFeedback, Image } from 'react-native';
 import MapView, { Marker, Circle } from 'react-native-maps';
 import { useLocation } from '../hooks/useLocation';
 import { useAllEvents } from '@/apiCalls/getAllEvents';
 import { useEventContext } from '@/context/eventContext';
 import { subscribeToEvent } from '@/apiCalls/subscribeToAnEvent';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { Icon } from 'react-native-elements'
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { Float } from 'react-native/Libraries/Types/CodegenTypes';
+import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+
+interface EventWithId {
+  id: number;
+  name: string;
+  date: Date;
+  latitude: Float;
+  longitude: Float;
+  description: string;
+  maxParticipants: number;
+  currentParticipants: number;
+  time: string;
+  category: any;
+  userId: number;
+};
+
+
 
 export default function Index() {
   const { location, locationError } = useLocation();
@@ -37,6 +56,54 @@ export default function Index() {
         <Text style={styles.loadingText}>Cargando...</Text>
       </View>
     );
+  }
+  const getCategoryImage = (category: string) => {
+    if (category === 'Deporte') {
+      return require('../assets/images/sport.png');
+    }
+    if (category === 'Musica') {
+      return require('../assets/images/music.png');
+    }
+    if (category === 'Arte') {
+      return require('../assets/images/art.png');
+    }
+    if (category === 'Comida') {
+      return require('../assets/images/food.png');
+    }
+    if (category === 'NetWorking') {
+      return require('../assets/images/networking.png');
+    }
+    if (category === 'Fiesta') {
+      return require('../assets/images/party.png');
+    }
+    if (category === 'Voluntariado') {
+      return require('../assets/images/volunteer.png');
+    }
+    return require('../assets/images/ping.png');
+  }
+  const getBackgroundColor = (event: EventWithId | null) => {
+    if (event?.category?.name === 'Deporte') {
+      return '#7FBF6E'; //light green
+    }
+    if (event?.category?.name === 'Musica') {
+      return '#F76D8C'; //light pink
+    }
+    if (event?.category?.name === 'Arte') {
+      return '#65B9D3'; //light blue
+    }
+    if (event?.category?.name === 'Comida') {
+      return '#FF4E50'; //light red
+    }
+    if (event?.category?.name === 'NetWorking') {
+      return '#F9D616'; //light yellow
+    }
+    if (event?.category?.name === 'Fiesta') {
+      return '#F0BB62'; //light orange
+    }
+    if (event?.category?.name === 'Voluntariado') {
+      return '#D2B48C'; //light brown
+    }
+    return '#fef6f2';
   }
 
   const handleSubscribe = async (eventId: number) => {
@@ -127,12 +194,26 @@ export default function Index() {
           {filteredEvents.map((event) => (
             <React.Fragment key={event.id}>
               <Marker
+                pinColor={getBackgroundColor(event)}
+
                 coordinate={{
                   latitude: event.latitude + event.latitudeOffset,
                   longitude: event.longitude + event.longitudeOffset
                 }}
                 onPress={() => handleMarkerPress(event)}
-              />
+              // image={require('../assets/images/party_pin_location_map-512.jpg')} //
+              // style={styles.markerImage}
+              >
+                <Image
+                  source={getCategoryImage(event.category.name)}
+                  style={styles.markerImage}
+
+                
+                />
+              </Marker>
+
+
+
               <Circle
                 key={`circle-${event.id}`}
                 center={{
@@ -140,8 +221,8 @@ export default function Index() {
                   longitude: event.longitude + event.longitudeOffset
                 }}
                 radius={500}
-                strokeColor="rgba(0, 255, 0, 0.5)"
-                fillColor="rgba(0, 255, 0, 0.2)"
+                strokeColor={`${getBackgroundColor(event)}80`} // Borde con opacidad
+                fillColor={`${getBackgroundColor(event)}60`}
                 strokeWidth={2}
               />
             </React.Fragment>
@@ -303,6 +384,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  markerImage: {
+    width: 50, // Fixed width
+    height: 50, // Fixed height
+  },
+
   map: {
     width: '100%',
     height: '100%',
@@ -312,19 +398,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    zIndex: 1000, 
+    zIndex: 1000,
   },
   modalCard: {
     backgroundColor: '#fff',
-    borderRadius: 20, 
+    borderRadius: 20,
     padding: 20,
-    width: '90%', 
+    width: '90%',
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2, 
+    shadowOpacity: 0.2,
     shadowRadius: 5,
-    elevation: 10, 
+    elevation: 10,
   },
   selectedDateText: { fontSize: 14, marginBottom: 10 },
   errorModalContainer: {
@@ -427,7 +513,7 @@ const styles = StyleSheet.create({
     elevation: 15,
   },
   modalTitle: {
-    fontSize: 24, 
+    fontSize: 24,
     fontWeight: "700",
     color: "#333",
     textAlign: "center",
@@ -437,7 +523,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   inputLabel: {
-    fontSize: 18, 
+    fontSize: 18,
     fontWeight: "600",
     color: "#666",
     marginBottom: 5,
@@ -452,7 +538,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#f9f9f9",
   },
   datePickerButton: {
-    backgroundColor: "#1E90FF", 
+    backgroundColor: "#1E90FF",
     padding: 12,
     borderRadius: 10,
     alignItems: "center",
@@ -480,7 +566,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   applyButton: {
-    backgroundColor: "#1E90FF", 
+    backgroundColor: "#1E90FF",
   },
   clearButton: {
     backgroundColor: "#FF6347",
