@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useFocusEffect } from 'expo-router';
 
-export const useAllEvents = (trigger: boolean) => {
+export const getAllEvents = (trigger: boolean, distanceRadius: number, userLatitude: number, userLongitude: number) => {
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [eventsError, setEventsError] = useState<string | null>(null);
@@ -12,7 +12,7 @@ export const useAllEvents = (trigger: boolean) => {
         setLoading(true); // Reset loading state on focus
         setEventsError(null); // Clear previous error
         try {
-          const response = await fetch(`http://${process.env.EXPO_PUBLIC_SERVER_IP}:3000/getEvents`, {
+          const response = await fetch(`http://${process.env.EXPO_PUBLIC_SERVER_IP}:3000/getEvents/${distanceRadius}/${userLatitude}/${userLongitude}`, {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',

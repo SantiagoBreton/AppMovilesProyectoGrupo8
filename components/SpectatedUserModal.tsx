@@ -20,6 +20,8 @@ interface CustomEvent {
     maxParticipants: number;
     currentParticipants: number;
     userId: number;
+    time: string;
+    category: any;
 };
 interface User {
     id: number;

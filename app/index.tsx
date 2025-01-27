@@ -2,11 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, Text, ActivityIndicator, Button, Modal, TouchableOpacity, TextInput, TouchableWithoutFeedback, Image } from 'react-native';
 import MapView, { Marker, Circle } from 'react-native-maps';
 import { useLocation } from '../hooks/useLocation';
-import { useAllEvents } from '@/apiCalls/getAllEvents';
+import { getAllEvents } from '@/apiCalls/getAllEvents';
 import { useEventContext } from '@/context/eventContext';
 import { subscribeToEvent } from '@/apiCalls/subscribeToAnEvent';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Icon } from 'react-native-elements'
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Float } from 'react-native/Libraries/Types/CodegenTypes';
 import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
@@ -25,29 +24,47 @@ interface EventWithId {
   userId: number;
 };
 
-
-
 export default function Index() {
   const { location, locationError } = useLocation();
   const { trigger } = useEventContext();
-  const { events, loading, eventsError } = useAllEvents(trigger);
+  const [proximityFilter, setProximityFilter] = useState<number>(50);
+  const { events, loading, eventsError } = getAllEvents(
+    trigger,
+    proximityFilter,
+    location?.coords.latitude ?? 0,
+    location?.coords.longitude ?? 0
+  );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { refreshEvents } = useEventContext();
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<{ id: string; name: string; description: string; date: string; currentParticipants: number; maxParticipants: number; latitude: number; longitude: number; } | null>(null); // Selected event state
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [nameFilter, setNameFilter] = useState<string>('');
-  const [proximityFilter, setProximityFilter] = useState<number>(50);
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [mapLoaded, setMapLoaded] = useState(false);
+  const [filteredEvents, setFilteredEvents] = useState(events);
 
   useEffect(() => {
     if (location) {
-      setMapLoaded(true);
-    }
 
+      refreshEvents();
+      console.log('holaaaa');
+
+    }
   }, [location]);
+
+  useEffect(() => {
+    
+
+    setFilteredEvents(events);
+    console.log('chauuu');
+    setMapLoaded(true);
+
+
+  }, [events]);
+
+
 
   if (!mapLoaded) {
     return (
@@ -136,24 +153,24 @@ export default function Index() {
     return R * c;
   };
 
-  const filteredEvents = (events.filter((event) => event.date > new Date().toISOString())).filter((event) => {
-    const matchesDate =
-      selectedDate === null ||
-      new Date(event.date).toDateString() === selectedDate.toDateString();
-    const matchesName =
-      nameFilter === '' ||
-      event.name.toLowerCase().includes(nameFilter.toLowerCase());
-    const matchesProximity =
-      location &&
-      getDistanceFromLatLonInKm(
-        location.coords.latitude,
-        location.coords.longitude,
-        event.latitude,
-        event.longitude
-      ) <= proximityFilter;
+  // const filteredEvents = (events.filter((event) => event.date > new Date().toISOString())).filter((event) => {
+  //   const matchesDate =
+  //     selectedDate === null ||
+  //     new Date(event.date).toDateString() === selectedDate.toDateString();
+  //   const matchesName =
+  //     nameFilter === '' ||
+  //     event.name.toLowerCase().includes(nameFilter.toLowerCase());
+  //   const matchesProximity =
+  //     location &&
+  //     getDistanceFromLatLonInKm(
+  //       location.coords.latitude,
+  //       location.coords.longitude,
+  //       event.latitude,
+  //       event.longitude
+  //     ) <= proximityFilter;
 
-    return matchesDate && matchesName && matchesProximity;
-  });
+  //   return matchesDate && matchesName && matchesProximity;
+  // });
 
   const handleClearFilters = () => {
     setSelectedDate(null);
@@ -201,18 +218,14 @@ export default function Index() {
                   longitude: event.longitude + event.longitudeOffset
                 }}
                 onPress={() => handleMarkerPress(event)}
-              // image={require('../assets/images/party_pin_location_map-512.jpg')} //
-              // style={styles.markerImage}
               >
                 <Image
                   source={getCategoryImage(event.category.name)}
                   style={styles.markerImage}
 
-                
+
                 />
               </Marker>
-
-
 
               <Circle
                 key={`circle-${event.id}`}
@@ -385,10 +398,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   markerImage: {
-    width: 50, // Fixed width
-    height: 50, // Fixed height
+    width: 50,
+    height: 50,
   },
-
   map: {
     width: '100%',
     height: '100%',
@@ -575,5 +587,5 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "600",
-  },
+  }
 });
