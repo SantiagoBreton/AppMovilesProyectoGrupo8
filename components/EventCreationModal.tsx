@@ -68,7 +68,9 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
         const fetchCategories = async () => {
             const result = await getAllCategories();
             if (result.data) {
-                setCategories(result.data);
+                const categoryNames = result.data.map((category: { name: string }) => category.name);
+
+                setCategories(categoryNames);
             } else {
                 Alert.alert('Error', result.error || 'Error fetching categories');
             }
@@ -291,6 +293,7 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
 
                     {showCategories && (
                         <FlatList
+                        scrollEnabled={false}
                             data={categories}
                             keyExtractor={(item, index) => index.toString()}
                             renderItem={({ item }) => (
