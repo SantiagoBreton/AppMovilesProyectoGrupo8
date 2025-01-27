@@ -13,7 +13,6 @@ export const getUserBannerImage = async (userId:number) => {
 
 
         const data = await response.json(); // Assuming the backend sends JSON with the image URL or path
-        console.log('User banner image:', data);
         return { data, error: null };
     } catch (error: any) {
         console.error('Error fetching user banner image:', error);

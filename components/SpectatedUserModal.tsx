@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Modal, View, Text, TouchableOpacity, Image, FlatList, ScrollView, StyleSheet, Button, Alert, ActivityIndicator, ImageBackground } from 'react-native';
-import { FontAwesome, FontAwesome5 } from '@expo/vector-icons'; // If you are using FontAwesome5
+import { FontAwesome5 } from '@expo/vector-icons'; // If you are using FontAwesome5
 import { Float } from 'react-native/Libraries/Types/CodegenTypes';
 import EventDetailModal from './EventDetailModal';
 import { getAllEventsFromUser } from '@/apiCalls/getAllEventsFromUser';
@@ -26,6 +26,7 @@ interface User {
     name: string;
     email: string;
     rating: number;
+    description: string;
 };
 interface SpectatedUserModalProps {
     isVisible: boolean;
@@ -139,13 +140,10 @@ const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
                 </View>
             ) : (
                 <ScrollView>
-                    <View style={styles.header3}>
-                        <Text style={styles.name}></Text>
-                        <TouchableOpacity style={styles.closeButton2} onPress={() => { onClose() }}>
-                            <FontAwesome5 name="times" size={24} color="black" />
-                        </TouchableOpacity>
-                    </View>
                     <View style={styles.container}>
+                    <TouchableOpacity style={styles.closeButton2} onPress={() => { onClose() }}>
+                                <FontAwesome5 name="times" size={24} color="black" />
+                            </TouchableOpacity>
                         <View style={styles.bannerContainer}>
                             <ImageBackground
                                 source={{ uri: bannerImage || 'https://www.gravatar.com/avatar/2c7d99fe281ecd3bcd65ab915bac6dd5?s=250' }}
@@ -173,8 +171,10 @@ const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
                             <Text style={styles.label}>Email:</Text>
                             <Text style={styles.input}>{user.email}</Text>
                         </View>
-
-
+                        <View style={styles.section}>
+                            <Text style={styles.label}>Descripción:</Text>
+                            <Text style={styles.input}>{user.description}</Text>
+                        </View>
                         <View style={styles.section}>
                             <Text style={styles.sectionTitle}>Eventos Creados</Text>
                             {userEvents && userEvents.length > 0 ? (
@@ -233,11 +233,10 @@ const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
 const styles = StyleSheet.create({
     header3: {
         alignItems: 'center',
-        paddingBottom: 5,
         backgroundColor: '#F9F9F9',
     },
     starContainer: {
-        backgroundColor: '#fff',
+        backgroundColor: '#ffffff',
         padding: 16,
         marginVertical: 12,
         borderRadius: 12,
@@ -247,9 +246,7 @@ const styles = StyleSheet.create({
         shadowRadius: 6,
         elevation: 4,
         flexDirection: 'row',
-    },
-    star: {
-        marginHorizontal: 2,
+        alignItems: 'center',
     },
     text: {
         marginLeft: 10,
@@ -263,9 +260,12 @@ const styles = StyleSheet.create({
     },
     closeButton2: {
         position: 'absolute',
-        top: 8,
-        right: 8,
+        right: 16,
         padding: 8,
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 1,
+        overflow: 'hidden',
     },
     container: {
         flex: 1,
@@ -273,14 +273,6 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         paddingVertical: 10,
     },
-    header: {
-        alignItems: 'center',
-        marginBottom: 24,
-        backgroundColor: '#FF7F50',
-        paddingVertical: 16,
-        borderRadius: 16,
-    },
-
     section: {
         backgroundColor: '#fff',
         padding: 16,
@@ -313,11 +305,10 @@ const styles = StyleSheet.create({
     eventHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'flex-start', // Aligns content at the top
-        flexWrap: 'wrap', // Allows wrapping to the next line when necessary
+        alignItems: 'flex-start',
+        flexWrap: 'wrap',
         marginBottom: 8,
     },
-
     eventCard: {
         backgroundColor: '#fef6f2',
         borderRadius: 12,
@@ -335,23 +326,20 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: 'bold',
         color: '#FF7F50',
-        flex: 1, // Allow the event name to take up the available space
-        marginRight: 8, // Adds space between the event name and the date
+        flex: 1,
+        marginRight: 8,
     },
-
-
     eventDate: {
         fontSize: 14,
         color: '#666',
         fontStyle: 'italic',
-        flexShrink: 0, // Prevents the date from shrinking
-        marginTop: 5, // Adds a small gap between the name and the date if it moves to the next line
-        marginLeft: 8, // Moves the date a bit more to the left (closer to the name)
-        textAlign: 'right', // Aligns the date to the left if it wraps
-        width: '100%', // Ensures it takes up the full width on the next line
+        flexShrink: 0,
+        marginTop: 5,
+        marginLeft: 8,
+        textAlign: 'right',
+        width: '100%',
         paddingTop: 5,
     },
-
     eventDescription: {
         fontSize: 14,
         color: '#333',
@@ -386,7 +374,7 @@ const styles = StyleSheet.create({
     },
     bannerContainer: {
         alignItems: 'center',
-        marginTop: 10,
+        marginTop: 0,
     },
     banner: {
         width: '100%',
@@ -407,11 +395,3 @@ const styles = StyleSheet.create({
 });
 
 export default SpectatedUserModal;
-function setEventLocation(location: string) {
-    throw new Error('Function not implemented.');
-}
-
-function setIsDetailsModalVisible(arg0: boolean) {
-    throw new Error('Function not implemented.');
-}
-
