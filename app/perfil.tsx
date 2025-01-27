@@ -63,7 +63,11 @@ export default function Perfil() {
     useEffect(() => {
 
         const getUserBanner = async () => {
-            const result = await getUserBannerImage();
+            const storedUserId = await AsyncStorage.getItem('userId');
+            if (storedUserId) {
+                setUserId(parseInt(storedUserId, 10));
+            }
+            const result = await getUserBannerImage(userId || 0);
             if (result.data) {
                 setBannerImage(result.data.imageUrl);
             }

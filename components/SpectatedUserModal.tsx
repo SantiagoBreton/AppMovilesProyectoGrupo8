@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, View, Text, TouchableOpacity, Image, FlatList, ScrollView, StyleSheet, Button, Alert, ActivityIndicator } from 'react-native';
+import { Modal, View, Text, TouchableOpacity, Image, FlatList, ScrollView, StyleSheet, Button, Alert, ActivityIndicator, ImageBackground } from 'react-native';
 import { FontAwesome, FontAwesome5 } from '@expo/vector-icons'; // If you are using FontAwesome5
 import { Float } from 'react-native/Libraries/Types/CodegenTypes';
 import EventDetailModal from './EventDetailModal';
@@ -7,6 +7,8 @@ import { getAllEventsFromUser } from '@/apiCalls/getAllEventsFromUser';
 import ReviewModal from './RatingUserModal';
 import { getAllUserRatings } from '@/apiCalls/getAllUserRatings';
 import { StarRating } from './StarRating';
+import { getUserProfileImage } from '@/apiCalls/getUserProfileImage';
+import { getUserBannerImage } from '@/apiCalls/getUserBannerImage';
 
 interface CustomEvent {
     id: number;
@@ -55,6 +57,8 @@ const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
     const hasHalfStar = rating % 1 >= 0.5; // Determine if a half-star is needed
     const emptyStars = totalStars - filledStars - (hasHalfStar ? 1 : 0); // Remaining empty stars
     const [userRating, setUserRating] = useState<Rating[]>([]); // User rating
+    const [profileImage, setProfileImage] = useState<string | null>(null);
+    const [bannerImage, setBannerImage] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -69,6 +73,15 @@ const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
                 } else {
                     setUserEvents(eventResponse.data);
                 }
+                const profileImage = await getUserProfileImage(user.id);
+                const bannerImage = await getUserBannerImage(user.id);
+                if (profileImage.data) {
+                    setProfileImage(profileImage.data.imageUrl);
+                }
+                if (bannerImage.data) {
+                    setBannerImage(bannerImage.data.imageUrl);
+                }
+
 
                 // Actualizar calificaciones del usuario
                 await refreshUserRatings();
@@ -133,9 +146,17 @@ const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
                         </TouchableOpacity>
                     </View>
                     <View style={styles.container}>
-                        <View style={styles.header}>
-                            <Image source={{ uri: 'https://via.placeholder.com/150' }} style={styles.profileImage} />
-                            <Text style={styles.name}>{user.name}</Text>
+                        <View style={styles.bannerContainer}>
+                            <ImageBackground
+                                source={{ uri: bannerImage || 'https://www.gravatar.com/avatar/2c7d99fe281ecd3bcd65ab915bac6dd5?s=250' }}
+                                style={styles.banner}
+                            />
+                            <View style={styles.profileContainer}>
+                                <Image
+                                    source={{ uri: profileImage || 'https://www.gravatar.com/avatar/2c7d99fe281ecd3bcd65ab915bac6dd5?s=250' }}
+                                    style={styles.profileImage}
+                                />
+                            </View>
                         </View>
                         <TouchableOpacity onPress={() => { setIsReviewModalVisible(true) }}>
                             <View style={styles.starContainer}>
@@ -259,14 +280,7 @@ const styles = StyleSheet.create({
         paddingVertical: 16,
         borderRadius: 16,
     },
-    profileImage: {
-        width: 100,
-        height: 100,
-        borderRadius: 50,
-        borderWidth: 2,
-        borderColor: '#fff',
-        marginBottom: 8,
-    },
+
     section: {
         backgroundColor: '#fff',
         padding: 16,
@@ -369,6 +383,26 @@ const styles = StyleSheet.create({
         marginTop: 10,
         fontSize: 16,
         color: '#333',
+    },
+    bannerContainer: {
+        alignItems: 'center',
+        marginTop: 10,
+    },
+    banner: {
+        width: '100%',
+        height: 180,
+        justifyContent: 'flex-end',
+    },
+    profileContainer: {
+        alignItems: 'center',
+        marginTop: -50,
+    },
+    profileImage: {
+        width: 100,
+        height: 100,
+        borderRadius: 50,
+        borderWidth: 2,
+        borderColor: '#F4F4F4',
     },
 });
 

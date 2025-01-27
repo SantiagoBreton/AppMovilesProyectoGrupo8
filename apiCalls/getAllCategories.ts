@@ -6,7 +6,7 @@ export const getAllCategories = async () => {
             throw new Error("Failed to fetch categories");
         }
         const data = await response.json();
-        console.log("Categories fetched:", data);
+        
         return { data, error: null };
     } catch (error: any) {
         console.error("Error:", error);
