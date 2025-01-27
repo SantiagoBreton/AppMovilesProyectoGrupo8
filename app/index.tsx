@@ -13,19 +13,18 @@ export default function Index() {
   const { trigger } = useEventContext();
   const { events, loading, eventsError } = useAllEvents(trigger);
   const [errorMessage, setErrorMessage] = useState<string | null>(null); // Mensaje de error
-  const {refreshEvents} = useEventContext();
+  const { refreshEvents } = useEventContext();
   const [modalVisible, setModalVisible] = useState(false); // Modal visibility state
   const [selectedEvent, setSelectedEvent] = useState<{ id: string; name: string; description: string; date: string; currentParticipants: number; maxParticipants: number; latitude: number; longitude: number; } | null>(null); // Selected event state
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [nameFilter, setNameFilter] = useState<string>('');
   const [proximityFilter, setProximityFilter] = useState<number>(50);
-  const [filterModalVisible, setFilterModalVisible] = useState(false); 
+  const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [mapLoaded, setMapLoaded] = useState(false); // To track if the map has loaded
 
-
   useEffect(() => {
-    if (location ) {
+    if (location) {
       setMapLoaded(true);
     }
 
@@ -64,9 +63,9 @@ export default function Index() {
     const a =
       Math.sin(dLat / 2) * Math.sin(dLat / 2) +
       Math.cos(deg2rad(lat1)) *
-        Math.cos(deg2rad(lat2)) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
+      Math.cos(deg2rad(lat2)) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c;
   };
@@ -133,13 +132,13 @@ export default function Index() {
                   latitude: event.latitude + event.latitudeOffset,
                   longitude: event.longitude + event.longitudeOffset
                 }}
-                onPress={() => handleMarkerPress(event)} 
+                onPress={() => handleMarkerPress(event)}
               />
               <Circle
-                key={`circle-${event.id}`} 
+                key={`circle-${event.id}`}
                 center={{
                   latitude: event.latitude + event.latitudeOffset,
-                  longitude: event.longitude + event.longitudeOffset 
+                  longitude: event.longitude + event.longitudeOffset
                 }}
                 radius={500}
                 strokeColor="rgba(0, 255, 0, 0.5)"
@@ -153,68 +152,67 @@ export default function Index() {
 
       {selectedEvent && (
         <Modal
-        transparent={true}
-        visible={modalVisible}
-        animationType="slide"
-        onRequestClose={handleCloseModal}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalCard}>
-            <Text style={styles.modalEventName}>{selectedEvent.name}</Text>
-            <Text style={styles.modalEventDescription}>{selectedEvent.description}</Text>
-            <View style={styles.modalDetails}>
-              <Ionicons name="calendar" size={16} color="#FF7F50" />
-              <Text style={styles.modalDetailText}>
-                {new Date(selectedEvent.date).toLocaleDateString()}
-              </Text>
-            </View>
-            <View style={styles.modalDetails}>
-              <Ionicons name="people" size={16} color="#FF7F50" />
-              <Text style={styles.modalDetailText}>
-                {selectedEvent.currentParticipants}/{selectedEvent.maxParticipants} Participantes
-              </Text>
-            </View>
-            <View style={styles.modalButtonContainer}>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.subscribeButton]}
-                onPress={() => handleSubscribe(Number(selectedEvent.id))}
-              >
-                <Text style={styles.buttonText}>Quiero ir!</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.closeButton]}
-                onPress={handleCloseModal}
-              >
-                <Text style={styles.buttonText}>Close</Text>
-              </TouchableOpacity>
+          transparent={true}
+          visible={modalVisible}
+          animationType="slide"
+          onRequestClose={handleCloseModal}
+        >
+          <View style={styles.modalContainer}>
+            <View style={styles.modalCard}>
+              <Text style={styles.modalEventName}>{selectedEvent.name}</Text>
+              <Text style={styles.modalEventDescription}>{selectedEvent.description}</Text>
+              <View style={styles.modalDetails}>
+                <Ionicons name="calendar" size={16} color="#FF7F50" />
+                <Text style={styles.modalDetailText}>
+                  {new Date(selectedEvent.date).toLocaleDateString()}
+                </Text>
+              </View>
+              <View style={styles.modalDetails}>
+                <Ionicons name="people" size={16} color="#FF7F50" />
+                <Text style={styles.modalDetailText}>
+                  {selectedEvent.currentParticipants}/{selectedEvent.maxParticipants} Participantes
+                </Text>
+              </View>
+              <View style={styles.modalButtonContainer}>
+                <TouchableOpacity
+                  style={[styles.modalButton, styles.subscribeButton]}
+                  onPress={() => handleSubscribe(Number(selectedEvent.id))}
+                >
+                  <Text style={styles.buttonText}>Quiero ir!</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.modalButton, styles.closeButton]}
+                  onPress={handleCloseModal}
+                >
+                  <Text style={styles.buttonText}>Close</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
-        </View>
-      </Modal>
+        </Modal>
       )}
       {errorMessage && (
-    <Modal
-      transparent={true}
-      visible={!!errorMessage}
-      animationType="fade"
-      onRequestClose={() => setErrorMessage(null)} // Cerrar el modal al presionar fuera
-    >
-      <View style={styles.errorModalContainer}>
-        <View style={styles.errorModalCard}>
-          <Text style={styles.errorTitle}>¡Cuidado!</Text>
-          <Text style={styles.errorDescription}>{errorMessage}</Text>
-          <Button
-            title="Cerrar"
-            color="#FF6347"
-            onPress={() => setErrorMessage(null)} // Cerrar el modal de error
-          />
-        </View>
-      </View>
-    </Modal>
-    
-    
-  )}
-    <TouchableOpacity
+        <Modal
+          transparent={true}
+          visible={!!errorMessage}
+          animationType="fade"
+          onRequestClose={() => setErrorMessage(null)} // Cerrar el modal al presionar fuera
+        >
+          <View style={styles.errorModalContainer}>
+            <View style={styles.errorModalCard}>
+              <Text style={styles.errorTitle}>¡Cuidado!</Text>
+              <Text style={styles.errorDescription}>{errorMessage}</Text>
+              <Button
+                title="Cerrar"
+                color="#FF6347"
+                onPress={() => setErrorMessage(null)} // Cerrar el modal de error
+              />
+            </View>
+          </View>
+        </Modal>
+
+      )}
+      <TouchableOpacity
         style={styles.lupaContainer}
         onPress={() => setFilterModalVisible(true)}
       >
@@ -223,61 +221,86 @@ export default function Index() {
 
       {/* Filter Modal */}
       <Modal
-      transparent={true}
-      visible={filterModalVisible}
-      animationType="slide"
-      onRequestClose={() => setFilterModalVisible(false)}
-    >
-      <TouchableWithoutFeedback onPress={() => setFilterModalVisible(false)}>
-        <View style={styles.filterModalContainer}>
-          <TouchableWithoutFeedback>
-            <View style={styles.filterModal}>
-              <Text style={styles.modalTitle}>Filters</Text>
+        transparent={true}
+        visible={filterModalVisible}
+        animationType="slide"
+        onRequestClose={() => setFilterModalVisible(false)}
+      >
+        <TouchableWithoutFeedback onPress={() => setFilterModalVisible(false)}>
+          <View style={styles.filterModalContainer}>
+            <TouchableWithoutFeedback>
+              <View style={styles.filterModal}>
+                <Text style={styles.modalTitle}>Filters</Text>
 
-              
+                {/* Name Filter */}
+                <View style={styles.inputGroup}>
+                  <Text style={styles.inputLabel}>Event Name</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Filter by Name"
+                    value={nameFilter}
+                    onChangeText={setNameFilter}
+                    placeholderTextColor="#aaa"
+                  />
+                </View>
 
-              {/* Name Filter */}
-              <TextInput
-                style={styles.input}
-                placeholder="Filter by Name"
-                value={nameFilter}
-                onChangeText={setNameFilter}
-              />
+                {/* Proximity Filter */}
+                <View style={styles.inputGroup}>
+                  <Text style={styles.inputLabel}>Proximity (km)</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Enter distance"
+                    value={String(proximityFilter)}
+                    onChangeText={(value) => setProximityFilter(Number(value))}
+                    keyboardType="numeric"
+                    placeholderTextColor="#aaa"
+                  />
+                </View>
 
-              {/* Proximity Filter */}
-              <TextInput
-                style={styles.input}
-                placeholder="Proximity (km)"
-                value={String(proximityFilter)}
-                onChangeText={(value) => setProximityFilter(Number(value))}
-                keyboardType="numeric"
-              />
-              {/* Date Picker */}
-              <Button title="Select Date" onPress={() => setShowDatePicker(true)} />
-              {showDatePicker && (
-                <DateTimePicker
-                  value={selectedDate || new Date()}
-                  mode="date"
-                  display="default"
-                  onChange={handleDateChange}
-                />
-              )}
-              {selectedDate && (
-                <Text style={styles.selectedDateText}>
-                  Selected Date: {selectedDate.toDateString()}
-                </Text>
-              )}
+                {/* Date Picker */}
+                <View style={styles.inputGroup}>
+                  <Text style={styles.inputLabel}>Select Date</Text>
+                  {/* <Button
+                    title={selectedDate ? selectedDate.toDateString() : "Choose Date"}
+                    onPress={() => setShowDatePicker(true)}
+                    color="#4CAF50"
+                  /> */}
+                  <TouchableOpacity
+                    style={styles.datePickerButton}
+                    onPress={() => setShowDatePicker(true)}
+                  >
+                    <Text style={styles.datePickerButtonText}>Choose Date</Text>
+                  </TouchableOpacity>
+                  {showDatePicker && (
+                    <DateTimePicker
+                      value={selectedDate || new Date()}
+                      mode="date"
+                      display="default"
+                      onChange={handleDateChange}
+                    />
+                  )}
+                </View>
 
-              {/* Buttons */}
-              <View style={styles.buttonGroup}>
-                <Button title="Apply Filters" onPress={() => setFilterModalVisible(false)} />
-                <Button title="Clear Filters" color="red" onPress={handleClearFilters} />
+                {/* Buttons */}
+                <View style={styles.buttonGroup}>
+                  <TouchableOpacity
+                    style={[styles.modalButton, styles.applyButton]}
+                    onPress={() => setFilterModalVisible(false)}
+                  >
+                    <Text style={styles.buttonText}>Apply</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.modalButton, styles.clearButton]}
+                    onPress={handleClearFilters}
+                  >
+                    <Text style={styles.buttonText}>Clear</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
-            </View>
-          </TouchableWithoutFeedback>
-        </View>
-      </TouchableWithoutFeedback>
-    </Modal>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
     </View>
   );
 }
@@ -309,21 +332,7 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 10, // Elevation for Android shadow
   },
-  
-  filterModalContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
   selectedDateText: { fontSize: 14, marginBottom: 10 },
-  filterModal: {
-    backgroundColor: '#fff',
-    padding: 20,
-    borderRadius: 10,
-    width: '80%',
-  },
-  modalTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 10 },
   errorModalContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -342,17 +351,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.5,
     shadowRadius: 4,
     elevation: 5,
-  },
-  buttonGroup: {
-    marginTop: 20,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  input: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
-    marginBottom: 15,
-    padding: 8,
   },
   errorTitle: {
     fontSize: 18,
@@ -400,23 +398,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginTop: 20,
   },
-  modalButton: {
-    flex: 1,
-    padding: 10,
-    borderRadius: 20,
-    marginHorizontal: 5,
-    alignItems: 'center',
-  },
   subscribeButton: {
     backgroundColor: '#FF7F50',
   },
   closeButton: {
     backgroundColor: '#FF6347',
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
   },
   loadingText: {
     marginTop: 10,
@@ -429,5 +415,85 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#fff',
   },
-  
+  filterModalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
+  },
+  filterModal: {
+    backgroundColor: "#fff",
+    padding: 20,
+    borderRadius: 15,
+    width: "90%",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 15,
+  },
+  modalTitle: {
+    fontSize: 24, // Increased size for better visibility
+    fontWeight: "700",
+    color: "#333",
+    textAlign: "center",
+    marginBottom: 20,
+  },
+  inputGroup: {
+    marginBottom: 15,
+  },
+  inputLabel: {
+    fontSize: 18, // Enlarged label text
+    fontWeight: "600",
+    color: "#666",
+    marginBottom: 5,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 10,
+    padding: 10,
+    fontSize: 16,
+    color: "#333",
+    backgroundColor: "#f9f9f9",
+  },
+  datePickerButton: {
+    backgroundColor: "#1E90FF", // Stylish blue button
+    padding: 12,
+    borderRadius: 10,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 5,
+  },
+  datePickerButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  buttonGroup: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 20,
+  },
+  modalButton: {
+    flex: 1,
+    padding: 10,
+    borderRadius: 20,
+    marginHorizontal: 5,
+    alignItems: "center",
+  },
+  applyButton: {
+    backgroundColor: "#1E90FF", // Changed to blue for consistency
+  },
+  clearButton: {
+    backgroundColor: "#FF6347",
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
 });
