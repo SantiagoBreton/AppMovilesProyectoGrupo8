@@ -18,6 +18,7 @@ import { StarRating } from '@/components/StarRating';
 import { getUserProfileImage } from '@/apiCalls/getUserProfileImage';
 import { getUserBannerImage } from '@/apiCalls/getUserBannerImage';
 import AdminProfileModal from '@/components/AdminProfileModal';
+import { categoryName } from '@/constants/CategoryColor';
 
 interface User {
     id: number;
@@ -41,7 +42,7 @@ export default function Perfil() {
     const [profileImage, setProfileImage] = useState<string | null>(null);
     const [bannerImage, setBannerImage] = useState<string | null>(null);
     const [userId, setUserId] = useState<number | null>(null);
-    const [categories, setCategories] = useState<string[]>(['Todo', 'Musica', 'Deporte', 'Arte', 'Comida', 'NetWorking', 'Fiesta', 'Voluntariado']);
+    const [categories, setCategories] = useState<string[]>(categoryName);
     const [selectedCategory, setSelectedCategory] = useState('Todo');
     const [isCategoryModalVisible, setIsCategoryModalVisible] = useState(false);
 

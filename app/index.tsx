@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, Text, ActivityIndicator, Button, Modal, TouchableOpacity, TextInput, TouchableWithoutFeedback, Image } from 'react-native';
+import { StyleSheet, View, Text, ActivityIndicator, Button, Modal, TouchableOpacity, TextInput, TouchableWithoutFeedback, Image, Pressable } from 'react-native';
 import MapView, { Marker, Circle } from 'react-native-maps';
 import { useLocation } from '../hooks/useLocation';
 import { getAllEvents } from '@/apiCalls/getAllEvents';
@@ -9,7 +9,8 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Float } from 'react-native/Libraries/Types/CodegenTypes';
 import { debounce, set } from "lodash";
-import { getCategoryBackgroundColor, getCategoryImage } from '@/constants/CategoryColor';
+import { getCategoryBackgroundColor, getCategoryImage, categoryName } from '@/constants/CategoryColor';
+import EventDetailModal from '@/components/EventDetailModal';
 
 interface EventWithId {
   id: number;
@@ -38,7 +39,7 @@ export default function Index() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { refreshEvents } = useEventContext();
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedEvent, setSelectedEvent] = useState<{ id: string; name: string; description: string; date: string; currentParticipants: number; maxParticipants: number; latitude: number; longitude: number; } | null>(null); // Selected event state
+  const [selectedEvent, setSelectedEvent] = useState<EventWithId | null>(null); // Selected event state
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [nameFilter, setNameFilter] = useState<string>('');
   const [filterModalVisible, setFilterModalVisible] = useState(false);
@@ -46,6 +47,9 @@ export default function Index() {
   const [mapLoaded, setMapLoaded] = useState(false);
   const [filteredEvents, setFilteredEvents] = useState(events);
   const [hasFetchedEvents, setHasFetchedEvents] = useState(false);
+  const [categoryNames, setCategoryNames] = useState<string[]>(categoryName);
+  const [isCategoryModalVisible, setIsCategoryModalVisible] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   useEffect(() => {
     if (location) {
@@ -69,8 +73,8 @@ export default function Index() {
       </View>
     );
   }
-  
-  
+
+
 
   const handleSubscribe = async (eventId: number) => {
     try {
@@ -90,8 +94,11 @@ export default function Index() {
   const handleClearFilters = () => {
     setSelectedDate(null);
     setNameFilter('');
-    setProximityFilter(5);
+    setProximityFilter(50);
+    setSelectedCategory(null);
+    setFilteredEvents(events);
     setFilterModalVisible(false);
+
   };
 
   const handleDateChange = (event: any, date?: Date) => {
@@ -99,7 +106,7 @@ export default function Index() {
     if (date) setSelectedDate(date);
   };
 
-  const handleMarkerPress = (event: { id: string; name: string; description: string; date: string; currentParticipants: number; maxParticipants: number; latitude: number; longitude: number; }) => {
+  const handleMarkerPress = (event: EventWithId) => {
     setSelectedEvent(event);
     setModalVisible(true);
   };
@@ -111,15 +118,18 @@ export default function Index() {
 
   const handleApplyFilters = () => {
     setFilterModalVisible(false);
-    setFilteredEvents( events.filter((event) => {
+    setFilteredEvents(events.filter((event) => {
       const matchesDate =
         selectedDate === null ||
         new Date(event.date).toDateString() === selectedDate.toDateString();
       const matchesName =
         nameFilter === '' ||
         event.name.toLowerCase().includes(nameFilter.toLowerCase());
+      const matchesCategory =
+        selectedCategory === null ||
+        event.category.name === selectedCategory;
 
-      return matchesDate && matchesName;
+      return matchesDate && matchesName && matchesCategory;
     }));
   };
 
@@ -173,45 +183,12 @@ export default function Index() {
       )}
 
       {selectedEvent && (
-        <Modal
-          transparent={true}
+        <EventDetailModal
+          eventDetails={selectedEvent}
           visible={modalVisible}
-          animationType="slide"
-          onRequestClose={handleCloseModal}
-        >
-          <View style={styles.modalContainer}>
-            <View style={styles.modalCard}>
-              <Text style={styles.modalEventName}>{selectedEvent.name}</Text>
-              <Text style={styles.modalEventDescription}>{selectedEvent.description}</Text>
-              <View style={styles.modalDetails}>
-                <Ionicons name="calendar" size={16} color="#FF7F50" />
-                <Text style={styles.modalDetailText}>
-                  {new Date(selectedEvent.date).toLocaleDateString()}
-                </Text>
-              </View>
-              <View style={styles.modalDetails}>
-                <Ionicons name="people" size={16} color="#FF7F50" />
-                <Text style={styles.modalDetailText}>
-                  {selectedEvent.currentParticipants}/{selectedEvent.maxParticipants} Participantes
-                </Text>
-              </View>
-              <View style={styles.modalButtonContainer}>
-                <TouchableOpacity
-                  style={[styles.modalButton, styles.subscribeButton]}
-                  onPress={() => handleSubscribe(Number(selectedEvent.id))}
-                >
-                  <Text style={styles.buttonText}>Quiero ir!</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.modalButton, styles.closeButton]}
-                  onPress={handleCloseModal}
-                >
-                  <Text style={styles.buttonText}>Close</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        </Modal>
+          onClose={handleCloseModal}
+          showSuscribe={true}
+        />
       )}
       {errorMessage && (
         <Modal
@@ -297,17 +274,46 @@ export default function Index() {
                     />
                   )}
                 </View>
-                {/* Category Picker */}
-                <View style={styles.inputGroup}>
+                <TouchableOpacity
+                  style={styles.inputGroup}
+                  onPress={() => setIsCategoryModalVisible(true)}
+                >
                   <Text style={styles.inputLabel}>Category</Text>
                   <TextInput
                     style={styles.input}
                     placeholder="Filter by Category"
-                    value={nameFilter}
-                    onChangeText={setNameFilter}
+                    value={selectedCategory || 'All'}
+                    editable={false}
                     placeholderTextColor="#aaa"
                   />
-                </View>
+                </TouchableOpacity>
+                <Modal
+                  visible={isCategoryModalVisible}
+                  animationType="slide"
+                  transparent={true}
+                  onRequestClose={() => setIsCategoryModalVisible(false)}
+                >
+                  <View style={styles.modalContainer}>
+                    <View style={styles.modalContent}>
+                      <Text style={styles.modalTitle2}>Seleccionar Categoría</Text>
+                      {categoryName.map((category) => (
+                        <TouchableOpacity
+                          key={category}
+                          style={styles.modalOption}
+                          onPress={() => { setSelectedCategory(category); setIsCategoryModalVisible(false) }}
+                        >
+                          <Text style={styles.modalOptionText}>{category}</Text>
+                        </TouchableOpacity>
+                      ))}
+                      <Pressable
+                        style={styles.closeButton}
+                        onPress={() => setIsCategoryModalVisible(false)}
+                      >
+                        <Text style={styles.closeButtonText}>Cerrar</Text>
+                      </Pressable>
+                    </View>
+                  </View>
+                </Modal>
 
                 {/* Buttons */}
                 <View style={styles.buttonGroup}>
@@ -350,7 +356,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    zIndex: 1000,
   },
   modalCard: {
     backgroundColor: '#fff',
@@ -434,8 +439,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#FF7F50',
   },
   closeButton: {
-    backgroundColor: '#FF6347',
-  },
+    marginTop: 20,
+    padding: 10,
+    backgroundColor: '#FF3B30',
+    borderRadius: 12,
+},
   loadingText: {
     marginTop: 10,
     fontSize: 16,
@@ -470,6 +478,12 @@ const styles = StyleSheet.create({
     color: "#333",
     textAlign: "center",
     marginBottom: 20,
+  },
+  modalTitle2: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    color: '#007AFF',
   },
   inputGroup: {
     marginBottom: 15,
@@ -527,5 +541,27 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "600",
-  }
+  },
+  closeButtonText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    fontSize: 16,
+},
+  modalOption: {
+    paddingVertical: 10,
+    width: '100%',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: '#FFFFFF',
+    padding: 20,
+    borderRadius: 12,
+    width: '80%',
+    alignItems: 'center',
+  },
+  modalOptionText: {
+    fontSize: 16,
+    color: '#333',
+  },
+
 });
