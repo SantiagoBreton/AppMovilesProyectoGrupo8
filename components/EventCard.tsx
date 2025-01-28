@@ -5,6 +5,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useEffect, useState } from "react";
 import { TouchableOpacity, View, Text, StyleSheet, Alert } from "react-native";
 import { Float } from "react-native/Libraries/Types/CodegenTypes";
+import DeleteConfirmationModal from "./DeleteConfirmationModal";
 
 interface EventCardProps {
     event: EventWithId | null;
@@ -35,6 +36,7 @@ const EventCard: React.FC<EventCardProps> = ({
     const { refreshEvents } = useEventContext();
     const isEventOngoing = event?.date ? new Date(event.date) > new Date() : false;
     const [isConfirmaDeletionModalVisible, setIsConfirmaDeletionModalVisible] = useState(false);
+    const[isDeletingLoading, setIsDeletingLoading] = useState(false);
 
     useEffect(() => {
         const fetchUserId = async () => {
@@ -71,9 +73,11 @@ const EventCard: React.FC<EventCardProps> = ({
 
     const handleDeleteEvent = async (eventId: number) => {
         try {
+            setIsDeletingLoading(true);
             await deleteEventById(eventId);
             refreshEvents();
-            Alert.alert('Éxito', 'El evento ha sido eliminado.');
+            setIsConfirmaDeletionModalVisible(false);
+            
         } catch (error) {
             console.error('Error deleting event:', error);
             Alert.alert('Error', 'No se pudo eliminar el evento.');
@@ -106,6 +110,14 @@ const EventCard: React.FC<EventCardProps> = ({
     }
 
     const backgroundColor = getBackgroundColor();
+
+    if (isDeletingLoading) {
+        return (
+            <View style={styles.eventCard}>
+                <Text style= {styles.deleteText}>Eliminando evento...</Text>
+            </View>
+        );
+    }
 
     return (
         <TouchableOpacity style={[styles.eventCard, { borderColor: backgroundColor }]}>
@@ -146,7 +158,7 @@ const EventCard: React.FC<EventCardProps> = ({
                                 </TouchableOpacity>
                                 <TouchableOpacity
                                     style={styles.deleteButton}
-                                    onPress={() => openDeleteModal(event.id)}
+                                    onPress={() => setIsConfirmaDeletionModalVisible(true)}
                                 >
                                     <Text style={styles.deleteButtonText}>Eliminar</Text>
                                 </TouchableOpacity>
@@ -185,6 +197,16 @@ const EventCard: React.FC<EventCardProps> = ({
                             </>
                         )}
                     </View>
+                    <DeleteConfirmationModal
+                        isVisible={isConfirmaDeletionModalVisible}
+                        confirmDelete={() =>
+                            handleDeleteEvent(
+                                event?.id ? event.id : 0
+                            )
+                        }
+                        mensaje="¿Estás seguro que deseas eliminar este evento?"
+                        onClose={() => setIsConfirmaDeletionModalVisible(false)}
+                    />
                 </>
             )}
         </TouchableOpacity>
@@ -444,6 +466,11 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: '600',
         textTransform: 'uppercase',
+        textAlign: 'center',
+    },
+    deleteText: {
+        fontSize: 16,
+        color: '#333',
         textAlign: 'center',
     },
 });

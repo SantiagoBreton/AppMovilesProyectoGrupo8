@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, FlatList, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platform, Alert, Button, ScrollView, } from 'react-native';
+import { View, Text, TextInput, FlatList, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platform, Alert, Button, ScrollView, Image } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { Float } from 'react-native/Libraries/Types/CodegenTypes';
 import { getEventByName } from '@/apiCalls/getEventByName';
@@ -7,6 +7,7 @@ import { getUserByName } from '@/apiCalls/getUserByName';
 import SpectatedUserModal from '@/components/SpectatedUserModal';
 import EventCard2 from '@/components/EventCard2';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getUserProfileImage } from '@/apiCalls/getUserProfileImage';
 
 export default function Busqueda() {
     const [query, setQuery] = useState('');
@@ -16,6 +17,7 @@ export default function Busqueda() {
     const [isSpectatedUserVisible, setIsSpectatedUserVisible] = useState(false);
     const [seeUser, setSeeUser] = useState<User | null>(null);
     const [userId, setUserId] = useState<number | null>(null);
+    const [userImages, setUserImages] = useState<{ [key: number]: string }>({});
 
 
     useEffect(() => {
@@ -87,29 +89,46 @@ export default function Busqueda() {
             }
             const filteredResults = await getUserByName(query);
             setFilteredUsers(filteredResults.data);
+            // Fetch profile images for all users
+            filteredResults.data.forEach(async (user: User) => {
+                const profileImage = await getUserProfileImage(user.id);
+                //console.log('Profile image:', profileImage);    
+                setUserImages((prevImages) => ({
+                    ...prevImages,
+                    [user.id]: profileImage.data.imageUrl, // Store only the URL from the response
+                }));
 
+            });
+            console.log('User images:', userImages);
         } catch (error) {
             console.error('Error fetching users:', error);
             Alert.alert('Error', 'Failed to fetch users');
         } finally {
             setIsSearching(false);
         }
-    }
+    };
 
     const handleSeeUser = (user: User) => {
-        setSeeUser( user )
+        setSeeUser(user)
         setIsSpectatedUserVisible(true);
     }
 
     const renderEventResult = ({ item }: { item: CustomEvent }) => (
         <EventCard2
-            event={item}/>
+            event={item} />
     );
 
-    const renderUserResult = ({ item }: { item: User }) => (
+    const renderUserResult = ({ item }: { item: User }) =>
+    (
         <View style={styles.resultCard}>
             <View style={styles.iconContainer}>
-                <FontAwesome5 name="user" size={30} color="#FF7F50" />
+                {/* Display user profile image */}
+                {userImages[item.id] ? (
+                    <Image source={{ uri: userImages[item.id] }} style={styles.userProfileImage} />
+                ) : (
+                    <FontAwesome5 name="user" size={30} color="#FF7F50" />
+                )}
+
             </View>
             <View style={styles.userInfo}>
                 <Text style={styles.resultTitle}>{item.name}</Text>
@@ -125,6 +144,8 @@ export default function Busqueda() {
                 />
             </View>
         </View>);
+
+
 
     return (
         <KeyboardAvoidingView
@@ -147,8 +168,10 @@ export default function Busqueda() {
                 <TouchableOpacity
                     style={styles.searchButton}
                     onPress={() => {
+                        setIsSearching(true);
                         handleEventSearch();
                         handleUserSearch();
+                        setIsSearching(false);
                     }}
                 >
                     <FontAwesome5 name="search" size={20} color="#FFFFFF" />
@@ -295,6 +318,11 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         fontSize: 16,
         backgroundColor: '#ffffff',
+    },
+    userProfileImage: {
+        width: 50,
+        height: 50,
+        borderRadius: 20,
     },
     userInfo: {
         flex: 1,

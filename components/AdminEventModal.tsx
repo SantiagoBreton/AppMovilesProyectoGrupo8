@@ -486,6 +486,7 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
                                                             adminEventDetails?.id ?? 0
                                                         )
                                                     }
+                                                    mensaje={`¿Estás seguro de que deseas eliminar a ${user.name} del evento?`}
                                                     onClose={() => setIsDeleteConfirmationVisible(false)}
                                                 />
                                             </View>

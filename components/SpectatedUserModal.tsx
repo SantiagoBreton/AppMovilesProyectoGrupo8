@@ -19,6 +19,8 @@ interface CustomEvent {
     description: string;
     maxParticipants: number;
     currentParticipants: number;
+    time: string;
+    category: any;
     userId: number;
     time: string;
     category: any;
