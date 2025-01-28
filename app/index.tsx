@@ -8,7 +8,7 @@ import { subscribeToEvent } from '@/apiCalls/subscribeToAnEvent';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Float } from 'react-native/Libraries/Types/CodegenTypes';
-import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import { debounce, set } from "lodash";
 
 interface EventWithId {
   id: number;
@@ -44,27 +44,22 @@ export default function Index() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [filteredEvents, setFilteredEvents] = useState(events);
+  const [hasFetchedEvents, setHasFetchedEvents] = useState(false);
 
   useEffect(() => {
-    if (location) {
-
+    if (location && !hasFetchedEvents) {
       refreshEvents();
-      console.log('holaaaa');
-
+      setHasFetchedEvents(true);
     }
   }, [location]);
 
   useEffect(() => {
-    
-
-    setFilteredEvents(events);
-    console.log('chauuu');
-    setMapLoaded(true);
-
-
+    if (events.length > 0) {
+      setFilteredEvents(events);
+      console.log('chauuu');
+      setMapLoaded(true);
+    }
   }, [events]);
-
-
 
   if (!mapLoaded) {
     return (
@@ -133,44 +128,10 @@ export default function Index() {
     }
   };
 
-  const getDistanceFromLatLonInKm = (
-    lat1: number,
-    lon1: number,
-    lat2: number,
-    lon2: number
-  ): number => {
-    const R = 6371;
-    const deg2rad = (deg: number): number => deg * (Math.PI / 180);
-    const dLat = deg2rad(lat2 - lat1);
-    const dLon = deg2rad(lon2 - lon1);
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(deg2rad(lat1)) *
-      Math.cos(deg2rad(lat2)) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
-  };
-
-  // const filteredEvents = (events.filter((event) => event.date > new Date().toISOString())).filter((event) => {
-  //   const matchesDate =
-  //     selectedDate === null ||
-  //     new Date(event.date).toDateString() === selectedDate.toDateString();
-  //   const matchesName =
-  //     nameFilter === '' ||
-  //     event.name.toLowerCase().includes(nameFilter.toLowerCase());
-  //   const matchesProximity =
-  //     location &&
-  //     getDistanceFromLatLonInKm(
-  //       location.coords.latitude,
-  //       location.coords.longitude,
-  //       event.latitude,
-  //       event.longitude
-  //     ) <= proximityFilter;
-
-  //   return matchesDate && matchesName && matchesProximity;
-  // });
+  const handleProximityChange = debounce((value: number) => {
+    setProximityFilter(value);
+    refreshEvents();
+  }, 500);
 
   const handleClearFilters = () => {
     setSelectedDate(null);
@@ -192,6 +153,20 @@ export default function Index() {
   const handleCloseModal = () => {
     setModalVisible(false);
     setSelectedEvent(null);
+  };
+
+  const handleApplyFilters = () => {
+    setFilterModalVisible(false);
+    setFilteredEvents( events.filter((event) => {
+      const matchesDate =
+        selectedDate === null ||
+        new Date(event.date).toDateString() === selectedDate.toDateString();
+      const matchesName =
+        nameFilter === '' ||
+        event.name.toLowerCase().includes(nameFilter.toLowerCase());
+
+      return matchesDate && matchesName;
+    }));
   };
 
   return (
@@ -344,7 +319,7 @@ export default function Index() {
                     style={styles.input}
                     placeholder="Enter distance"
                     value={String(proximityFilter)}
-                    onChangeText={(value) => setProximityFilter(Number(value))}
+                    onChangeText={(value) => handleProximityChange(Number(value))}
                     keyboardType="numeric"
                     placeholderTextColor="#aaa"
                   />
@@ -373,7 +348,7 @@ export default function Index() {
                 <View style={styles.buttonGroup}>
                   <TouchableOpacity
                     style={[styles.modalButton, styles.applyButton]}
-                    onPress={() => setFilterModalVisible(false)}
+                    onPress={() => handleApplyFilters()}
                   >
                     <Text style={styles.buttonText}>Apply</Text>
                   </TouchableOpacity>
