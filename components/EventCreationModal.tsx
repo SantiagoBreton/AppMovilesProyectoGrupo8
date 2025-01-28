@@ -9,7 +9,7 @@ import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { useLocation } from '@/hooks/useLocation';
 import { getAllCategories } from '@/apiCalls/getAllCategories';
-import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+
 
 
 interface Event {
@@ -90,6 +90,8 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
         setLongitude(null);
         setEventAssLocation(null);
         setSelectedDate(null);
+        setTime('');
+        setSelectedCategory('');
     };
 
     const showDatePicker = () => {

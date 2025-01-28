@@ -23,13 +23,28 @@ export default function CreacionEvento() {
     const { trigger } = useEventContext();
     const allevents = getSubscribedEvents(trigger);
     const myUserEvents = myEvents(trigger); // Call myEvents and store the result directly in the variable
-    const eventsToDisplay = selectedView === 'inscriptos' ? allevents.events : myUserEvents.myEvents;
+    //const eventsToDisplay = selectedView === 'inscriptos' ? allevents.events : myUserEvents.myEvents;
     const [isAdminModalVisible, setIsAdminModalVisible] = useState(false);
     const [adminEventDetails, setAdminEventDetails] = useState<EventWithId | null>(null);
     const [subscribedUsers, setSubscribedUsers] = useState<User[]>([]);
     const [requestingUsers, setRequestingUsers] = useState<User[]>([]);
     const [userId, setUserId] = useState<number | null>(null);
     const [isAdminEventLoading, setIsAdminEventLoading] = useState(false);
+    const [selectedSubTab, setSelectedSubTab] = useState('activos'); // Sub-tab: 'activos' o 'finalizados'
+
+
+    const eventsToDisplay =
+        selectedView === 'inscriptos' ? allevents.events : myUserEvents.myEvents;
+
+    // Filtrar eventos según el sub-tab activo
+    const filteredEvents = eventsToDisplay.filter((event) =>
+        selectedSubTab === 'activos'
+            ? new Date(event.date) >= new Date()
+            : selectedSubTab === 'finalizados'
+                ? new Date(event.date) < new Date()
+                : event.status === 'pendiente' // Nuevos filtros para solicitudes pendientes
+    );
+
 
 
     useEffect(() => {
@@ -90,10 +105,17 @@ export default function CreacionEvento() {
             Alert.alert('Error', 'Failed to fetch event details');
         }
     };
-
     const switchView = (view: string) => {
         setSelectedView(view);
+        setSelectedSubTab('activos'); // Reiniciar sub-tab al cambiar vista
     };
+
+    const switchSubTab = (tab: string) => {
+        setSelectedSubTab(tab);
+    };
+
+
+
 
     const handleAdministrarEvent = async (event: EventWithId) => {
         try {
@@ -127,30 +149,69 @@ export default function CreacionEvento() {
         <View style={styles.container}>
             <Text style={styles.header}>Mis Eventos</Text>
 
-            {/* Botones para cambiar la vista */}
-            <View style={styles.buttonContainer}>
-                <View style={styles.buttonWrapper}>
-                    <Button
-                        title="Eventos a los que me Inscribí"
-                        onPress={() => switchView('inscriptos')}
-                        color={selectedView === 'inscriptos' ? '#FF7F50' : '#A9A9A9'} // Naranja para seleccionado, gris claro para no seleccionado
-                    />
-                </View>
-                <View style={styles.buttonWrapper}>
-                    <Button
-                        title="Mis Eventos Creados"
-                        onPress={() => switchView('creados')}
-                        color={selectedView === 'creados' ? '#FF7F50' : '#A9A9A9'} // Naranja para seleccionado, gris claro para no seleccionado
-                    />
-                </View>
+            {/* Tabs principales */}
+            <View style={styles.tabContainer}>
+                <Text
+                    style={[
+                        styles.tabButton,
+                        selectedView === 'inscriptos' && styles.tabButtonSelected,
+                    ]}
+                    onPress={() => switchView('inscriptos')}
+                >
+                    Eventos Inscritos
+                </Text>
+                <Text
+                    style={[
+                        styles.tabButton,
+                        selectedView === 'creados' && styles.tabButtonSelected,
+                    ]}
+                    onPress={() => switchView('creados')}
+                >
+                    Eventos Creados
+                </Text>
             </View>
-            <Text style={styles.subHeader}>Eventos Activos</Text>
+
+            {/* Sub-tabs de Activos, Finalizados, y Pendientes */}
+            <View style={styles.subTabContainer}>
+                <Text
+                    style={[
+                        styles.subTabButton,
+                        selectedSubTab === 'activos' && styles.subTabButtonSelected,
+                    ]}
+                    onPress={() => switchSubTab('activos')}
+                >
+                    Activos
+                </Text>
+
+                {selectedView === 'inscriptos' && (
+                    <Text
+                        style={[
+                            styles.subTabButton,
+                            selectedSubTab === 'pendientes' && styles.subTabButtonSelected,
+                        ]}
+                        onPress={() => switchSubTab('pendientes')}
+                    >
+                        Pendientes
+                    </Text>
+                )}
+                                <Text
+                    style={[
+                        styles.subTabButton,
+                        selectedSubTab === 'finalizados' && styles.subTabButtonSelected,
+                    ]}
+                    onPress={() => switchSubTab('finalizados')}
+                >
+                    Finalizados
+                </Text>
+            </View>
+
+
             <ScrollView>
 
                 {/* Lista de eventos activos */}
 
                 <FlatList
-                    data={eventsToDisplay.filter(event => new Date(event.date) >= new Date())}
+                    data={filteredEvents}
                     scrollEnabled={false}
                     renderItem={({ item }) => (
                         <EventCardModal
@@ -161,12 +222,15 @@ export default function CreacionEvento() {
 
                     )}
                     keyExtractor={(item) => item.id.toString()}
+                    ListEmptyComponent={
+                        <Text style={styles.emptyMessage}>No hay eventos disponibles</Text>
+                    }
                 />
 
-                <Text style={styles.subHeader}>Eventos Finalizados</Text>
+
 
                 {/* Lista de eventos finalizados */}
-                <FlatList
+                {/* <FlatList
                     data={eventsToDisplay.filter(event => new Date(event.date) < new Date())}
                     scrollEnabled={false}
                     renderItem={({ item }) => (
@@ -178,7 +242,7 @@ export default function CreacionEvento() {
 
                     )}
                     keyExtractor={(item) => item.id.toString()}
-                />
+                /> */}
 
             </ScrollView>
 
@@ -222,224 +286,13 @@ const styles = StyleSheet.create({
         padding: 16,
         backgroundColor: '#ffffff',
     },
-    subHeader: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#333',
-        marginTop: 20,
-        marginBottom: 10,
-    },
-    buttonContainer: {
-        flexDirection: 'row',        // Alineación de los botones en fila
-        justifyContent: 'space-between', // Espaciado entre los botones
-        marginBottom: 20,            // Margen abajo para separar de la lista
-    },
-    header: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 20,
-        color: '#FF7F50',
-    },
-    modalSection: {
-        marginBottom: 10,
-        paddingVertical: 5,
-        borderBottomWidth: 1,
-        borderBottomColor: '#FF7F50',
-    },
-    modalLabel: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: '#FF7F50',
-    },
-    modalText: {
-        fontSize: 14,
-        color: '#333',
-    },
-    modalActionButton: {
-        marginTop: 20,
-        alignSelf: 'center',
-        paddingVertical: 12,
-        paddingHorizontal: 30,
-        backgroundColor: '#FF7F50',
-        borderRadius: 25,
-    },
-    modalActionButtonText: {
-        color: '#fff',
-        fontSize: 16,
-        fontWeight: 'bold',
-        textAlign: 'center',
-    },
-    closeMapButton: {
-        position: 'absolute',
-        bottom: 10,
-        paddingVertical: 10,
-        paddingHorizontal: 20,
-        backgroundColor: '#f44336',
-        borderRadius: 5,
-    },
-    closeMapButtonText: {
-        color: '#fff',
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
-    buttonWrapper: {
-        width: '45%',               // Controla el ancho de cada botón
-    },
-    mapModalContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    },
-    mapModalContent: {
-        width: '90%',
-        height: '60%',
-        backgroundColor: '#fff',
-        borderRadius: 10,
-        overflow: 'hidden',
-        alignItems: 'center',
-    },
-    map: {
-        width: '100%',
-        height: '100%',
-    },
-    modalContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)', // Overlay for modal
-    },
-    modalContent: {
-        width: '80%', // Adjust width if needed
-        backgroundColor: '#ffffff', // White background
-        borderRadius: 15, // Rounded edges
-        padding: 20,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        elevation: 5, // For Android shadow
-    },
-    modalTitle: {
-        fontSize: 22,
-        fontWeight: 'bold',
-        color: '#FF7F50', // Orange color for title
-        textAlign: 'center',
-        marginBottom: 15,
-    },
-    cardHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 12,
-    },
-    closeButtonText: {
-        color: '#fff',
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
-    eventCard: {
-        backgroundColor: '#f9f9f9',
-        borderRadius: 15,
-        marginVertical: 10,
-        marginHorizontal: 16,
-        padding: 16,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.1,
-        shadowRadius: 10,
-        elevation: 5,
-        borderWidth: 1,
-        borderColor: '#e6e6e6',
-    },
-    headerSection: {
-        flexDirection: 'row',
-        justifyContent: 'space-between', // Pushes name and date to opposite ends
-        alignItems: 'center',
-        marginBottom: 8,
-    },
-    eventName: {
-        fontSize: 20,
-        fontWeight: '700',
-        color: '#333',
-        textTransform: 'capitalize',
-        flex: 1, // Ensures the name takes up available space
-    },
-    eventDate: {
-        fontSize: 14,
-        fontStyle: 'italic',
-        color: '#6b7280',
-        backgroundColor: '#f1f1f1',
-        padding: 4,
-        borderRadius: 5,
-        textAlign: 'right', // Aligns text to the right
-        maxWidth: '40%', // Ensures it doesn’t take too much space
-    },
-    divider: {
-        height: 1,
-        backgroundColor: '#e5e5e5',
-        marginVertical: 10,
-    },
-    eventDescription: {
-        fontSize: 16,
-        color: '#4b5563',
-        lineHeight: 22,
-        marginBottom: 12,
-        textAlign: 'justify',
-    },
-    actionButtons: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginTop: 10,
-    },
-    adminButton: {
-        backgroundColor: '#3b82f6',
-        paddingVertical: 10,
-        paddingHorizontal: 16,
-        borderRadius: 8,
-    },
-    adminButtonText: {
-        color: '#fff',
-        fontSize: 14,
-        fontWeight: '600',
-        textTransform: 'uppercase',
-    },
-    deleteButton: {
-        backgroundColor: '#ef4444',
-        paddingVertical: 10,
-        paddingHorizontal: 16,
-        borderRadius: 8,
-    },
-    deleteButtonText: {
-        color: '#fff',
-        fontSize: 14,
-        fontWeight: '600',
-        textTransform: 'uppercase',
-    },
-    detailsButton: {
-        backgroundColor: '#6366f1',
-        paddingVertical: 10,
-        paddingHorizontal: 16,
-        borderRadius: 8,
-    },
-    detailsButtonText: {
-        color: '#fff',
-        fontSize: 14,
-        fontWeight: '600',
-        textTransform: 'uppercase',
-    },
-    unsubscribeButton: {
-        backgroundColor: '#f59e0b',
-        paddingVertical: 10,
-        paddingHorizontal: 16,
-        borderRadius: 8,
-    },
-    unsubscribeButtonText: {
-        color: '#fff',
-        fontSize: 14,
-        fontWeight: '600',
-        textTransform: 'uppercase',
-    }, loadingContainer: {
+
+
+
+
+
+
+    loadingContainer: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
@@ -450,4 +303,80 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#333',
     },
+    header: {
+        fontSize: 28,
+        fontWeight: 'bold',
+        color: '#FF7F50',
+        textAlign: 'center',
+        marginBottom: 20,
+        textShadowColor: 'rgba(0, 0, 0, 0.1)',
+        textShadowOffset: { width: 2, height: 2 },
+        textShadowRadius: 3,
+    },
+    subHeader: {
+        fontSize: 20,
+        fontWeight: '600',
+        color: '#444',
+        marginTop: 20,
+        marginBottom: 10,
+        textAlign: 'center',
+        textTransform: 'uppercase',
+    },
+    tabContainer: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginVertical: 15,
+        backgroundColor: '#f9f9f9',
+        borderRadius: 25,
+        paddingVertical: 5,
+        paddingHorizontal: 10,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.1,
+        shadowRadius: 6,
+        elevation: 5,
+    },
+    tabButton: {
+        flex: 1,
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        textAlign: 'center',
+        color: '#A9A9A9',
+        fontSize: 16,
+        fontWeight: '500',
+        borderRadius: 20,
+    },
+    tabButtonSelected: {
+        color: '#fff',
+        backgroundColor: '#FF7F50',
+        fontWeight: '700',
+        textShadowColor: 'rgba(0, 0, 0, 0.2)',
+        textShadowOffset: { width: 1, height: 1 },
+        textShadowRadius: 3,
+    },
+    subTabContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        marginBottom: 16,
+    },
+    subTabButton: {
+        fontSize: 14,
+        fontWeight: '500',
+        padding: 8,
+        color: '#666',
+    },
+    subTabButtonSelected: {
+        color: '#FF7F50',
+        borderBottomWidth: 2,
+        borderBottomColor: '#FF7F50',
+    },
+    emptyMessage: {
+        textAlign: 'center',
+        color: '#999',
+        marginTop: 20,
+        fontSize: 16,
+    },
+
+
 });
