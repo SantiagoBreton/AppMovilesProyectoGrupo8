@@ -8,6 +8,9 @@ import { updateEvent } from '@/apiCalls/updateEvent';
 import DeleteConfirmationModal from './DeleteConfirmationModal';
 import { confirmSubscriptionToAnEvent } from '@/apiCalls/confirmSubscriptionToAnEvent';
 import { denySubscriptionToAnEvent } from '@/apiCalls/denySubscriptionToAnEvent';
+import { getUserProfileImage } from '@/apiCalls/getUserProfileImage';
+import { FontAwesome5 } from '@expo/vector-icons';
+import SpectatedUserModal from './SpectatedUserModal';
 
 interface EventWithId {
     id: number;
@@ -28,6 +31,7 @@ interface User {
     name: string;
     email: string;
     rating: number;
+    description: string;
 };
 interface AdminEventModalProps {
     isVisible: boolean;
@@ -64,10 +68,30 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
     const [activeTab, setActiveTab] = useState<'inscritos' | 'pendientes'>('inscritos');
     const [showTimePicker, setShowTimePicker] = useState(false);
     const [time, setTime] = useState<string>('');
+    const [userImages, setUserImages] = useState<{ [key: number]: string }>({});
 
     useEffect(() => {
         setUpdatedSubscribedUsers(subscribedUsers);
         setUpdatedRequestingUsers(requestingUsers);
+        updatedRequestingUsers.forEach(async (user: User) => {
+            const profileImage = await getUserProfileImage(user.id);
+            //console.log('Profile image:', profileImage);    
+            setUserImages((prevImages) => ({
+                ...prevImages,
+                [user.id]: profileImage.data.imageUrl, // Store only the URL from the response
+            }));
+
+        });
+        updatedSubscribedUsers.forEach(async (user: User) => {
+            const profileImage = await getUserProfileImage(user.id);
+            //console.log('Profile image:', profileImage);    
+            setUserImages((prevImages) => ({
+                ...prevImages,
+                [user.id]: profileImage.data.imageUrl, // Store only the URL from the response
+            }));
+
+        });
+
 
     }, [subscribedUsers, requestingUsers]);
 
@@ -86,7 +110,7 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
         }
     };
 
-    const handleSeeUserProfile = (user: { id: number; name: string; email: string; rating: number }) => {
+    const handleSeeUserProfile = (user: { id: number; name: string; email: string; rating: number; description: string }) => {
         setSeeUser(user)
         setIsSpectatedUserVisible(true);
     }
@@ -159,7 +183,7 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
                 const response = await confirmSubscriptionToAnEvent(adminEventDetails.id, userId);
                 if (response) {
                     Alert.alert('Éxito', 'Usuario aceptado en el evento correctamente.');
-                    setUpdatedSubscribedUsers((prevUsers) => [...prevUsers, requestingUsers.find((user) => user.id === userId) ?? { id: 0, name: '', email: '', rating: 0 }]);
+                    setUpdatedSubscribedUsers((prevUsers) => [...prevUsers, requestingUsers.find((user) => user.id === userId) ?? { id: 0, name: '', email: '', rating: 0, description: '' }]);
                     setUpdatedRequestingUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
                     requestingUsers = requestingUsers.filter((user) => user.id !== userId);
                     refreshEvents();
@@ -195,7 +219,7 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
             Alert.alert('Error', 'No se pudo denegar al usuario en el evento.');
         }
     };
-     const onTimeChange = (event: any, selectedTime?: Date) => {
+    const onTimeChange = (event: any, selectedTime?: Date) => {
         setShowTimePicker(false);
         if (selectedTime) {
             const hours = selectedTime.getHours().toString().padStart(2, '0');
@@ -443,12 +467,11 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
                                     updatedSubscribedUsers.map((user) => (
                                         <View key={user.id} style={styles.userCard}>
                                             <TouchableOpacity onPress={() => handleSeeUserProfile(user)}>
-                                                <Image
-                                                    source={{
-                                                        uri: 'https://www.gravatar.com/avatar/2c7d99fe281ecd3bcd65ab915bac6dd5?s=250',
-                                                    }}
-                                                    style={styles.profilePicture}
-                                                />
+                                                {userImages[user.id] ? (
+                                                    <Image source={{ uri: userImages[user.id] }} style={styles.profilePicture} />
+                                                ) : (
+                                                    <FontAwesome5 name="user" size={30} color="#FF7F50" />
+                                                )}
                                             </TouchableOpacity>
                                             <View style={styles.userInfo}>
                                                 <TouchableOpacity onPress={() => handleSeeUserProfile(user)}>
@@ -489,12 +512,11 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
                                     updatedRequestingUsers.map((user) => (
                                         <View key={user.id} style={styles.userCard}>
                                             <TouchableOpacity onPress={() => handleSeeUserProfile(user)}>
-                                                <Image
-                                                    source={{
-                                                        uri: 'https://www.gravatar.com/avatar/2c7d99fe281ecd3bcd65ab915bac6dd5?s=250',
-                                                    }}
-                                                    style={styles.profilePicture}
-                                                />
+                                                {userImages[user.id] ? (
+                                                    <Image source={{ uri: userImages[user.id] }} style={styles.profilePicture} />
+                                                ) : (
+                                                    <FontAwesome5 name="user" size={30} color="#FF7F50" />
+                                                )}
                                             </TouchableOpacity>
                                             <View style={styles.userInfo}>
                                                 <TouchableOpacity onPress={() => handleSeeUserProfile(user)}>
@@ -539,6 +561,11 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
                     </View>
                 </ScrollView>
             </View>
+            <SpectatedUserModal
+                isVisible={isSpectatedUserVisible}
+                user={seeUser}
+                onClose={() => setIsSpectatedUserVisible(false)}
+            />
         </Modal>
 
     );
@@ -549,7 +576,7 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.7)', 
+        backgroundColor: 'rgba(0, 0, 0, 0.7)',
     },
     modalContent2: {
         width: '90%',
@@ -568,7 +595,7 @@ const styles = StyleSheet.create({
         color: '#FF7F50',
         textAlign: 'center',
         marginBottom: 15,
-        textTransform: 'uppercase', 
+        textTransform: 'uppercase',
     },
     actionButtons2: {
         flexDirection: 'row',
@@ -582,13 +609,13 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff3e0',
         paddingVertical: 10,
         paddingHorizontal: 15,
-        borderRadius: 20, 
+        borderRadius: 20,
         textAlign: 'center',
-        marginBottom: 30, 
-        letterSpacing: 1, 
+        marginBottom: 30,
+        letterSpacing: 1,
     },
     saveButton: {
-        backgroundColor: '#00C851', 
+        backgroundColor: '#00C851',
         paddingVertical: 12,
         paddingHorizontal: 20,
         borderRadius: 25,
@@ -644,7 +671,7 @@ const styles = StyleSheet.create({
         marginRight: 10,
     },
     closeButton: {
-        backgroundColor: '#CC0000', 
+        backgroundColor: '#CC0000',
         padding: 12,
         borderRadius: 30,
         alignItems: 'center',
@@ -658,7 +685,7 @@ const styles = StyleSheet.create({
     userName: {
         fontSize: 18,
         color: '#333',
-        marginBottom: 5, 
+        marginBottom: 5,
     },
     updateButtonText: {
         color: '#fff',
@@ -666,16 +693,16 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     modalTitle1: {
-        fontSize: 32, 
+        fontSize: 32,
         fontWeight: '600',
         color: '#4A4A4A',
         letterSpacing: 0.5,
         textTransform: 'capitalize',
         textShadowColor: '#ddd',
-        textShadowOffset: { width: 0, height: 2 }, 
-        textShadowRadius: 4, 
-        marginBottom: 20, 
-        paddingHorizontal: 20, 
+        textShadowOffset: { width: 0, height: 2 },
+        textShadowRadius: 4,
+        marginBottom: 20,
+        paddingHorizontal: 20,
         textAlign: 'center',
     },
     elegantDetailsContainer: {
@@ -704,24 +731,24 @@ const styles = StyleSheet.create({
     detailValue: {
         fontSize: 16,
         color: '#555',
-        backgroundColor: '#F9F9F9', 
+        backgroundColor: '#F9F9F9',
         paddingVertical: 8,
         paddingHorizontal: 12,
         borderRadius: 8,
         lineHeight: 22,
         borderWidth: 1,
-        borderColor: '#EAEAEA', 
+        borderColor: '#EAEAEA',
         overflow: 'hidden',
     },
     actionCardsContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'center', 
-        flexWrap: 'wrap', 
+        alignItems: 'center',
+        flexWrap: 'wrap',
         marginVertical: 20,
     },
     actionCard: {
-        width: '30%', 
+        width: '30%',
         minWidth: 120,
         height: 120,
         backgroundColor: '#fff',
@@ -786,7 +813,7 @@ const styles = StyleSheet.create({
     },
     titleSeparator: {
         borderBottomWidth: 1,
-        borderBottomColor: '#ddd', 
+        borderBottomColor: '#ddd',
         marginVertical: 15,
     },
     actionButtons: {

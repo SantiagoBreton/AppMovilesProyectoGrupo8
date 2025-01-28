@@ -9,6 +9,7 @@ import { getAllUserRatings } from '@/apiCalls/getAllUserRatings';
 import { StarRating } from './StarRating';
 import { getUserProfileImage } from '@/apiCalls/getUserProfileImage';
 import { getUserBannerImage } from '@/apiCalls/getUserBannerImage';
+import EventCard2 from './EventCard2';
 
 interface CustomEvent {
     id: number;
@@ -180,22 +181,9 @@ const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
                                     data={userEvents}
                                     scrollEnabled={false}
                                     renderItem={({ item }) => (
-                                        <TouchableOpacity
-                                            style={styles.eventCard}
-                                            onPress={() => handleEventPress(item)}
-                                        >
-                                            <View style={styles.eventHeader}>
-                                                <Text style={styles.eventName} numberOfLines={2}>{item.name}</Text>
-                                                <Text style={styles.eventDate}>
-                                                    {item.date ? new Date(item.date).toLocaleDateString() : 'Fecha no disponible'}
-                                                </Text>
-
-                                            </View>
-                                            <Text style={styles.eventDescription}>{item.description}</Text>
-                                            <View style={styles.detailButtonContainer}>
-                                                <Button title="Detalles" onPress={() => handleEventPress(item)} color="#FF7F50" />
-                                            </View>
-                                        </TouchableOpacity>
+                                        <EventCard2
+                                            event={item}
+                                        />
                                     )}
                                     keyExtractor={(item) => item.id.toString()}
                                     ListFooterComponent={

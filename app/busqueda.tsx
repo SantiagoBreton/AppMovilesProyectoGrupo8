@@ -18,7 +18,7 @@ export default function Busqueda() {
     const [isSpectatedUserVisible, setIsSpectatedUserVisible] = useState(false);
     const [seeUser, setSeeUser] = useState<User | null>(null);
     const [userId, setUserId] = useState<number | null>(null);
-    const [userImages, setUserImages] = useState<{ [key: number]: string }>({});
+    const [userImages, setUserImages] = useState<{ [key: number]: string }>({}); 
 
     useEffect(() => {
         const fetchUserId = async () => {
