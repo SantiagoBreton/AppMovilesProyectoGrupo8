@@ -12,40 +12,38 @@ import AdminEventModal from '@/components/AdminEventModal';
 import EventDetailModal from '@/components/EventDetailModal';
 import EventCardModal from '@/components/EventCard';
 import { getAllRequestingUsersToAnEvent } from '@/apiCalls/getAllRequestingUsersToAnEvent';
-
+import { getPendingRequestedEvents } from '@/apiCalls/getPendingRequestedEvents';
 
 export default function CreacionEvento() {
     const [isModalVisible, setIsModalVisible] = useState(false);
-    const [selectedView, setSelectedView] = useState('inscriptos'); // 'inscriptos' o 'creados'
+    const [selectedView, setSelectedView] = useState('inscriptos');
     const [isDetailsModalVisible, setIsDetailsModalVisible] = useState(false);
     const [eventDetails, setEventDetails] = useState<EventWithId | null>(null);
     const [eventLocation, setEventLocation] = useState<string | null>(null);
     const { trigger } = useEventContext();
-    const allevents = getSubscribedEvents(trigger);
-    const myUserEvents = myEvents(trigger); // Call myEvents and store the result directly in the variable
-    //const eventsToDisplay = selectedView === 'inscriptos' ? allevents.events : myUserEvents.myEvents;
     const [isAdminModalVisible, setIsAdminModalVisible] = useState(false);
     const [adminEventDetails, setAdminEventDetails] = useState<EventWithId | null>(null);
     const [subscribedUsers, setSubscribedUsers] = useState<User[]>([]);
     const [requestingUsers, setRequestingUsers] = useState<User[]>([]);
     const [userId, setUserId] = useState<number | null>(null);
     const [isAdminEventLoading, setIsAdminEventLoading] = useState(false);
-    const [selectedSubTab, setSelectedSubTab] = useState('activos'); // Sub-tab: 'activos' o 'finalizados'
-
-
+    
+    const allevents = getSubscribedEvents(trigger);
+    const myUserEvents = myEvents(trigger);
+    const pendingToBeAcceptedEvents = getPendingRequestedEvents(trigger);
+    const [selectedSubTab, setSelectedSubTab] = useState('activos');
+    
     const eventsToDisplay =
         selectedView === 'inscriptos' ? allevents.events : myUserEvents.myEvents;
-
     // Filtrar eventos según el sub-tab activo
     const filteredEvents = eventsToDisplay.filter((event) =>
         selectedSubTab === 'activos'
+
             ? new Date(event.date) >= new Date()
             : selectedSubTab === 'finalizados'
                 ? new Date(event.date) < new Date()
                 : event.status === 'pendiente' // Nuevos filtros para solicitudes pendientes
     );
-
-
 
     useEffect(() => {
         const fetchUserId = async () => {
@@ -115,9 +113,6 @@ export default function CreacionEvento() {
         setSelectedSubTab(tab);
     };
 
-
-
-
     const handleAdministrarEvent = async (event: EventWithId) => {
         try {
             setIsAdminEventLoading(true);
@@ -137,6 +132,7 @@ export default function CreacionEvento() {
             Alert.alert('Error', 'No se pudo cargar la información del evento.');
         }
     };
+
     if (isAdminEventLoading) {
         return (
             <View style={styles.loadingContainer}>
