@@ -10,8 +10,6 @@ import * as Location from 'expo-location';
 import { useLocation } from '@/hooks/useLocation';
 import { getAllCategories } from '@/apiCalls/getAllCategories';
 
-
-
 interface Event {
     name: string;
     date: Date;
@@ -44,9 +42,8 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
     const [titulo, setTitulo] = useState('');
     const [descripcion, setDescripcion] = useState('');
     const [ubicacion, setUbicacion] = useState('');
-    const [time, setTime] = useState<string>(''); // La hora guardada como string
+    const [time, setTime] = useState<string>(''); 
     const [showTimePicker, setShowTimePicker] = useState(false);
-
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedLocation, setSelectedLocation] = useState<{ latitude: number; longitude: number } | null>(null);
     const [selectedLatitude, setLatitude] = useState<number | null>(null);
@@ -59,8 +56,6 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
     const [errorMessageDate, setErrorMessageDate] = useState('');
     const [isCreationLoading, setIsCreationLoading] = useState(false);
     const [categories, setCategories] = useState<string[]>([]);
-
-
     const [selectedCategory, setSelectedCategory] = useState('');
     const [showCategories, setShowCategories] = useState(false);
 
@@ -137,7 +132,6 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
         setLatitude(latitude);
         setLongitude(longitude);
         setUbicacion(`${latitude},${longitude}`);
-        //setModalVisible(false);
         const addresses = await Location.reverseGeocodeAsync({
             latitude: latitude,
             longitude: longitude,
@@ -147,13 +141,8 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
             addresses.length > 0
                 ? `${addresses[0].city}, ${addresses[0].region}, ${addresses[0].country}`
                 : 'Address not found';
-
         setEventAssLocation(location);
-
-
-
     };
-
 
     const confirmLocationSelection = () => {
         if (!selectedLocation) {
@@ -161,8 +150,8 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
             return;
         }
         setModalVisible(false);
-
     };
+
     const handleEventTitleChange = (text: string) => {
         if (text.length <= 30) {
             setTitulo(text);
@@ -183,7 +172,6 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
         }
     };
 
-
     const handleDateChange = (event: any, date?: Date) => {
         setDatePickerVisible(false);
 
@@ -195,7 +183,6 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
         else {
             setErrorMessageDate('Seleccione una fecha válida');
         }
-
     };
 
     const handleMaxParticipantsChange = (text: string) => {
@@ -211,6 +198,7 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
         setMaxParticipants(isNaN(numericValue) ? 0 : numericValue);
         setErrorMessageParticipants('');
     };
+
     if (isCreationLoading) {
         return (
             <View style={styles.loadingContainer}>
@@ -219,7 +207,6 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
             </View>
         );
     }
-
 
     const toggleCategories = () => {
         setShowCategories(!showCategories);
@@ -235,27 +222,18 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
     };
 
     const onTimeChange = (event: any, selectedTime?: Date) => {
-        setShowTimePicker(false); // Cierra el picker después de seleccionar
+        setShowTimePicker(false);
         if (selectedTime) {
-            // Convierte la hora seleccionada en un string en formato "HH:mm"
             const hours = selectedTime.getHours().toString().padStart(2, '0');
             const minutes = selectedTime.getMinutes().toString().padStart(2, '0');
             setTime(`${hours}:${minutes}`);
         }
     };
 
-
-
-
-
-
-
-
     return (
         <Modal visible={isModalVisible} animationType="slide">
             <ScrollView contentContainerStyle={styles.scrollContainer}>
                 <Text style={styles.title}>Crear Evento</Text>
-
 
                 {/* Event Title */}
                 <View style={styles.section}>
@@ -308,7 +286,6 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
                 </View>
                 
                 {/* Time */}
-
                 <View style={styles.section}>
                     <Text style={styles.label}>Hora</Text>
                     <TouchableOpacity style={styles.button} onPress={openTimePicker}>
@@ -472,25 +449,19 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
 };
 
 const styles = StyleSheet.create({
-    modal: {
-        flex: 1,
-        backgroundColor: '#F9F9F9',
-        paddingHorizontal: 20,
-        paddingVertical: 10,
-    },
     scrollContainer: {
         flexGrow: 1,
         paddingBottom: 30,
     },
     title: {
-        fontSize: 32, // Larger font size
-        fontWeight: 'bold', // Make it bold
-        textAlign: 'center', // Center-align the text
-        marginTop: 20, // Add top margin for spacing
-        marginBottom: 20, // Add bottom margin to separate from other elements
-        color: '#1A237E', // Deep navy blue color
-        textTransform: 'uppercase', // Uppercase for a more dynamic look
-        letterSpacing: 1, // Add spacing between letters for a modern look
+        fontSize: 32, 
+        fontWeight: 'bold',
+        textAlign: 'center',
+        marginTop: 20,
+        marginBottom: 20,
+        color: '#1A237E',
+        textTransform: 'uppercase',
+        letterSpacing: 1,
     },
     section: {
         backgroundColor: '#FFFFFF',
@@ -616,12 +587,6 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginTop: 5,
     },
-    searchBarContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginHorizontal: 20,
-        marginTop: 10,
-    },
     searchBar: {
         flex: 1,
         backgroundColor: '#fff',
@@ -634,18 +599,6 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.2,
         shadowRadius: 4,
         elevation: 2,
-    },
-    searchButton: {
-        backgroundColor: '#FF7F50',
-        borderRadius: 8,
-        marginLeft: 10,
-        paddingVertical: 10,
-        paddingHorizontal: 15,
-    },
-    searchButtonText: {
-        color: '#fff',
-        fontSize: 14,
-        fontWeight: 'bold',
     },
     enhancedMap: {
         flex: 1,
@@ -710,7 +663,6 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         bottom: 0,
-
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: '#F4F4F4',

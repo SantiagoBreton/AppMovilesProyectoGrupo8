@@ -3,7 +3,7 @@ import { View, Text, TextInput, StyleSheet, TouchableOpacity, Animated, Keyboard
 import { createNewUser } from '@/apiCalls/createNewUser';
 import { loginUser } from '@/apiCalls/loginUser';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useAuthContext } from '@/context/userLoginContext';  // Updated import
+import { useAuthContext } from '@/context/userLoginContext';
 
 export default function InicioPerfil() {
   const [isLogin, setIsLogin] = useState(true);
@@ -11,24 +11,20 @@ export default function InicioPerfil() {
   const [password, setPassword] = useState('');
   const [userName, setUsername] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  const { login } = useAuthContext();  // Use login method from context
+  const { login } = useAuthContext();
 
   const emailAnimation = useState(new Animated.Value(1))[0];
   const passwordAnimation = useState(new Animated.Value(1))[0];
   const confirmPasswordAnimation = useState(new Animated.Value(1))[0];
-  interface LoginResponse {
-    success: boolean;
-    message?: string;  // Optional field for any message returned
-  }
+  
   const createUser = async () => {
     const user = { email, password, name: userName, rating: 0 };
     if (validateUser(user)) {
       try {
         const res = await createNewUser(user);
 
-        // Check if user creation was successful before calling login
         if (res) {
-          login();  // Only call login if the user creation was successful
+          login();
         } else {
           setErrorMessage('Error al crear el usuario, por favor inténtalo de nuevo.');
         }
@@ -62,15 +58,13 @@ export default function InicioPerfil() {
     const user = { email, password, name: "" };
 
     try {
-      const res = await loginUser(user);  // Now res will contain either 'id' or 'error'
+      const res = await loginUser(user);
 
       if ('id' in res) {
-        // Login successful, handle success
         await AsyncStorage.setItem('userId', res.id.toString());
 
-        login();  // Update the auth context
+        login();
       } else {
-        // Login failed, show the error message
         setErrorMessage(res.error || 'Unknown error occurred');
       }
     } catch (error) {
@@ -81,7 +75,7 @@ export default function InicioPerfil() {
 
 
   const handlePress = () => {
-    setErrorMessage('');  // Reset the error message before trying to log in or register
+    setErrorMessage('');
     if (isLogin) {
       loginNewUser();
     } else {
@@ -106,7 +100,6 @@ export default function InicioPerfil() {
       tension: 100,
       useNativeDriver: true,
     }).start(() => {
-      // Return to original scale
       Animated.spring(animation, {
         toValue: 1,
         friction: 3,
@@ -133,7 +126,7 @@ export default function InicioPerfil() {
             keyboardType="email-address"
             autoCapitalize="none"
             placeholderTextColor="#A9A9A9"
-            onFocus={() => bounceAnimation(emailAnimation)} // Bounce when input is focused
+            onFocus={() => bounceAnimation(emailAnimation)}
           />
         </Animated.View>
 
@@ -145,7 +138,7 @@ export default function InicioPerfil() {
             onChangeText={setPassword}
             secureTextEntry
             placeholderTextColor="#A9A9A9"
-            onFocus={() => bounceAnimation(passwordAnimation)} // Bounce when input is focused
+            onFocus={() => bounceAnimation(passwordAnimation)}
           />
         </Animated.View>
 
@@ -157,7 +150,7 @@ export default function InicioPerfil() {
               value={userName}
               onChangeText={handleUsernameChange}
               placeholderTextColor="#A9A9A9"
-              onFocus={() => bounceAnimation(confirmPasswordAnimation)} // Bounce when input is focused
+              onFocus={() => bounceAnimation(confirmPasswordAnimation)}
             />
           </Animated.View>
         )}

@@ -1,28 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import {
-    View,
-    Text,
-    StyleSheet,
-    TouchableOpacity,
-    Modal,
-    Button,
-    TextInput,
-    FlatList,
-    Animated
-} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Modal, TextInput, FlatList,} from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { getAllUserRatings } from '@/apiCalls/getAllUserRatings';
 import { createNewRating } from '@/apiCalls/createNewRating';
 import SpectatedUserModal from './SpectatedUserModal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-
-
 interface User {
     id: number;
     name: string;
     email: string;
     rating: number;
+    description: string;
 };
 interface ReviewModalProps {
     isVisible: boolean;
@@ -51,7 +40,6 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
     const [userId, setUserId] = useState<number | null>(null);
     const [specModalVisible, setSpecModalVisible] = useState(false);
   
-    // Fetch user ratings and userId when modal is visible
     useEffect(() => {
       if (user) {
         fetchRatingsAndUserId(user.id);
@@ -227,7 +215,7 @@ const styles = StyleSheet.create({
     },
     commentsContainer: {
         width: '100%',
-        maxHeight: 200, // Limit height for scrollable area
+        maxHeight: 200,
         marginBottom: 20,
     },
     commentCard: {
@@ -243,7 +231,7 @@ const styles = StyleSheet.create({
     },
     commentRating: {
         flexDirection: 'row',
-        alignItems: 'center', // Align stars vertically
+        alignItems: 'center',
     },
     submitButton: {
         backgroundColor: '#FF6F61',
@@ -268,20 +256,20 @@ const styles = StyleSheet.create({
         padding: 5,
     },
     titleSeparator: {
-        borderBottomWidth: 1, // Creates the horizontal line
-        borderBottomColor: '#ddd', // Light gray color for the line
-        marginVertical: 15, // Space around the line to keep separation clean
+        borderBottomWidth: 1,
+        borderBottomColor: '#ddd',
+        marginVertical: 15,
     },
     commentUserName: {
         fontSize: 12,
         color: '#555',
-        textAlign: 'right', // Ensure the text aligns properly
+        textAlign: 'right',
     },
     commentHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 10, // Add some spacing between the header and the comment
+        marginBottom: 10,
     },
 });
 

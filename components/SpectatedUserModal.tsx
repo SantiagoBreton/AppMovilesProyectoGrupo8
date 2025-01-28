@@ -55,11 +55,11 @@ const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
     const [isLoading, setIsLoading] = useState(true);
     const [isRevieModalVisible, setIsReviewModalVisible] = useState(false);
     const totalStars = 5;
-    const rating = user?.rating !== undefined && !isNaN(user.rating) ? user.rating : 0; // Handle NaN or undefined ratings
-    const filledStars = Math.floor(rating); // Fully filled stars
-    const hasHalfStar = rating % 1 >= 0.5; // Determine if a half-star is needed
-    const emptyStars = totalStars - filledStars - (hasHalfStar ? 1 : 0); // Remaining empty stars
-    const [userRating, setUserRating] = useState<Rating[]>([]); // User rating
+    const rating = user?.rating !== undefined && !isNaN(user.rating) ? user.rating : 0;
+    const filledStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 >= 0.5;
+    const emptyStars = totalStars - filledStars - (hasHalfStar ? 1 : 0);
+    const [userRating, setUserRating] = useState<Rating[]>([]);
     const [profileImage, setProfileImage] = useState<string | null>(null);
     const [bannerImage, setBannerImage] = useState<string | null>(null);
 
@@ -68,7 +68,6 @@ const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
             if (!user) return;
             setIsLoading(true);
             try {
-                // Obtener eventos del usuario
                 const eventResponse = await getAllEventsFromUser(user.id);
                 if (eventResponse.error) {
                     console.error('Error fetching user events:', eventResponse.error);
@@ -111,9 +110,9 @@ const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
                         ? ratingResponse.data
                             .reduce((acc: number, rating: { rating: number }) => acc + (rating.rating || 0), 0) /
                         ratingResponse.data.length
-                        : 0; // Default to 0 if no ratings
+                        : 0; 
 
-                user.rating = averageRating; // Actualizar el objeto `user`
+                user.rating = averageRating;
 
             }
         } catch (error) {
@@ -230,10 +229,6 @@ const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
 };
 
 const styles = StyleSheet.create({
-    header3: {
-        alignItems: 'center',
-        backgroundColor: '#F9F9F9',
-    },
     starContainer: {
         backgroundColor: '#ffffff',
         padding: 16,
@@ -251,11 +246,6 @@ const styles = StyleSheet.create({
         marginLeft: 10,
         fontSize: 16,
         color: '#333',
-    },
-    name: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: '#fff',
     },
     closeButton2: {
         position: 'absolute',
