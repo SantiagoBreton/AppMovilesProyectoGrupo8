@@ -9,6 +9,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getHostInfoByEventId } from '@/apiCalls/getHostInfoByEventId';
 import { getUserDataById } from '@/apiCalls/getUserDataById';
 import { getUserProfileImage } from '@/apiCalls/getUserProfileImage';
+import SpectatedUserModal from './SpectatedUserModal';
+import { StarRating } from '@/components/StarRating';
 
 interface CustomEvent {
     id: number;
@@ -23,17 +25,20 @@ interface CustomEvent {
     time: string;
     category: any;
 };
+
 interface EventDetailModalProps {
     visible: boolean;
     showSuscribe: boolean;
     eventDetails: CustomEvent | null;
     onClose: () => void;
 }
+
 interface User {
     id: number;
     name: string;
     email: string;
     rating: Float;
+    description: string;
 };
 
 const EventDetailModal: React.FC<EventDetailModalProps> = ({
@@ -125,7 +130,7 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
         }
     };
 
-    const handleSeeUserProfile = (user: { id: number; name: string; email: string; rating: number }) => {
+    const handleSeeUserProfile = (user: { id: number; name: string; email: string; rating: number; description: string }) => {
         setSeeUser(user)
         setIsSpectatedUserVisible(true);
     }
@@ -183,8 +188,9 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
                                             />
                                         </TouchableOpacity>
                                         <View style={styles.userInfo}>
-                                            <TouchableOpacity onPress={() => handleSeeUserProfile(hostInfo)}>
+                                            <TouchableOpacity onPress={() => handleSeeUserProfile(hostInfo)} style={styles.userInfoRow}>
                                                 <Text style={styles.userName}>{hostInfo.name}</Text>
+                                                <StarRating rating={hostInfo.rating || 0} size={16} />
                                             </TouchableOpacity>
                                         </View>
                                     </View>
@@ -255,6 +261,11 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
                     </View>
                 </View>
             </Modal>
+            <SpectatedUserModal
+                isVisible={isSpectatedUserVisible}
+                user={seeUser}
+                onClose={() => setIsSpectatedUserVisible(false)}
+            />
         </Modal>
     );
 };
@@ -333,7 +344,7 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         paddingVertical: 11.6,
         paddingHorizontal: 20,
-        backgroundColor: '#FF7F50',
+        backgroundColor: '#dc2626',
         borderRadius: 25,
     },
     closeButtonText: {
@@ -345,7 +356,6 @@ const styles = StyleSheet.create({
     separatedButton: {
         flex: 1,
         marginLeft: 10, // Separación entre botones
-        backgroundColor: 'red',
         borderRadius: 25,
     },
     mapModalContainer: {
@@ -396,12 +406,23 @@ const styles = StyleSheet.create({
         fontSize: 18,
         color: '#333',
         marginBottom: 5, // Space between name and button
+        maxWidth: '59%', // Limit the width of the name
     },
     profilePicture: {
         width: 50,
         height: 50,
         borderRadius: 25,
         marginRight: 15,
+    },
+    text: {
+        marginLeft: 10,
+        fontSize: 14,
+        color: '#333',
+    },
+    userInfoRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
     },
 });
 
