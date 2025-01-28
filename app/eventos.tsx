@@ -81,6 +81,7 @@ export default function CreacionEvento() {
         name: string;
         email: string;
         rating: number;
+        description: string;
     };
 
     const handleDetailsEvent = async (item: EventWithId) => {

@@ -11,7 +11,8 @@ import { getUserDataById } from '@/apiCalls/getUserDataById';
 import { getUserProfileImage } from '@/apiCalls/getUserProfileImage';
 import SpectatedUserModal from './SpectatedUserModal';
 import { StarRating } from '@/components/StarRating';
-import { set } from 'lodash';
+import ConfirmationModal from './ConfirmationModal';
+import SuccessModal from './SuccesModal';
 
 interface CustomEvent {
     id: number;
@@ -58,6 +59,8 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
     const [isSpectatedUserVisible, setIsSpectatedUserVisible] = useState(false);
     const [userImages, setUserImages] = useState<{ [key: number]: string }>({});
     const [isLoading, setIsLoading] = useState(true);
+    const [isConfirmationVisible, setIsConfirmationVisible] = useState(false);
+    const [isSuccessVisible, setIsSuccessVisible] = useState(false);
 
     useEffect(() => {
         const fetchUserId = async () => {
@@ -134,9 +137,10 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
 
     const handleSubscribe = async (eventId: number) => {
         try {
+
             await subscribeToEvent(eventId);
-            Alert.alert('Subscribed', 'You have successfully subscribed to the event');
-            onClose();
+            setIsSuccessVisible(true);
+            //onClose();
             refreshEvents();
         } catch (error: any) {
             Alert.alert('Error subscribing to event:', error.message);
@@ -221,7 +225,7 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
                                 {showSuscribe && (
                                     <TouchableOpacity
                                         style={[styles.modalActionButton, styles.subscribeButton]}
-                                        onPress={() => { handleSubscribe(eventDetails.id) }}
+                                        onPress={() => { setIsConfirmationVisible(true) }}
                                     >
                                         <Text style={styles.modalActionButtonText} numberOfLines={1}>Quiero ir!</Text>
                                     </TouchableOpacity>
@@ -279,6 +283,18 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
                 isVisible={isSpectatedUserVisible}
                 user={seeUser}
                 onClose={() => setIsSpectatedUserVisible(false)}
+            />
+            <ConfirmationModal
+                visible={isConfirmationVisible}
+                title="Confirmar"
+                message="¿Estás seguro de que deseas suscribirte a este evento?"
+                onConfirm={() => handleSubscribe(eventDetails.id)}
+                onCancel={() => setIsConfirmationVisible(false)}
+            />
+            <SuccessModal
+                visible={isSuccessVisible}
+                message="Te has suscrito al evento con éxito!"
+                onClose={() => {setIsSuccessVisible(false);onClose()}}
             />
         </Modal>
     );
