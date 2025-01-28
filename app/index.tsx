@@ -9,6 +9,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Float } from 'react-native/Libraries/Types/CodegenTypes';
 import { debounce, set } from "lodash";
+import { getCategoryBackgroundColor, getCategoryImage } from '@/constants/CategoryColor';
 
 interface EventWithId {
   id: number;
@@ -68,54 +69,8 @@ export default function Index() {
       </View>
     );
   }
-  const getCategoryImage = (category: string) => {
-    if (category === 'Deporte') {
-      return require('../assets/images/sport.png');
-    }
-    if (category === 'Musica') {
-      return require('../assets/images/music.png');
-    }
-    if (category === 'Arte') {
-      return require('../assets/images/art.png');
-    }
-    if (category === 'Comida') {
-      return require('../assets/images/food.png');
-    }
-    if (category === 'NetWorking') {
-      return require('../assets/images/networking.png');
-    }
-    if (category === 'Fiesta') {
-      return require('../assets/images/party.png');
-    }
-    if (category === 'Voluntariado') {
-      return require('../assets/images/volunteer.png');
-    }
-    return require('../assets/images/ping.png');
-  }
-  const getBackgroundColor = (event: EventWithId | null) => {
-    if (event?.category?.name === 'Deporte') {
-      return '#7FBF6E'; //light green
-    }
-    if (event?.category?.name === 'Musica') {
-      return '#F76D8C'; //light pink
-    }
-    if (event?.category?.name === 'Arte') {
-      return '#65B9D3'; //light blue
-    }
-    if (event?.category?.name === 'Comida') {
-      return '#FF4E50'; //light red
-    }
-    if (event?.category?.name === 'NetWorking') {
-      return '#F9D616'; //light yellow
-    }
-    if (event?.category?.name === 'Fiesta') {
-      return '#F0BB62'; //light orange
-    }
-    if (event?.category?.name === 'Voluntariado') {
-      return '#D2B48C'; //light brown
-    }
-    return '#fef6f2';
-  }
+  
+  
 
   const handleSubscribe = async (eventId: number) => {
     try {
@@ -185,7 +140,7 @@ export default function Index() {
           {filteredEvents.map((event) => (
             <React.Fragment key={event.id}>
               <Marker
-                pinColor={getBackgroundColor(event)}
+                pinColor={getCategoryBackgroundColor(event)}
 
                 coordinate={{
                   latitude: event.latitude + event.latitudeOffset,
@@ -208,8 +163,8 @@ export default function Index() {
                   longitude: event.longitude + event.longitudeOffset
                 }}
                 radius={500}
-                strokeColor={`${getBackgroundColor(event)}80`} // Borde con opacidad
-                fillColor={`${getBackgroundColor(event)}60`}
+                strokeColor={`${getCategoryBackgroundColor(event)}80`} // Borde con opacidad
+                fillColor={`${getCategoryBackgroundColor(event)}60`}
                 strokeWidth={2}
               />
             </React.Fragment>
@@ -341,6 +296,17 @@ export default function Index() {
                       onChange={handleDateChange}
                     />
                   )}
+                </View>
+                {/* Category Picker */}
+                <View style={styles.inputGroup}>
+                  <Text style={styles.inputLabel}>Category</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Filter by Category"
+                    value={nameFilter}
+                    onChangeText={setNameFilter}
+                    placeholderTextColor="#aaa"
+                  />
                 </View>
 
                 {/* Buttons */}

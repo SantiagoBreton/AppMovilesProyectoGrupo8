@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { TouchableOpacity, View, Text, StyleSheet, Button } from "react-native";
 import { Float } from "react-native/Libraries/Types/CodegenTypes";
 import EventDetailModal from "./EventDetailModal";
+import { getCategoryBackgroundColor } from "@/constants/CategoryColor";
 
 interface EventWithId {
     id: number;
@@ -32,32 +33,9 @@ const EventCard2: React.FC<EventCard2Props> = ({
         setIsDetailsModalVisible(true);
     };
 
-    const getBackgroundColor = () => {
-        if (event?.category?.name === 'Deporte') {
-            return '#7FBF6E'; //light green
-        }
-        if (event?.category?.name === 'Musica') {
-            return '#F76D8C'; //light pink
-        }
-        if (event?.category?.name === 'Arte') {
-            return '#65B9D3'; //light blue
-        }
-        if (event?.category?.name === 'Comida') {
-            return '#FF4E50'; //light red
-        }
-        if (event?.category?.name === 'NetWorking') {
-            return '#F9D616'; //light yellow
-        }
-        if (event?.category?.name === 'Fiesta') {
-            return '#F0BB62'; //light orange
-        }
-        if (event?.category?.name === 'Voluntariado') {
-            return '#D2B48C'; //light brown
-        }
-        return '#fef6f2';
-    }
+
     
-    const backgroundColor = getBackgroundColor();
+    const backgroundColor = event ? getCategoryBackgroundColor(event) : '#fef6f2';
 
     return (
         <TouchableOpacity
