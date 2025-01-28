@@ -180,7 +180,23 @@ const EventCard: React.FC<EventCardProps> = ({
                                 </TouchableOpacity>
                             </>
                         )}
-                        {!isEventOngoing && (
+                        {userId !== null && event.userId !== userId &&!isEventOngoing && (
+                            <>
+                                <TouchableOpacity
+                                    style={styles.detailsButton}
+                                    onPress={() => handleDetailsEvent(event)}
+                                >
+                                    <Text style={styles.detailsButtonText}>Detalles</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    style={styles.unsubscribeButton}
+                                    onPress={() => handleUnsubscribe(event.id)}
+                                >
+                                    <Text style={styles.unsubscribeButtonText}>Borrar</Text>
+                                </TouchableOpacity>
+                            </>
+                        )}
+                        {userId !== null && event.userId === userId && !isEventOngoing && (
                             <>
                                 <TouchableOpacity
                                     style={styles.detailsButton}

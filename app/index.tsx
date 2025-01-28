@@ -47,16 +47,15 @@ export default function Index() {
   const [hasFetchedEvents, setHasFetchedEvents] = useState(false);
 
   useEffect(() => {
-    if (location && !hasFetchedEvents) {
+    if (location) {
       refreshEvents();
       setHasFetchedEvents(true);
     }
   }, [location]);
 
   useEffect(() => {
-    if (events.length > 0) {
+    if (hasFetchedEvents) {
       setFilteredEvents(events);
-      console.log('chauuu');
       setMapLoaded(true);
     }
   }, [events]);
