@@ -7,7 +7,6 @@ import { TouchableOpacity, View, Text, StyleSheet, Alert } from "react-native";
 import { Float } from "react-native/Libraries/Types/CodegenTypes";
 import DeleteConfirmationModal from "./DeleteConfirmationModal";
 import { getCategoryBackgroundColor } from "@/constants/CategoryColor";
-import { get } from "lodash";
 
 interface EventCardProps {
     event: EventWithId | null;
@@ -45,7 +44,7 @@ const EventCard: React.FC<EventCardProps> = ({
             try {
                 const storedUserId = await AsyncStorage.getItem('userId');
                 if (storedUserId) {
-                    setUserId(parseInt(storedUserId, 10)); // Convierte el ID de string a número
+                    setUserId(parseInt(storedUserId, 10));
                 }
             } catch (error) {
                 console.error('Error fetching userId:', error);
@@ -54,10 +53,6 @@ const EventCard: React.FC<EventCardProps> = ({
 
         fetchUserId();
     }, []);
-
-    const openDeleteModal = (eventId: number) => {
-        setIsConfirmaDeletionModalVisible(true);
-    };
 
     const handleUnsubscribe = async (eventId: number) => {
         try {
@@ -86,7 +81,6 @@ const EventCard: React.FC<EventCardProps> = ({
         }
     };
 
-
     const backgroundColor = event ? getCategoryBackgroundColor(event) : '#fef6f2';
 
     if (isDeletingLoading) {
@@ -99,7 +93,6 @@ const EventCard: React.FC<EventCardProps> = ({
 
     return (
         <TouchableOpacity style={[styles.eventCard, { borderColor: backgroundColor }]} >
-
             {event && (
                 <>
                     <View style={styles.headerSection}>
@@ -216,82 +209,11 @@ const styles = StyleSheet.create({
         padding: 16,
         backgroundColor: '#ffffff',
     },
-    subHeader: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#333',
-        marginTop: 20,
-        marginBottom: 10,
-    },
-    buttonContainer: {
-        flexDirection: 'row',        // Alineación de los botones en fila
-        justifyContent: 'space-between', // Espaciado entre los botones
-        marginBottom: 20,            // Margen abajo para separar de la lista
-    },
     header: {
         fontSize: 24,
         fontWeight: 'bold',
         marginBottom: 20,
         color: '#FF7F50',
-    },
-    modalSection: {
-        marginBottom: 10,
-        paddingVertical: 5,
-        borderBottomWidth: 1,
-        borderBottomColor: '#FF7F50',
-    },
-    modalLabel: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: '#FF7F50',
-    },
-    modalText: {
-        fontSize: 14,
-        color: '#333',
-    },
-    modalActionButton: {
-        marginTop: 20,
-        alignSelf: 'center',
-        paddingVertical: 12,
-        paddingHorizontal: 30,
-        backgroundColor: '#FF7F50',
-        borderRadius: 25,
-    },
-    modalActionButtonText: {
-        color: '#fff',
-        fontSize: 16,
-        fontWeight: 'bold',
-        textAlign: 'center',
-    },
-    closeMapButton: {
-        position: 'absolute',
-        bottom: 10,
-        paddingVertical: 10,
-        paddingHorizontal: 20,
-        backgroundColor: '#f44336',
-        borderRadius: 5,
-    },
-    closeMapButtonText: {
-        color: '#fff',
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
-    buttonWrapper: {
-        width: '45%',
-    },
-    mapModalContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    },
-    mapModalContent: {
-        width: '90%',
-        height: '60%',
-        backgroundColor: '#fff',
-        borderRadius: 10,
-        overflow: 'hidden',
-        alignItems: 'center',
     },
     map: {
         width: '100%',
@@ -313,24 +235,6 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.25,
         shadowRadius: 4,
         elevation: 5,
-    },
-    modalTitle: {
-        fontSize: 22,
-        fontWeight: 'bold',
-        color: '#FF7F50',
-        textAlign: 'center',
-        marginBottom: 15,
-    },
-    cardHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 12,
-    },
-    closeButtonText: {
-        color: '#fff',
-        fontSize: 16,
-        fontWeight: 'bold',
     },
     eventCard: {
         backgroundColor: '#ffffff',

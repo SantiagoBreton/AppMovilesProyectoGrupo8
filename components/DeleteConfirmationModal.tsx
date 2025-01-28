@@ -1,19 +1,12 @@
-
-
-
-import React, { useEffect, useState } from 'react';
-import { Modal, View, Text, TouchableOpacity, Image, FlatList, ScrollView, StyleSheet, Button, Alert, ActivityIndicator } from 'react-native';
-
+import { Modal, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
 interface DeleteConfirmationModalProps {
     isVisible: boolean;
     confirmDelete: () => void;
     mensaje: string;
     onClose: () => void;
-    
+
 }
-
-
 
 const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
     isVisible,
@@ -21,10 +14,6 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
     mensaje,
     onClose,
 }) => {
-
-
-
-
 
     return (
         <Modal visible={isVisible} transparent={true} animationType="fade">
@@ -37,7 +26,7 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
                     <View style={modalStyles.modalButtons}>
                         <TouchableOpacity
                             style={[modalStyles.modalButton, modalStyles.cancelButton]}
-                            onPress={()=>onClose()}
+                            onPress={() => onClose()}
                         >
                             <Text style={modalStyles.cancelButtonText}>Cancelar</Text>
                         </TouchableOpacity>
@@ -53,7 +42,6 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
         </Modal>
     );
 };
-
 
 const modalStyles = StyleSheet.create({
     modalOverlay: {
@@ -106,8 +94,7 @@ const modalStyles = StyleSheet.create({
     confirmButtonText: {
         color: '#fff',
         fontWeight: 'bold',
-    },
+    }
 });
 
 export default DeleteConfirmationModal;
-

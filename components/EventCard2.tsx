@@ -33,39 +33,38 @@ const EventCard2: React.FC<EventCard2Props> = ({
         setIsDetailsModalVisible(true);
     };
 
-
-    
     const backgroundColor = event ? getCategoryBackgroundColor(event) : '#fef6f2';
 
     return (
-        <TouchableOpacity
-            style={[styles.eventCard, { borderLeftColor: backgroundColor }]}
-            onPress={() => event && handleDetailsEvent(event)}
-        >
-            <View style={[styles.cardContent]}>
-                <Text style={[styles.eventCategory, { backgroundColor: backgroundColor }]}>
-                    {event?.category ? event.category.name : 'Categoría no disponible'}
-                </Text>
-                <Text style={[styles.eventName, {color: backgroundColor}]} numberOfLines={2}>{event?.name}</Text>
-                <View style={styles.dateTimeContainer}>
-                    <Text style={styles.eventDate}>
-                        {event?.date ? new Date(event.date).toLocaleDateString() : 'Fecha no disponible'}
+        <View>
+            <TouchableOpacity
+                style={[styles.eventCard, { borderLeftColor: backgroundColor }]}
+                onPress={() => event && handleDetailsEvent(event)}
+            >
+                <View style={[styles.cardContent]}>
+                    <Text style={[styles.eventCategory, { backgroundColor: backgroundColor }]}>
+                        {event?.category ? event.category.name : 'Categoría no disponible'}
                     </Text>
-                    <Text style={styles.eventTime}>
-                        {event?.time ? event.time : 'Hora no disponible'}
-                    </Text>
+                    <Text style={[styles.eventName, {color: backgroundColor}]} numberOfLines={2}>{event?.name}</Text>
+                    <View style={styles.dateTimeContainer}>
+                        <Text style={styles.eventDate}>
+                            {event?.date ? new Date(event.date).toLocaleDateString() : 'Fecha no disponible'}
+                        </Text>
+                        <Text style={styles.eventTime}>
+                            {event?.time ? event.time : 'Hora no disponible'}
+                        </Text>
+                    </View>
+
+                    <Text style={styles.eventDescription}>{event?.description}</Text>
                 </View>
-
-                <Text style={styles.eventDescription}>{event?.description}</Text>
-            </View>
-
+            </TouchableOpacity>
             <EventDetailModal
-                visible={isDetailsModalVisible}
-                eventDetails={eventDetails as EventWithId | null}
-                showSuscribe={true}
-                onClose={() => setIsDetailsModalVisible(false)}
-            />
-        </TouchableOpacity>
+                    visible={isDetailsModalVisible}
+                    eventDetails={eventDetails as EventWithId | null}
+                    showSuscribe={true}
+                    onClose={() => setIsDetailsModalVisible(false)}
+                />
+        </View>
 
     );
 };
@@ -91,57 +90,43 @@ const styles = StyleSheet.create({
     eventName: {
         fontSize: 20,
         fontWeight: 'bold',
-        //color: '#FF7F50',
         marginBottom: 8,
     },
-    // Contenedor de la fecha y hora
     dateTimeContainer: {
-        flexDirection: 'row', // Organiza la fecha y hora en una fila
-        justifyContent: 'space-between', // Separa la fecha y la hora
-        marginBottom: 10, // Aumenté el espacio para más claridad
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 10,
     },
-
-    // Fecha
     eventDate: {
         fontSize: 15,
-        color: '#888',  // Cambié el color a algo más suave
+        color: '#888',
         fontStyle: 'italic',
         textAlign: 'left',
-        marginRight: 10, // Un poco de separación entre la fecha y la hora
+        marginRight: 10, 
     },
-
-    // Hora
     eventTime: {
         fontSize: 15,
         color: '#888',
         fontStyle: 'italic',
         textAlign: 'right',
-        fontWeight: 'bold', // Hice la hora más destacada
+        fontWeight: 'bold',
     },
-
-    // Categoría
     eventCategory: {
         fontSize: 16,
         fontWeight: '700',
         color: '#fff',
-        //backgroundColor: '#F0BB62', // Fondo más llamativo
         paddingVertical: 8,
         paddingHorizontal: 20,
-        borderRadius: 25, // Borde redondeado para un look más moderno
+        borderRadius: 25,
         textAlign: 'center',
-        letterSpacing: 1, // Espaciado de letras para darle más estilo
-        marginBottom: 15, // Espacio entre la categoría y el siguiente contenido
+        letterSpacing: 1,
+        marginBottom: 15,
     },
-
     eventDescription: {
         fontSize: 14,
         color: '#333',
         marginBottom: 20,
-        textAlign: 'justify',  // Mejor alineación para la descripción
-        lineHeight: 20, // Aumento de altura de línea para mejorar la legibilidad
-    },
-
-    detailButtonContainer: {
-        alignSelf: 'flex-end',
+        textAlign: 'justify',
+        lineHeight: 20,
     }
 });

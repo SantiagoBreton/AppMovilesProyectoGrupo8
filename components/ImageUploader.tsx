@@ -14,10 +14,8 @@ import {
 import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system";
 import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { uploadUserProfileImage } from "@/apiCalls/uploadUserProfileImage";
 import { uploadUserBannerImage } from "@/apiCalls/uploadUserBannerImage";
-import { getUserProfileImage } from "@/apiCalls/getUserProfileImage";
 
 interface ImageUploaderProps {
   isVisible: boolean;
@@ -279,7 +277,7 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "bold",
-  },
+  }
 });
 
 export default ImageUploader;
