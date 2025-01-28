@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, View, Text, TouchableOpacity, TouchableWithoutFeedback, StyleSheet, Alert, Image } from 'react-native';
+import { Modal, View, Text, TouchableOpacity, TouchableWithoutFeedback, StyleSheet, Alert, Image, ActivityIndicator } from 'react-native';
 import MapView, { Circle } from 'react-native-maps';
 import { Float } from 'react-native/Libraries/Types/CodegenTypes';
 import { subscribeToEvent } from '@/apiCalls/subscribeToAnEvent';
@@ -11,6 +11,7 @@ import { getUserDataById } from '@/apiCalls/getUserDataById';
 import { getUserProfileImage } from '@/apiCalls/getUserProfileImage';
 import SpectatedUserModal from './SpectatedUserModal';
 import { StarRating } from '@/components/StarRating';
+import { set } from 'lodash';
 
 interface CustomEvent {
     id: number;
@@ -56,6 +57,7 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
     const [seeUser, setSeeUser] = useState<User | null>(null);
     const [isSpectatedUserVisible, setIsSpectatedUserVisible] = useState(false);
     const [userImages, setUserImages] = useState<{ [key: number]: string }>({});
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         const fetchUserId = async () => {
@@ -104,6 +106,7 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
                         const { data } = await getUserProfileImage(hostId.data.user.id);
                         updatedImages[hostId.data.user.id] = data?.imageUrl || 'default_image_url';
                         setUserImages(updatedImages);
+                        setIsLoading(false);
                     }
                 } catch (error) {
                     console.error('Error fetching host info:', error);
@@ -113,9 +116,19 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
 
         fetchLocation();
         fetchHostInfo();
+
     }, [eventDetails]);
 
     if (!eventDetails) return null;
+    if (isLoading) {
+        return (
+            <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#FF7F50" />
+                <Text style={styles.loadingText}>Cargando...</Text>
+            </View>
+        );
+    }
+
 
     const handleCloseMap = () => setMapVisible(false);
 
@@ -141,6 +154,7 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
             transparent={true}
             animationType="slide"
             onRequestClose={onClose}
+
         >
             <TouchableWithoutFeedback onPress={onClose}>
                 <View style={styles.modalContainer}>
@@ -423,6 +437,21 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
+    },
+    loadingContainer: {
+        position: 'absolute',
+        alignSelf: 'center',
+        width: '100%',
+        height: '100%',
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(255, 255, 255, 0.7)',  // Slight transparency to show loading over content
+        zIndex: 9999,  // Makes sure this layer is above other components
+    },
+    loadingText: {
+        marginTop: 10,
+        fontSize: 16,
+        color: '#333',
     },
 });
 

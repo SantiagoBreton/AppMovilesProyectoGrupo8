@@ -14,6 +14,8 @@ interface EventWithId {
     userId: number;
 };
 
+export const categoryName = ['Todo', 'Musica', 'Deporte', 'Arte', 'Comida', 'NetWorking', 'Fiesta', 'Voluntariado']
+
 export const getCategoryBackgroundColor = (event: EventWithId) => {
     if (event?.category?.name === 'Deporte') {
         return '#7FBF6E'; //light green
