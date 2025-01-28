@@ -1,4 +1,4 @@
-import React, { useState, } from 'react';
+import React, { useEffect, useState, } from 'react';
 import { Modal, View, Text, TouchableOpacity, ScrollView, StyleSheet, Alert, Pressable, TextInput } from 'react-native';
 import { useEventContext } from '@/context/eventContext';
 import { updateProfile } from '@/apiCalls/updateProfile';
@@ -212,7 +212,6 @@ const AdminProfileModal: React.FC<AdminProfileModalProps> = ({
                                         style={styles.saveButton}
                                         onPress={() => {
                                             setIsNameModalVisible(false);
-                                            // Handle Save Logic
                                         }}
                                     >
                                         <Text style={styles.saveButtonText}>Guardar</Text>
@@ -286,7 +285,7 @@ const AdminProfileModal: React.FC<AdminProfileModalProps> = ({
                                 <TextInput
                                     style={styles.input}
                                     placeholder="Nueva Descripción"
-                                    value={newPassword}
+                                    value={newDescription}
                                     onChangeText={handleDescriptionChange}
                                 />
                                 <View style={styles.modalButtons}>

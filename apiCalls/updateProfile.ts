@@ -1,8 +1,14 @@
 export const updateProfile = async (userId: number, newName: string, newPassword: string, newDescription: string) => {
     try {
-        // Ensure the date is converted to ISO format
-        const response = await fetch(`http://${process.env.EXPO_PUBLIC_SERVER_IP}:3000/updateProfile/${userId}/${newName}/${newPassword}/${newDescription}`, {
-            method: 'GET', // Replace with 'PUT' if you're following REST conventions
+        const queryParams = new URLSearchParams({
+            userId: userId.toString(),
+            newName,
+            newPassword,
+            newDescription,
+        }).toString();
+
+        const response = await fetch(`http://${process.env.EXPO_PUBLIC_SERVER_IP}:3000/updateProfile?${queryParams}`, {
+            method: 'GET',
         });
 
         if (response.ok) {
