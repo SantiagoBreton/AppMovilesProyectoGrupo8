@@ -22,8 +22,6 @@ interface CustomEvent {
     time: string;
     category: any;
     userId: number;
-    time: string;
-    category: any;
 };
 interface User {
     id: number;
@@ -87,8 +85,6 @@ const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
                     setBannerImage(bannerImage.data.imageUrl);
                 }
 
-
-                // Actualizar calificaciones del usuario
                 await refreshUserRatings();
             } catch (error) {
                 console.error('Error fetching user data:', error);
@@ -110,7 +106,6 @@ const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
             if (ratingResponse.data) {
                 setUserRating(ratingResponse.data);
 
-                // Actualizar promedio de calificación del usuario
                 const averageRating =
                     ratingResponse.data.length > 0
                         ? ratingResponse.data
@@ -162,7 +157,7 @@ const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
                         </View>
                         <TouchableOpacity onPress={() => { setIsReviewModalVisible(true) }}>
                             <View style={styles.starContainer}>
-                                <Text style={styles.text}>Users Rating:  </Text>
+                                <Text style={styles.text}>Valoración:  </Text>
                                 <StarRating rating={user.rating || 0} size={24} />
                                 <Text style={styles.text}>{`(${isNaN(user.rating) ? 0 : user.rating.toFixed(1)})`}</Text>
                             </View>

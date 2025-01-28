@@ -42,7 +42,7 @@ export default function Perfil() {
     const [bannerImage, setBannerImage] = useState<string | null>(null);
     const [userId, setUserId] = useState<number | null>(null);
     const [categories, setCategories] = useState<string[]>(['Todo', 'Musica', 'Deporte', 'Arte', 'Comida', 'NetWorking', 'Fiesta', 'Voluntariado']);
-    const [selectedCategory, setSelectedCategory] = useState('All');
+    const [selectedCategory, setSelectedCategory] = useState('Todo');
     const [isCategoryModalVisible, setIsCategoryModalVisible] = useState(false);
 
     useEffect(() => {
@@ -128,7 +128,7 @@ export default function Perfil() {
 
     const handleCategorySelection = (category: string) => {
         setSelectedCategory(category);
-        setFilteredEvents(category === 'All' ? eventsToDisplay : eventsToDisplay.filter(event => event.category.name === category));
+        setFilteredEvents(category === 'Todo' ? eventsToDisplay : eventsToDisplay.filter(event => event.category.name === category));
         setIsCategoryModalVisible(false);
     };
 
@@ -183,13 +183,22 @@ export default function Perfil() {
             </View>
 
             <View style={styles.buttonContainer}>
-                <Button title="Cerrar Sesión" onPress={handleLogout} color="#007AFF" />
+                <TouchableOpacity
+                    style={styles.closeSessionButton}
+                    onPress={() => handleLogout()}
+                >
+                    <Text style={styles.closeSessionButtonText}>Cerrar Sesión</Text>
+                </TouchableOpacity>
 
-                <Button title="Editar Perfil" onPress={() => { handleEditarPerfil() }} color="#FF9500" />
+                <TouchableOpacity
+                    style={styles.editProfileButton}
+                    onPress={() => handleEditarPerfil()}
+                >
+                    <Text style={styles.editProfileButtonText}>Editar Perfil</Text>
+                </TouchableOpacity>
             </View>
 
             <View style={styles.section}>
-                {/* Add button to filter by category */}
 
                 <Text style={styles.sectionTitle}>Eventos Creados</Text>
                 <TextInput
@@ -262,8 +271,6 @@ export default function Perfil() {
                 refreshData={refreshUserRatings}
                 onClose={() => { setIsReviewModalVisible(false); refreshUserRatings(); }}
             />
-
-
         </ScrollView>
     );
 }
@@ -319,14 +326,14 @@ const styles = StyleSheet.create({
     sectionTitle: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#007AFF',
+        color: '#FF7F50', // Using the same orange color from the tab
         marginBottom: 16,
         textAlign: 'center',
     },
     label: {
         fontSize: 16,
         fontWeight: 'bold',
-        color: '#007AFF',
+        color: '#FF7F50', // Using the same orange color from the tab
         marginBottom: 4,
     },
     input: {
@@ -431,5 +438,29 @@ const styles = StyleSheet.create({
         color: '#FFFFFF',
         fontWeight: 'bold',
         fontSize: 16,
+    },
+    closeSessionButton: {
+        backgroundColor: '#dc2626',
+        borderRadius: 10,
+        padding: 10,
+    },
+    closeSessionButtonText: {
+        color: '#fff',
+        fontSize: 14,
+        fontWeight: '600',
+        textTransform: 'uppercase',
+        textAlign: 'center',
+    },
+    editProfileButton: {
+        backgroundColor: '#007AFF',
+        borderRadius: 10,
+        padding: 10,
+    },
+    editProfileButtonText: {
+        color: '#fff',
+        fontSize: 14,
+        fontWeight: '600',
+        textTransform: 'uppercase',
+        textAlign: 'center',
     },
 });

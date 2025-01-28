@@ -8,6 +8,7 @@ import SpectatedUserModal from '@/components/SpectatedUserModal';
 import EventCard2 from '@/components/EventCard2';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getUserProfileImage } from '@/apiCalls/getUserProfileImage';
+import { StarRating } from '@/components/StarRating';
 
 export default function Busqueda() {
     const [query, setQuery] = useState('');
@@ -18,7 +19,6 @@ export default function Busqueda() {
     const [seeUser, setSeeUser] = useState<User | null>(null);
     const [userId, setUserId] = useState<number | null>(null);
     const [userImages, setUserImages] = useState<{ [key: number]: string }>({});
-
 
     useEffect(() => {
         const fetchUserId = async () => {
@@ -120,30 +120,26 @@ export default function Busqueda() {
 
     const renderUserResult = ({ item }: { item: User }) =>
     (
-        <View style={styles.resultCard}>
-            <View style={styles.iconContainer}>
-                {/* Display user profile image */}
-                {userImages[item.id] ? (
-                    <Image source={{ uri: userImages[item.id] }} style={styles.userProfileImage} />
-                ) : (
-                    <FontAwesome5 name="user" size={30} color="#FF7F50" />
-                )}
+        <TouchableOpacity onPress={() => handleSeeUser(item)}>
+            <View style={styles.resultCard}>
+                <View style={styles.iconContainer}>
+                    {/* Display user profile image */}
+                    {userImages[item.id] ? (
+                        <Image source={{ uri: userImages[item.id] }} style={styles.userProfileImage} />
+                    ) : (
+                        <FontAwesome5 name="user" size={30} color="#FF7F50" />
+                    )}
 
+                </View>
+                <View style={styles.userInfo}>
+                    <Text style={styles.resultTitle}>{item.name}</Text>
+                    <Text style={styles.resultType}>{item.email}</Text>
+                </View>
+
+                <StarRating rating={item.rating || 0} size={16} />
+                <Text style={styles.text}>{`(${isNaN(item.rating) ? 0 : item.rating.toFixed(1)})`}</Text>
             </View>
-            <View style={styles.userInfo}>
-                <Text style={styles.resultTitle}>{item.name}</Text>
-                <Text style={styles.resultType}>{item.email}</Text>
-            </View>
-            <View style={styles.buttonContainer}>
-                <Button
-                    title="Ver Perfil"
-                    color="#FF7F50"
-                    onPress={() => {
-                        handleSeeUser(item);
-                    }}
-                />
-            </View>
-        </View>);
+        </TouchableOpacity>)
 
 
 
@@ -423,5 +419,10 @@ const styles = StyleSheet.create({
         marginLeft: 10, // Separación entre botones
         backgroundColor: 'red',
         borderRadius: 25,
+    },
+    text: {
+        marginLeft: 10,
+        fontSize: 14,
+        color: '#333',
     },
 });
