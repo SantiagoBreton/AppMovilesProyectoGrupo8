@@ -62,12 +62,12 @@ export default function Perfil() {
                 setIsLoading(false);
             }
         };
-
-        fetchUserData();
-    }, []);
+        if (!isAdminModalVisible){
+            fetchUserData();
+        }
+    }, [isAdminModalVisible]);
 
     useEffect(() => {
-
         const getUserBanner = async () => {
             const storedUserId = await AsyncStorage.getItem('userId');
             if (storedUserId) {
