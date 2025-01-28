@@ -19,8 +19,8 @@ export const getSubscribedEvents = (trigger: boolean) => {
         if (!response.ok) {
           throw new Error('Failed to get events');
         }
-
         const fetchedEvents = await response.json();
+        
         setEvents(fetchedEvents); // Set the fetched events to state
       } catch (error) {
         setEventsError('Error fetching events');
