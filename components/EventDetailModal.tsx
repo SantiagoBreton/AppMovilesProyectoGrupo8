@@ -30,7 +30,6 @@ interface CustomEvent {
 
 interface EventDetailModalProps {
     visible: boolean;
-    showSuscribe: boolean;
     eventDetails: CustomEvent | null;
     onClose: () => void;
 }
@@ -45,7 +44,6 @@ interface User {
 
 const EventDetailModal: React.FC<EventDetailModalProps> = ({
     visible,
-    showSuscribe,
     eventDetails,
     onClose,
 
@@ -61,6 +59,7 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
     const [isLoading, setIsLoading] = useState(true);
     const [isConfirmationVisible, setIsConfirmationVisible] = useState(false);
     const [isSuccessVisible, setIsSuccessVisible] = useState(false);
+    const showSuscribe = userId !== eventDetails?.userId;
 
     useEffect(() => {
         const fetchUserId = async () => {

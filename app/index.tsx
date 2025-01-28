@@ -75,17 +75,6 @@ export default function Index() {
   }
 
 
-
-  const handleSubscribe = async (eventId: number) => {
-    try {
-      await subscribeToEvent(eventId);
-      handleCloseModal();
-      refreshEvents();
-    } catch (error: any) {
-      setErrorMessage(error.message || 'Que lastima, no te has podido subscribir.');
-    }
-  };
-
   const handleProximityChange = debounce((value: number) => {
     setProximityFilter(value);
     refreshEvents();
@@ -187,7 +176,6 @@ export default function Index() {
           eventDetails={selectedEvent}
           visible={modalVisible}
           onClose={handleCloseModal}
-          showSuscribe={true}
         />
       )}
       {errorMessage && (

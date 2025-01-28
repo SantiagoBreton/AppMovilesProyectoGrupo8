@@ -11,6 +11,10 @@ import { denySubscriptionToAnEvent } from '@/apiCalls/denySubscriptionToAnEvent'
 import { getUserProfileImage } from '@/apiCalls/getUserProfileImage';
 import { FontAwesome5 } from '@expo/vector-icons';
 import SpectatedUserModal from './SpectatedUserModal';
+import ConfirmationModal from './ConfirmationModal';
+import SuccessModal from './SuccesModal';
+import ErrorModal from './ErrorModal';
+import { set } from 'lodash';
 
 interface EventWithId {
     id: number;
@@ -61,7 +65,6 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
     const { refreshEvents } = useEventContext();
     const [updatedSubscribedUsers, setUpdatedSubscribedUsers] = useState<User[]>(subscribedUsers);
     const [updatedRequestingUsers, setUpdatedRequestingUsers] = useState<User[]>(requestingUsers);
-    const [isDeleteConfirmationVisible, setIsDeleteConfirmationVisible] = useState(false);
     const [errorMessageTitle, setErrorMessageTitle] = useState('');
     const [errorMessageDescription, setErrorMessageDescription] = useState('');
     const [errorMessageDate, setErrorMessageDate] = useState('');
@@ -69,6 +72,15 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
     const [showTimePicker, setShowTimePicker] = useState(false);
     const [time, setTime] = useState<string>('');
     const [userImages, setUserImages] = useState<{ [key: number]: string }>({});
+    const [isConfirmationModalVisible, setIsConfirmationModalVisible] = useState(false);
+    const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false);
+    const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
+    const [succesMessage, setSuccesMessage] = useState('');
+    const [confirmationMessage, setConfirmationMessage] = useState('');
+    const [onConfirmCallback, setOnConfirmCallback] = useState<(() => void) | null>(null);
+    const [onCloseCallback, setOnCloseCallback] = useState<(() => void) | null>(null);
+
 
     useEffect(() => {
         setUpdatedSubscribedUsers(subscribedUsers);
@@ -104,9 +116,9 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
             setErrorMessageDate('');
         }
         else {
-            setErrorMessageDate('Seleccione una fecha válida');
             setSelectedDate(null);
-            Alert.alert('Error', 'Por favor, seleccione una fecha válida.');
+            setErrorMessage("Seleccione una fecha válida")
+            setIsErrorModalVisible(true);
         }
     };
 
@@ -118,13 +130,16 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
     const handleEliminateUserFromEvent = async (userId: number, eventId: number) => {
         try {
             await unsubscribeUserFromAnEvent(userId, eventId);
-            Alert.alert('Éxito', 'Usuario eliminado del evento correctamente.');
 
             setUpdatedSubscribedUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
-            setIsDeleteConfirmationVisible(false);
+            setSuccesMessage('Usuario eliminado del evento correctamente.');
+            setOnCloseCallback(() => () => setIsSuccessModalVisible(false));
+            setIsSuccessModalVisible(true);
+
 
         } catch (error) {
-            Alert.alert('Error', 'No se pudo eliminar al usuario del evento.');
+            setErrorMessage('No se pudo eliminar al usuario del evento.');
+            setIsErrorModalVisible(true);
         }
     };
 
@@ -148,12 +163,13 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
             setNewName('');
             setNewDescription('');
             setSelectedDate(new Date());
-            onClose();
+            setOnCloseCallback(() => onClose);
+            setSuccesMessage('Evento actualizado correctamente.');
+            setIsSuccessModalVisible(true);
 
-            Alert.alert('Éxito', 'El evento se actualizó.');
         } catch (error) {
-            console.error('Error updating event:', error);
-            Alert.alert('Error', 'No se pudo actualizar el evento.');
+            setErrorMessage('No se pudo actualizar el evento.');
+            setIsErrorModalVisible(true);
         }
     };
 
@@ -182,20 +198,24 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
             if (adminEventDetails?.id !== undefined) {
                 const response = await confirmSubscriptionToAnEvent(adminEventDetails.id, userId);
                 if (response) {
-                    Alert.alert('Éxito', 'Usuario aceptado en el evento correctamente.');
+                    setSuccesMessage('Usuario aceptado en el evento correctamente.');
+                    setOnCloseCallback(() => () => setIsSuccessModalVisible(false));
                     setUpdatedSubscribedUsers((prevUsers) => [...prevUsers, requestingUsers.find((user) => user.id === userId) ?? { id: 0, name: '', email: '', rating: 0, description: '' }]);
                     setUpdatedRequestingUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
                     requestingUsers = requestingUsers.filter((user) => user.id !== userId);
                     refreshEvents();
+                    setIsSuccessModalVisible(true);
                 }
             }
             else {
-                Alert.alert('Error', 'No se pudo obtener el ID del evento.');
+                setErrorMessage('No se pudo obtener el ID del evento.');
+                setIsErrorModalVisible(true);
             }
 
 
         } catch (error: any) {
-            Alert.alert('Error', 'No se pudo aceptar al usuario en el evento.');
+            setErrorMessage('No se pudo aceptar al usuario en el evento.');
+            setIsErrorModalVisible(true);
         }
     };
 
@@ -204,19 +224,23 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
             if (adminEventDetails?.id !== undefined) {
                 const response = await denySubscriptionToAnEvent(adminEventDetails.id, userId);
                 if (response) {
-                    Alert.alert('Éxito', 'Usuario denegado en el evento correctamente.');
+                    setSuccesMessage('Usuario denegado en el evento correctamente.');
+                    setOnCloseCallback(() => () => setIsSuccessModalVisible(false));
+                    setIsSuccessModalVisible(true);
                     setUpdatedRequestingUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
                     requestingUsers = requestingUsers.filter((user) => user.id !== userId);
                     refreshEvents();
                 }
             }
             else {
-                Alert.alert('Error', 'No se pudo obtener el ID del evento.');
+                setErrorMessage('No se pudo obtener el ID del evento.');
+                setIsErrorModalVisible(true);
             }
 
 
         } catch (error: any) {
-            Alert.alert('Error', 'No se pudo denegar al usuario en el evento.');
+            setErrorMessage('No se pudo denegar al usuario en el evento.');
+            setIsErrorModalVisible(true);
         }
     };
     const onTimeChange = (event: any, selectedTime?: Date) => {
@@ -478,24 +502,13 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
                                                     <Text style={styles.userName}>{user.name}</Text>
                                                 </TouchableOpacity>
                                                 <TouchableOpacity
-                                                    onPress={() =>
-                                                        setIsDeleteConfirmationVisible(true)
-                                                    }
+                                                    onPress={() => { if (adminEventDetails) { setOnConfirmCallback(() => () => handleEliminateUserFromEvent(user.id, adminEventDetails.id)); setConfirmationMessage('¿Estás seguro de que deseas eliminar al usuario del evento?'); setIsConfirmationModalVisible(true); } }}
+
                                                     style={styles.deleteUserButton}
                                                 >
                                                     <Text style={styles.deleteUserText}>Eliminar</Text>
                                                 </TouchableOpacity>
-                                                <DeleteConfirmationModal
-                                                    isVisible={isDeleteConfirmationVisible}
-                                                    confirmDelete={() =>
-                                                        handleEliminateUserFromEvent(
-                                                            user.id,
-                                                            adminEventDetails?.id ?? 0
-                                                        )
-                                                    }
-                                                    mensaje={`¿Estás seguro de que deseas eliminar a ${user.name} del evento?`}
-                                                    onClose={() => setIsDeleteConfirmationVisible(false)}
-                                                />
+
                                             </View>
                                         </View>
                                     ))
@@ -524,13 +537,13 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
                                                 </TouchableOpacity>
                                                 <View style={styles.actionButtons}>
                                                     <TouchableOpacity
-                                                        onPress={() => handleAcceptUser(user.id)}
+                                                        onPress={() => { setOnConfirmCallback(() => () => handleAcceptUser(user.id)); setConfirmationMessage('¿Estás seguro de que deseas aceptar al usuario en el evento?'); setIsConfirmationModalVisible(true); }}
                                                         style={styles.acceptButton}
                                                     >
                                                         <Text style={styles.acceptButtonText}>Aceptar</Text>
                                                     </TouchableOpacity>
                                                     <TouchableOpacity
-                                                        onPress={() => handleDenyUser(user.id)}
+                                                        onPress={() => { setOnConfirmCallback(() => () => handleDenyUser(user.id)); setConfirmationMessage('¿Estás seguro de que deseas denegar al usuario en el evento?'); setIsConfirmationModalVisible(true); }}
                                                         style={styles.denyButton}
                                                     >
                                                         <Text style={styles.denyButtonText}>Denegar</Text>
@@ -548,7 +561,7 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
                     <View style={styles.actionButtons2}>
                         <TouchableOpacity
                             style={styles.updateButton}
-                            onPress={() => adminEventDetails && handleEventUpdate()}
+                            onPress={() => { setOnConfirmCallback(() => handleEventUpdate); setConfirmationMessage('¿Estás seguro de que deseas actualizar el evento?'); setIsConfirmationModalVisible(true); }}
                         >
                             <Text style={styles.updateButtonText}>Guardar Cambios</Text>
                         </TouchableOpacity>
@@ -566,6 +579,33 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
                 user={seeUser}
                 onClose={() => setIsSpectatedUserVisible(false)}
             />
+            <ConfirmationModal
+                visible={isConfirmationModalVisible}
+                title="Confirmación"
+                message={confirmationMessage}
+                onConfirm={() => {
+                    if (onConfirmCallback) {
+                        onConfirmCallback(); // Ejecuta la función que pasaste
+                    }; setIsConfirmationModalVisible(false);
+                }}
+                onCancel={() => setIsConfirmationModalVisible(false)}
+            />
+            <SuccessModal
+                visible={isSuccessModalVisible}
+                message={succesMessage}
+                onClose={() => {
+                    if (onCloseCallback) {
+                        onCloseCallback(); // Ejecuta la función que pasaste
+                    }
+                }}
+            />
+            <ErrorModal
+                visible={isErrorModalVisible}
+                title="Error"
+                message={errorMessage}
+                onClose={() => setIsErrorModalVisible(false)}
+            />
+
         </Modal>
 
     );

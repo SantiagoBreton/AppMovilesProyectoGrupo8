@@ -3,6 +3,10 @@ import { Modal, View, Text, TouchableOpacity, ScrollView, StyleSheet, Alert, Pre
 import { useEventContext } from '@/context/eventContext';
 import { updateProfile } from '@/apiCalls/updateProfile';
 import ImageUploader from './ImageUploader';
+import ConfirmationModal from './ConfirmationModal';
+import SuccessModal from './SuccesModal';
+import ErrorModal from './ErrorModal';
+
 
 interface User {
     id: number;
@@ -36,10 +40,16 @@ const AdminProfileModal: React.FC<AdminProfileModalProps> = ({
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
     const [isImageUploader, setIsImageUploader] = useState(false);
+    const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false);
+    const [isConfirmationModalVisible, setIsConfirmationModalVisible] = useState(false);
+    const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
+    const[errorMessage, setErrorMessage] = useState('');
 
     const handleProfileUpdate = async () => {
+        setIsConfirmationModalVisible(false);
         if ((!newName && !newPassword && !newDescription)) {
-            Alert.alert('Error', 'Por favor, complete al menos un campo para actualizar.');
+            setErrorMessage('Por favor, complete al menos un campo para actualizar.');
+            setIsErrorModalVisible(true);
             return;
         }
         try {
@@ -57,12 +67,11 @@ const AdminProfileModal: React.FC<AdminProfileModalProps> = ({
             setNewPassword('');
             setNewDescription('');
             setIsLoading(false);
-            onClose();
+            setIsSuccessModalVisible(true);
 
-            Alert.alert('Éxito', 'El evento se actualizó.');
         } catch (error) {
-            console.error('Error updating event:', error);
-            Alert.alert('Error', 'No se pudo actualizar el evento.');
+            setErrorMessage('Hubo un error al actualizar los detalles del evento. Por favor, inténtelo de nuevo.');
+            setIsErrorModalVisible(true);
         }
     };
 
@@ -318,7 +327,7 @@ const AdminProfileModal: React.FC<AdminProfileModalProps> = ({
                     <View style={styles.actionButtons2}>
                         <TouchableOpacity
                             style={styles.updateButton}
-                            onPress={() => adminProfileDetails && handleProfileUpdate()}
+                            onPress={() => adminProfileDetails && setIsConfirmationModalVisible(true)}
                         >
                             <Text style={styles.updateButtonText}>Guardar Cambios</Text>
                         </TouchableOpacity>
@@ -334,6 +343,24 @@ const AdminProfileModal: React.FC<AdminProfileModalProps> = ({
             <ImageUploader
                 isVisible={isImageUploader}
                 onClose={() => { setIsImageUploader(false); onClose(); }}
+            />
+            <ConfirmationModal
+                visible={isConfirmationModalVisible}
+                title="Confirmar"
+                message={"¿Estás seguro de que deseas actualizar los datos de tu perfil?"}
+                onConfirm={() => { handleProfileUpdate(); }}
+                onCancel={() => { setIsConfirmationModalVisible(false); }}
+            />
+            <SuccessModal
+                visible={isSuccessModalVisible}
+                message="Los datos de tu perfil se actualizaron."
+                onClose={() => { setIsSuccessModalVisible(false); onClose(); }}
+            />
+            <ErrorModal
+                visible={isErrorModalVisible}
+                title="Error"
+                message={errorMessage}
+                onClose={() => { setIsErrorModalVisible(false); }}
             />
         </Modal>
 

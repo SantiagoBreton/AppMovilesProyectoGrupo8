@@ -263,7 +263,6 @@ export default function CreacionEvento() {
             <EventDetailModal
                 visible={isDetailsModalVisible}
                 eventDetails={eventDetails}
-                showSuscribe={true}
                 onClose={() => setIsDetailsModalVisible(false)}
             />
 

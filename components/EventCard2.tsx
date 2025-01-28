@@ -61,7 +61,6 @@ const EventCard2: React.FC<EventCard2Props> = ({
             <EventDetailModal
                     visible={isDetailsModalVisible}
                     eventDetails={eventDetails as EventWithId | null}
-                    showSuscribe={true}
                     onClose={() => setIsDetailsModalVisible(false)}
                 />
         </View>
