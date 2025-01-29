@@ -58,11 +58,7 @@ const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
     const [filteredEvents, setFilteredEvents] = useState(userEvents);
     const [isLoading, setIsLoading] = useState(true);
     const [isRevieModalVisible, setIsReviewModalVisible] = useState(false);
-    const totalStars = 5;
-    const rating = user?.rating !== undefined && !isNaN(user.rating) ? user.rating : 0;
-    const filledStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 >= 0.5;
-    const emptyStars = totalStars - filledStars - (hasHalfStar ? 1 : 0);
+    
     const [userRating, setUserRating] = useState<Rating[]>([]);
     const [profileImage, setProfileImage] = useState<string | null>(null);
     const [bannerImage, setBannerImage] = useState<string | null>(null);
@@ -138,11 +134,7 @@ const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
         }
     };
 
-    const handleEventPress = (event: CustomEvent) => {
 
-        setEventDetails(event);
-        setIsDetailsModalVisible(true);
-    };
 
     const handleCategorySelection = (category: string) => {
         setSelectedCategory(category);

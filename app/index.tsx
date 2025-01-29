@@ -11,6 +11,7 @@ import { Float } from 'react-native/Libraries/Types/CodegenTypes';
 import { debounce, set } from "lodash";
 import { getCategoryBackgroundColor, getCategoryImage, categoryName } from '@/constants/CategoryColor';
 import EventDetailModal from '@/components/EventDetailModal';
+import LottieView from 'lottie-react-native';
 
 interface EventWithId {
   id: number;
@@ -68,7 +69,12 @@ export default function Index() {
   if (!mapLoaded) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#FF7F50" />
+        <LottieView
+          source={require('../assets/laoding/loadingAn.json')} // Replace with your Lottie JSON file
+          autoPlay
+          loop
+          style={styles.lottieAnimation}
+        />
         <Text style={styles.loadingText}>Cargando...</Text>
       </View>
     );
@@ -431,12 +437,16 @@ const styles = StyleSheet.create({
     padding: 10,
     backgroundColor: '#FF3B30',
     borderRadius: 12,
-},
+  },
   loadingText: {
     marginTop: 10,
     fontSize: 16,
     color: '#333',
   },
+  lottieAnimation: {
+    width: 120,
+    height: 120,
+},
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -534,7 +544,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: 'bold',
     fontSize: 16,
-},
+  },
   modalOption: {
     paddingVertical: 10,
     width: '100%',

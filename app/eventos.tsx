@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, Button, StyleSheet, FlatList, Modal, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { View, Text, Button, StyleSheet, FlatList, Modal, ScrollView, TouchableOpacity, ActivityIndicator, Animated, Easing } from 'react-native';
 import * as Location from 'expo-location';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Float } from 'react-native/Libraries/Types/CodegenTypes';
@@ -15,6 +15,9 @@ import { getAllRequestingUsersToAnEvent } from '@/apiCalls/getAllRequestingUsers
 import { getPendingRequestedEvents } from '@/apiCalls/getPendingRequestedEvents';
 import ErrorModal from '@/components/ErrorModal';
 import { set } from 'lodash';
+import LottieView from 'lottie-react-native';
+
+
 
 export default function CreacionEvento() {
     const [isModalVisible, setIsModalVisible] = useState(false);
@@ -36,6 +39,9 @@ export default function CreacionEvento() {
     const [selectedSubTab, setSelectedSubTab] = useState('activos');
     const [errorModalVisible, setErrorModalVisible] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
+    const isLoading = loading || allevents.loading || myUserEvents.loading;
+    const fadeAnim = useRef(new Animated.Value(0)).current;
+
 
     const eventsToDisplay =
         selectedView === 'inscriptos' ? allevents.events : myUserEvents.myEvents;
@@ -47,7 +53,12 @@ export default function CreacionEvento() {
                 ? eventsToDisplay.filter(event => new Date(event.date) < new Date())
                 : safePendingEvents || [];
 
-    
+
+
+
+
+
+
 
     useEffect(() => {
         const fetchUserId = async () => {
@@ -60,6 +71,12 @@ export default function CreacionEvento() {
                 console.error('Error fetching userId:', error);
             }
         };
+        Animated.timing(fadeAnim, {
+            toValue: 1,
+            duration: 600,
+            easing: Easing.out(Easing.exp),
+            useNativeDriver: true,
+        }).start();
 
         fetchUserId();
     }, []);
@@ -139,11 +156,16 @@ export default function CreacionEvento() {
         }
     };
 
-    if (isAdminEventLoading) {
+    if (isLoading) {
         return (
             <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#007AFF" />
-                <Text style={styles.loadingText}>Cargando pantalla de administarcion...</Text>
+                <LottieView
+                    source={require('../assets/laoding/loadingAn.json')} // Replace with your Lottie JSON file
+                    autoPlay
+                    loop
+                    style={styles.lottieAnimation}
+                />
+                <Text style={styles.loadingText}>Cargando...</Text>
             </View>
         );
     }
@@ -282,17 +304,7 @@ const styles = StyleSheet.create({
         padding: 16,
         backgroundColor: '#ffffff',
     },
-    loadingContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#F4F4F4',
-    },
-    loadingText: {
-        marginTop: 10,
-        fontSize: 16,
-        color: '#333',
-    },
+
     header: {
         fontSize: 28,
         fontWeight: 'bold',
@@ -366,5 +378,29 @@ const styles = StyleSheet.create({
         color: '#999',
         marginTop: 20,
         fontSize: 16,
-    }
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#fff',
+      },
+    blurEffect: {
+        width: 250,
+        height: 250,
+        backgroundColor: 'rgba(255, 255, 255, 0.2)', // Glass effect
+        borderRadius: 20,
+        justifyContent: 'center',
+        alignItems: 'center',
+        overflow: 'hidden', // Required for BlurView
+    },
+    lottieAnimation: {
+        width: 120,
+        height: 120,
+    },
+    loadingText: {
+        marginTop: 10,
+        fontSize: 16,
+        color: '#333',
+      },
 });

@@ -10,6 +10,9 @@ export const getPendingRequestedEvents = (trigger: boolean) => {
     const fetchEvents = async () => {
       try {
         const userIdString = await AsyncStorage.getItem('userId');
+        if (!userIdString) {
+          throw new Error('User ID is null');
+        }
         const userIdInt = userIdString ? parseInt(userIdString) : null;
         if (userIdInt === null) {
           throw new Error('User ID is null');
@@ -17,7 +20,7 @@ export const getPendingRequestedEvents = (trigger: boolean) => {
         const response = await fetch(`http://${process.env.EXPO_PUBLIC_SERVER_IP}:3000/getPendingRequestedEvents/${userIdInt}`);
 
         if (!response.ok) {
-          throw new Error(`Failed to get events: ${response.statusText}`);
+          throw new Error(`Failed to get events sorrys: ${response.statusText}`);
         }
         const fetchedEvents = await response.json();
 

@@ -42,6 +42,7 @@ const EventCard: React.FC<EventCardProps> = ({
     const[isDeletingLoading, setIsDeletingLoading] = useState(false);
     const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         const fetchUserId = async () => {

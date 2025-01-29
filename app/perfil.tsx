@@ -19,6 +19,7 @@ import { getUserProfileImage } from '@/apiCalls/getUserProfileImage';
 import { getUserBannerImage } from '@/apiCalls/getUserBannerImage';
 import AdminProfileModal from '@/components/AdminProfileModal';
 import { categoryName } from '@/constants/CategoryColor';
+import LottieView from 'lottie-react-native';
 
 interface User {
     id: number;
@@ -136,7 +137,12 @@ export default function Perfil() {
     if (isLoading) {
         return (
             <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#007AFF" />
+                <LottieView
+                    source={require('../assets/laoding/loadingAn.json')} // Replace with your Lottie JSON file
+                    autoPlay
+                    loop
+                    style={styles.lottieAnimation}
+                />
                 <Text style={styles.loadingText}>Cargando...</Text>
             </View>
         );
@@ -350,13 +356,13 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#F4F4F4',
-    },
-    loadingText: {
+        backgroundColor: '#fff',
+      },
+      loadingText: {
         marginTop: 10,
         fontSize: 16,
         color: '#333',
-    },
+      },
     starContainer: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -463,5 +469,9 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         textTransform: 'uppercase',
         textAlign: 'center',
+    },
+    lottieAnimation: {
+        width: 120,
+        height: 120,
     },
 });
