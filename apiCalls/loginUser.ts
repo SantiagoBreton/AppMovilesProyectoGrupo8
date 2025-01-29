@@ -15,7 +15,6 @@ interface LoginErrorResponse {
 
 export const loginUser = async (user: User): Promise<LoginSuccessResponse | LoginErrorResponse> => {
   try {
-    console.log(process.env.EXPO_PUBLIC_SERVER_IP);
     const response = await fetch(`http://${process.env.EXPO_PUBLIC_SERVER_IP}:3000/userLogin`, {
       method: 'POST',
       headers: {
@@ -30,12 +29,12 @@ export const loginUser = async (user: User): Promise<LoginSuccessResponse | Logi
     }
 
     const data = await response.json();
-    console.log('User logged in:', data);
+    
     await AsyncStorage.setItem("userId", data.id.toString());
 
     return { id: data.id };  // Return success response with user id
   } catch (error) {
-    console.error('Error logging in:', error);
+
     return { error: 'Error logging in, please try again' };  // Return general error message
   }
 };

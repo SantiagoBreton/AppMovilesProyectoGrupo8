@@ -13,7 +13,7 @@ export const updateProfile = async (userId: number, newName: string, newPassword
 
         if (response.ok) {
             const data = await response.json();
-            console.log('Profile updated successfully:', data);
+            
             return data;
         } else {
             throw new Error('Failed to update profile');

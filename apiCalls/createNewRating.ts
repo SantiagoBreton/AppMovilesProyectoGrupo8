@@ -21,7 +21,7 @@ export const createNewRating = async (rating: Rating) => {
             throw new Error(errorData.error || 'Failed to create rating');
         }
         const newRating = await response.json();
-        console.log('Rating created:', newRating);
+        
         return true; // Return success if rating is created
     } catch (error) {
         console.error('Error creating rating:', error);

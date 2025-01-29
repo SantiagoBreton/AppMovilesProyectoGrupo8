@@ -23,8 +23,7 @@ export const createNewUser = async (user: User) => {
   
       const newUser = await response.json();
       await AsyncStorage.setItem("userId", newUser.id.toString());
-      console.log('User created:', newUser);
-  
+      
       return true;  // Return success if user is created
   
     } catch (error) {

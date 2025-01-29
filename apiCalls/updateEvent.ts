@@ -9,7 +9,7 @@ export const updateEvent = async (eventId: number, newName: string, newDescripti
 
         if (response.ok) {
             const data = await response.json();
-            console.log('Event updated successfully:', data);
+            
             return data;
         } else {
             throw new Error('Failed to update event');

@@ -87,7 +87,7 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
         setUpdatedRequestingUsers(requestingUsers);
         updatedRequestingUsers.forEach(async (user: User) => {
             const profileImage = await getUserProfileImage(user.id);
-            //console.log('Profile image:', profileImage);    
+               
             setUserImages((prevImages) => ({
                 ...prevImages,
                 [user.id]: profileImage.data.imageUrl, // Store only the URL from the response
@@ -96,7 +96,7 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
         });
         updatedSubscribedUsers.forEach(async (user: User) => {
             const profileImage = await getUserProfileImage(user.id);
-            //console.log('Profile image:', profileImage);    
+           
             setUserImages((prevImages) => ({
                 ...prevImages,
                 [user.id]: profileImage.data.imageUrl, // Store only the URL from the response

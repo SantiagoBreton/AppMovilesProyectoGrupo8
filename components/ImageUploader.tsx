@@ -78,7 +78,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ isVisible, onClose }) => 
       : await uploadUserBannerImage(uri);
     setUploading(false);
     if (success) {
-      console.log("Image uploaded successfully");
+     
     } else {
       console.error("Failed to upload image");
     }

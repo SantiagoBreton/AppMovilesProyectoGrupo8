@@ -6,7 +6,6 @@ export const unsubscribeUserFromAnEvent = async (userId: number, eventId: number
 
     if (response.ok) {
       const data = await response.json();
-      console.log('Event deleted successfully:', data);
       return data;
     } else {
       throw new Error('Failed to delete event');

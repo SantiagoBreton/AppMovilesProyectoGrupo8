@@ -13,8 +13,7 @@ export const subscribeToEvent = async (eventId: number) => {
       eventId: eventId,
       userId: userIdInt!,
     };
-    console.log('userIdInt:', userIdInt);
-    console.log('eventId:', eventId);
+    
     const response = await fetch(`http://${process.env.EXPO_PUBLIC_SERVER_IP}:3000/subscribeToEvent`, {
       method: 'POST',
       headers: {

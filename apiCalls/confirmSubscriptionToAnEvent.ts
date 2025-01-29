@@ -12,8 +12,7 @@ export const confirmSubscriptionToAnEvent = async (eventId: number, userId: numb
         eventId: eventId,
         userId: userId,
     };
-    console.log('userIdInt:', userId);
-    console.log('eventId:', eventId);
+    
     const response = await fetch(`http://${process.env.EXPO_PUBLIC_SERVER_IP}:3000/confirmSubscriptionToAnEvent`, {
       method: 'POST', // POST request to create a subscription
       headers: {
@@ -24,7 +23,7 @@ export const confirmSubscriptionToAnEvent = async (eventId: number, userId: numb
 
     if (response.ok) {
       const data = await response.json();
-      console.log('User accepted to event:', data);
+      
       // Handle the response data (e.g., show a success message)
       return data;
     } else {

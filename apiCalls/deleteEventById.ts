@@ -10,14 +10,13 @@ export const deleteEventById = async (id: number) => {
   
       if (response.ok) {
         const data = await response.json();
-        console.log('Event deleted successfully:', data);
+        
         router.push('/eventos')
         return data;
       } else {
         throw new Error('Failed to delete event');
       }
     } catch (error) {
-      console.error('Error deleting event:', error);
       throw error; // Propagate the error if you want to handle it elsewhere
     }
   };

@@ -47,7 +47,7 @@ export default function CreacionEvento() {
                 ? eventsToDisplay.filter(event => new Date(event.date) < new Date())
                 : safePendingEvents || [];
 
-    console.log("Filtered Events:", filteredEvents);
+    
 
     useEffect(() => {
         const fetchUserId = async () => {

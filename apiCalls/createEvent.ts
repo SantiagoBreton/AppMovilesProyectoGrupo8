@@ -31,7 +31,7 @@ export const createEvent = async function createEvent(event: Event) {
     }
     
     const newEvent = await response.json();
-    console.log('User created:', newEvent);
+    
     
     } catch (error) {
     console.error('Error creating user:', error);

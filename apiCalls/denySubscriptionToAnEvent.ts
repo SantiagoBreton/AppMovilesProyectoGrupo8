@@ -8,14 +8,14 @@ export const denySubscriptionToAnEvent = async (eventId: number, userId: number)
 
         if (response.ok) {
             const data = await response.json();
-            console.log('User denied to event:', data);
+           
             router.push('/eventos')
             return data;
         } else {
             throw new Error('Failed to deny subscription to event');
         }
     } catch (error) {
-        console.error('Error denying subscription to event:', error);
+
         throw error;
     }
 }
