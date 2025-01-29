@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export const getSubscribedEvents = (trigger: boolean) => {
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [eventsError, setEventsError] = useState<string | null>(null);
+
   useEffect(() => {
     const fetchEvents = async () => {
       try {

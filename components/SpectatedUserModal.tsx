@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, View, Text, TouchableOpacity, Image, FlatList, ScrollView, StyleSheet, ActivityIndicator, ImageBackground } from 'react-native';
-import { FontAwesome5 } from '@expo/vector-icons'; // If you are using FontAwesome5
+import { Modal, View, Text, TouchableOpacity, Image, FlatList, ScrollView, StyleSheet, ActivityIndicator, ImageBackground, TextInput, Pressable } from 'react-native';
+import { FontAwesome5 } from '@expo/vector-icons';
 import { Float } from 'react-native/Libraries/Types/CodegenTypes';
 import EventDetailModal from './EventDetailModal';
 import { getAllEventsFromUser } from '@/apiCalls/getAllEventsFromUser';
@@ -11,7 +11,7 @@ import { getUserProfileImage } from '@/apiCalls/getUserProfileImage';
 import { getUserBannerImage } from '@/apiCalls/getUserBannerImage';
 import ErrorModal from './ErrorModal';
 import EventCard2 from './EventCard2';
-import { set } from 'lodash';
+import { categoryName } from '@/constants/CategoryColor';
 
 interface CustomEvent {
     id: number;
@@ -55,6 +55,7 @@ const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
     const [isDetailsModalVisible, setIsDetailsModalVisible] = useState(false);
     const [eventDetails, setEventDetails] = useState<CustomEvent | null>(null);
     const [userEvents, setUserEvents] = useState<CustomEvent[]>([]);
+    const [filteredEvents, setFilteredEvents] = useState(userEvents);
     const [isLoading, setIsLoading] = useState(true);
     const [isRevieModalVisible, setIsReviewModalVisible] = useState(false);
     const totalStars = 5;
@@ -67,6 +68,10 @@ const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
     const [bannerImage, setBannerImage] = useState<string | null>(null);
     const [errorModalVisible, setErrorModalVisible] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
+    const [categories, setCategories] = useState<string[]>(categoryName);
+    const [selectedCategory, setSelectedCategory] = useState('Todo');
+    const [isCategoryModalVisible, setIsCategoryModalVisible] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -104,6 +109,13 @@ const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
         fetchUserData();
     }, [user]);
 
+    useEffect(() => {
+            const results = userEvents.filter(event =>
+                event.name.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+            setFilteredEvents(results);
+        }, [searchQuery, userEvents]);
+
     const refreshUserRatings = async () => {
         if (!user) return;
         try {
@@ -116,7 +128,7 @@ const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
                         ? ratingResponse.data
                             .reduce((acc: number, rating: { rating: number }) => acc + (rating.rating || 0), 0) /
                         ratingResponse.data.length
-                        : 0; 
+                        : 0;
 
                 user.rating = averageRating;
 
@@ -132,6 +144,12 @@ const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
         setIsDetailsModalVisible(true);
     };
 
+    const handleCategorySelection = (category: string) => {
+        setSelectedCategory(category);
+        setFilteredEvents(category === 'Todo' ? userEvents : userEvents.filter(event => event.category.name === category));
+        setIsCategoryModalVisible(false);
+    };
+
     if (!user) return null;
 
     return (
@@ -145,9 +163,9 @@ const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
             ) : (
                 <ScrollView>
                     <View style={styles.container}>
-                    <TouchableOpacity style={styles.closeButton2} onPress={() => { onClose() }}>
-                                <FontAwesome5 name="times" size={24} color="black" />
-                            </TouchableOpacity>
+                        <TouchableOpacity style={styles.closeButton2} onPress={() => { onClose() }}>
+                            <FontAwesome5 name="times" size={24} color="black" />
+                        </TouchableOpacity>
                         <View style={styles.bannerContainer}>
                             <ImageBackground
                                 source={{ uri: bannerImage || 'https://www.gravatar.com/avatar/2c7d99fe281ecd3bcd65ab915bac6dd5?s=250' }}
@@ -179,25 +197,68 @@ const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
                             <Text style={styles.label}>Descripción:</Text>
                             <Text style={styles.input}>{user.description}</Text>
                         </View>
+
                         <View style={styles.section}>
+
                             <Text style={styles.sectionTitle}>Eventos Creados</Text>
-                            {userEvents && userEvents.length > 0 ? (
+                            <TextInput
+                                style={styles.searchBar}
+                                placeholder="Buscar eventos por nombre"
+                                value={searchQuery}
+                                onChangeText={setSearchQuery}
+                            />
+                            <TouchableOpacity
+                                style={styles.filterButton}
+                                onPress={() => setIsCategoryModalVisible(true)}
+                            >
+                                <Text style={styles.filterButtonText}>Categoría: {selectedCategory}</Text>
+                            </TouchableOpacity>
+
+                            {filteredEvents.length > 0 ? (
                                 <FlatList
-                                    data={userEvents}
+                                    data={filteredEvents}
                                     scrollEnabled={false}
                                     renderItem={({ item }) => (
-                                        <EventCard2
-                                            event={item}
-                                        />
+                                        <EventCard2 event={item} />
                                     )}
                                     keyExtractor={(item) => item.id.toString()}
                                     ListFooterComponent={
-                                        <Text style={styles.footerText}>{`Total de eventos: ${userEvents.length}`}</Text>
+                                        <Text style={styles.footerText}>
+                                            {`Total de eventos: ${filteredEvents.length}`}
+                                        </Text>
                                     }
                                 />
                             ) : (
                                 <Text style={styles.noEventsText}>No se han creado eventos aún.</Text>
                             )}
+
+                            <Modal
+                                visible={isCategoryModalVisible}
+                                animationType="slide"
+                                transparent={true}
+                                onRequestClose={() => setIsCategoryModalVisible(false)}
+                            >
+                                <View style={styles.modalContainer}>
+                                    <View style={styles.modalContent}>
+                                        <Text style={styles.modalTitle}>Seleccionar Categoría</Text>
+                                        {categories.map((category) => (
+                                            <TouchableOpacity
+                                                key={category}
+                                                style={styles.modalOption}
+                                                onPress={() => handleCategorySelection(category)}
+                                            >
+                                                <Text style={styles.modalOptionText}>{category}</Text>
+                                            </TouchableOpacity>
+                                        ))}
+                                        <Pressable
+                                            style={styles.closeButton}
+                                            onPress={() => setIsCategoryModalVisible(false)}
+                                        >
+                                            <Text style={styles.closeButtonText}>Cerrar</Text>
+                                        </Pressable>
+                                    </View>
+                                </View>
+                            </Modal>
                         </View>
                     </View>
 
@@ -378,6 +439,67 @@ const styles = StyleSheet.create({
         borderRadius: 50,
         borderWidth: 2,
         borderColor: '#F4F4F4',
+    },
+    modalContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    },
+    modalContent: {
+        backgroundColor: '#FFFFFF',
+        padding: 20,
+        borderRadius: 12,
+        width: '80%',
+        alignItems: 'center',
+    },
+    modalOptionText: {
+        fontSize: 16,
+        color: '#333',
+    },
+    closeButton: {
+        marginTop: 20,
+        padding: 10,
+        backgroundColor: '#FF3B30',
+        borderRadius: 12,
+    },
+    closeButtonText: {
+        color: '#FFFFFF',
+        fontWeight: 'bold',
+        fontSize: 16,
+    },
+    searchBar: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: 12,
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        fontSize: 16,
+        borderColor: '#DDD',
+        borderWidth: 1,
+        marginBottom: 16,
+    },
+    modalOption: {
+        paddingVertical: 10,
+        width: '100%',
+        alignItems: 'center',
+    },
+    filterButton: {
+        backgroundColor: '#007AFF',
+        borderRadius: 12,
+        padding: 10,
+        alignItems: 'center',
+        marginBottom: 16,
+    },
+    filterButtonText: {
+        color: '#FFFFFF',
+        fontWeight: 'bold',
+        fontSize: 16,
+    },
+    modalTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 20,
+        color: '#007AFF',
     },
 });
 

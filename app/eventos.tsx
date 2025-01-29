@@ -31,7 +31,7 @@ export default function CreacionEvento() {
     const [isAdminEventLoading, setIsAdminEventLoading] = useState(false);
     const allevents = getSubscribedEvents(trigger);
     const myUserEvents = myEvents(trigger);
-    const { events: pendingEvents, loading, eventsError } = getPendingRequestedEvents(userId);
+    const { events: pendingEvents, loading, eventsError } = getPendingRequestedEvents(trigger);
     const safePendingEvents = pendingEvents || [];
     const [selectedSubTab, setSelectedSubTab] = useState('activos');
     const [errorModalVisible, setErrorModalVisible] = useState(false);
