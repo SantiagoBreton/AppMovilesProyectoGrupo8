@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, View, Text, TouchableOpacity, ScrollView, StyleSheet, Button, Alert, TextInput, Platform, ActivityIndicator, FlatList } from 'react-native';
+import { Modal, View, Text, TouchableOpacity, ScrollView, StyleSheet, TextInput, Platform, ActivityIndicator, FlatList } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Float } from 'react-native/Libraries/Types/CodegenTypes';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -9,6 +9,8 @@ import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { useLocation } from '@/hooks/useLocation';
 import { getAllCategories } from '@/apiCalls/getAllCategories';
+import ErrorModal from './ErrorModal';
+import { set } from 'lodash';
 
 interface Event {
     name: string;
@@ -58,6 +60,8 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
     const [categories, setCategories] = useState<string[]>([]);
     const [selectedCategory, setSelectedCategory] = useState('');
     const [showCategories, setShowCategories] = useState(false);
+    const[isErrorModalVisible, setIsErrorModalVisible] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
 
     useEffect(() => {
         const fetchCategories = async () => {
@@ -67,7 +71,8 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
 
                 setCategories(categoryNames);
             } else {
-                Alert.alert('Error', result.error || 'Error fetching categories');
+                setErrorMessage('No se pudieron cargar las categorías. Inténtalo de nuevo más tarde.');
+                setIsErrorModalVisible(true);
             }
         };
 
@@ -95,7 +100,8 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
 
     const createNewEvent = async function createNewEvent() {
         if (!titulo || !descripcion || !selectedDate || !selectedLocation || maxParticipants <= 0 || !time || !selectedCategory) {
-            Alert.alert('Error', 'Por favor, complete todos los campos.');
+            setErrorMessageTitle('Por favor, complete todos los campos');
+            setErrorMessageDescription('Por favor, complete todos los campos');
             return;
         }
         try {
@@ -146,7 +152,8 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
 
     const confirmLocationSelection = () => {
         if (!selectedLocation) {
-            Alert.alert("Error", "Por favor, selecciona una ubicación antes de confirmar.");
+            setErrorMessage('Por favor, seleccione una ubicación en el mapa');
+            setIsErrorModalVisible(true);
             return;
         }
         setModalVisible(false);
@@ -444,6 +451,12 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
                     </View>
                 </Modal>
             </ScrollView>
+            <ErrorModal
+                visible={isErrorModalVisible}
+                title="Error"
+                message={errorMessage}
+                onClose={() => setIsErrorModalVisible(false)}
+            />
         </Modal>
     );
 };

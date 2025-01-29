@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, FlatList, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platform, Alert, Button, ScrollView, Image } from 'react-native';
+import { View, Text, TextInput, FlatList, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platform, Button, ScrollView, Image } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { Float } from 'react-native/Libraries/Types/CodegenTypes';
 import { getEventByName } from '@/apiCalls/getEventByName';
@@ -9,6 +9,9 @@ import EventCard2 from '@/components/EventCard2';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getUserProfileImage } from '@/apiCalls/getUserProfileImage';
 import { StarRating } from '@/components/StarRating';
+import ErrorModal from '@/components/ErrorModal';
+import { set } from 'lodash';
+
 
 export default function Busqueda() {
     const [query, setQuery] = useState('');
@@ -18,7 +21,9 @@ export default function Busqueda() {
     const [isSpectatedUserVisible, setIsSpectatedUserVisible] = useState(false);
     const [seeUser, setSeeUser] = useState<User | null>(null);
     const [userId, setUserId] = useState<number | null>(null);
-    const [userImages, setUserImages] = useState<{ [key: number]: string }>({}); 
+    const [userImages, setUserImages] = useState<{ [key: number]: string }>({});
+    const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
 
     useEffect(() => {
         const fetchUserId = async () => {
@@ -69,12 +74,12 @@ export default function Busqueda() {
                 const filteredResults = await getEventByName(parseInt(currentUserId), query);
                 setFilteredEvents(filteredResults.data);
             } else {
-                console.error('User ID is null');
-                Alert.alert('Error', 'User ID is null');
+                setErrorMessage('No se pudo obtener el ID del usuario');
+                setIsErrorModalVisible(true);
             }
         } catch (error) {
-            console.error('Error fetching events:', error);
-            Alert.alert('Error', 'Failed to fetch events');
+            setErrorMessage('Error al buscar eventos');
+            setIsErrorModalVisible(true);
         } finally {
             setIsSearching(false);
         }
@@ -101,8 +106,8 @@ export default function Busqueda() {
             });
             console.log('User images:', userImages);
         } catch (error) {
-            console.error('Error fetching users:', error);
-            Alert.alert('Error', 'Failed to fetch users');
+            setErrorMessage('Error al buscar usuarios');
+            setIsErrorModalVisible(true);
         } finally {
             setIsSearching(false);
         }
@@ -209,6 +214,12 @@ export default function Busqueda() {
                     onClose={() => setIsSpectatedUserVisible(false)}
                 />
             </View>
+            <ErrorModal
+                visible={isErrorModalVisible}
+                title="error"
+                message={errorMessage}
+                onClose={() => setIsErrorModalVisible(false)}
+            />
         </KeyboardAvoidingView>
     );
 }

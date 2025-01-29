@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Button, StyleSheet, FlatList, Modal, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, Button, StyleSheet, FlatList, Modal, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import * as Location from 'expo-location';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Float } from 'react-native/Libraries/Types/CodegenTypes';
@@ -13,6 +13,8 @@ import EventDetailModal from '@/components/EventDetailModal';
 import EventCardModal from '@/components/EventCard';
 import { getAllRequestingUsersToAnEvent } from '@/apiCalls/getAllRequestingUsersToAnEvent';
 import { getPendingRequestedEvents } from '@/apiCalls/getPendingRequestedEvents';
+import ErrorModal from '@/components/ErrorModal';
+import { set } from 'lodash';
 
 export default function CreacionEvento() {
     const [isModalVisible, setIsModalVisible] = useState(false);
@@ -32,6 +34,8 @@ export default function CreacionEvento() {
     const { events: pendingEvents, loading, eventsError } = getPendingRequestedEvents(userId);
     const safePendingEvents = pendingEvents || [];
     const [selectedSubTab, setSelectedSubTab] = useState('activos');
+    const [errorModalVisible, setErrorModalVisible] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
 
     const eventsToDisplay =
         selectedView === 'inscriptos' ? allevents.events : myUserEvents.myEvents;
@@ -100,8 +104,8 @@ export default function CreacionEvento() {
 
             setIsDetailsModalVisible(true);
         } catch (error) {
-            console.error('Error fetching address:', error);
-            Alert.alert('Error', 'Failed to fetch event details');
+            setErrorMessage('No se pudo cargar la información del evento.');
+            setErrorModalVisible(true);
         }
     };
     const switchView = (view: string) => {
@@ -123,13 +127,15 @@ export default function CreacionEvento() {
                 setSubscribedUsers(allSubscribedUser.data);
                 setRequestingUsers(allRequestingUsers.data);
             } else {
-                Alert.alert('Error', 'No se pudo cargar la información de los usuarios inscriptos.');
+                setErrorMessage('No se pudo cargar la información de los usuarios inscritos.');
+                setErrorModalVisible(true);
             }
             setIsAdminEventLoading(false);
             setAdminEventDetails(event);
             setIsAdminModalVisible(true);
         } catch (error) {
-            Alert.alert('Error', 'No se pudo cargar la información del evento.');
+            setErrorMessage('No se pudo cargar la información del evento.');
+            setErrorModalVisible(true);
         }
     };
 
@@ -258,6 +264,12 @@ export default function CreacionEvento() {
                 subscribedUsers={subscribedUsers}
                 requestingUsers={requestingUsers}
                 onClose={() => setIsAdminModalVisible(false)}
+            />
+            <ErrorModal
+                visible={errorModalVisible}
+                title="Error"
+                message={errorMessage}
+                onClose={() => setErrorModalVisible(false)}
             />
         </View>
     );

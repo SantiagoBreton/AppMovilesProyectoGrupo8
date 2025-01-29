@@ -3,10 +3,12 @@ import { unsubscribeUserFromAnEvent } from "@/apiCalls/unsubscribeUserFromEvent"
 import { useEventContext } from "@/context/eventContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useEffect, useState } from "react";
-import { TouchableOpacity, View, Text, StyleSheet, Alert } from "react-native";
+import { TouchableOpacity, View, Text, StyleSheet } from "react-native";
 import { Float } from "react-native/Libraries/Types/CodegenTypes";
 import DeleteConfirmationModal from "./DeleteConfirmationModal";
 import { getCategoryBackgroundColor } from "@/constants/CategoryColor";
+import ErrorModal from "./ErrorModal";
+
 
 interface EventCardProps {
     event: EventWithId | null;
@@ -38,6 +40,8 @@ const EventCard: React.FC<EventCardProps> = ({
     const isEventOngoing = event?.date ? new Date(event.date) > new Date() : false;
     const [isConfirmaDeletionModalVisible, setIsConfirmaDeletionModalVisible] = useState(false);
     const[isDeletingLoading, setIsDeletingLoading] = useState(false);
+    const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
 
     useEffect(() => {
         const fetchUserId = async () => {
@@ -62,8 +66,8 @@ const EventCard: React.FC<EventCardProps> = ({
                 refreshEvents();
             }
         } catch (error) {
-            console.error('Error unsubscribing:', error);
-            Alert.alert('Error', 'No se pudo cancelar la inscripción.');
+            setErrorMessage('No se pudo cancelar la inscripción.');
+            setIsErrorModalVisible(true);
         }
 
     };
@@ -76,8 +80,8 @@ const EventCard: React.FC<EventCardProps> = ({
             setIsConfirmaDeletionModalVisible(false);
             
         } catch (error) {
-            console.error('Error deleting event:', error);
-            Alert.alert('Error', 'No se pudo eliminar el evento.');
+            setErrorMessage('No se pudo eliminar el evento.');
+            setIsErrorModalVisible(true);
         }
     };
 
@@ -193,6 +197,12 @@ const EventCard: React.FC<EventCardProps> = ({
                         }
                         mensaje="¿Estás seguro que deseas eliminar este evento?"
                         onClose={() => setIsConfirmaDeletionModalVisible(false)}
+                    />
+                    <ErrorModal
+                        visible={isErrorModalVisible}
+                        title="Error"
+                        message={errorMessage}
+                        onClose={() => setIsErrorModalVisible(false)}
                     />
                 </>
             )}

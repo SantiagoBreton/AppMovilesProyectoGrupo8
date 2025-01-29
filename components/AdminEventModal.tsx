@@ -1,5 +1,5 @@
 import React, { useEffect, useState, } from 'react';
-import { Modal, View, Text, TouchableOpacity, Image, Platform, ScrollView, StyleSheet, Alert, Pressable, TextInput } from 'react-native';
+import { Modal, View, Text, TouchableOpacity, Image, Platform, ScrollView, StyleSheet, Pressable, TextInput } from 'react-native';
 import { Float } from 'react-native/Libraries/Types/CodegenTypes';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { unsubscribeUserFromAnEvent } from '@/apiCalls/unsubscribeUserFromEvent';
@@ -145,7 +145,8 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
 
     const handleEventUpdate = async () => {
         if ((!newName && !newDescription && !selectedDate && !time)) {
-            Alert.alert('Error', 'Por favor, complete al menos un campo para actualizar.');
+            setErrorMessage('Complete al menos un campo.');
+            setIsErrorModalVisible(true);
             return;
         }
         if (selectedDate && selectedDate <= new Date()) {

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, View, Text, TouchableOpacity, Image, FlatList, ScrollView, StyleSheet, Button, Alert, ActivityIndicator, ImageBackground } from 'react-native';
+import { Modal, View, Text, TouchableOpacity, Image, FlatList, ScrollView, StyleSheet, ActivityIndicator, ImageBackground } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons'; // If you are using FontAwesome5
 import { Float } from 'react-native/Libraries/Types/CodegenTypes';
 import EventDetailModal from './EventDetailModal';
@@ -9,7 +9,9 @@ import { getAllUserRatings } from '@/apiCalls/getAllUserRatings';
 import { StarRating } from './StarRating';
 import { getUserProfileImage } from '@/apiCalls/getUserProfileImage';
 import { getUserBannerImage } from '@/apiCalls/getUserBannerImage';
+import ErrorModal from './ErrorModal';
 import EventCard2 from './EventCard2';
+import { set } from 'lodash';
 
 interface CustomEvent {
     id: number;
@@ -63,6 +65,8 @@ const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
     const [userRating, setUserRating] = useState<Rating[]>([]);
     const [profileImage, setProfileImage] = useState<string | null>(null);
     const [bannerImage, setBannerImage] = useState<string | null>(null);
+    const [errorModalVisible, setErrorModalVisible] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -72,7 +76,8 @@ const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
                 const eventResponse = await getAllEventsFromUser(user.id);
                 if (eventResponse.error) {
                     console.error('Error fetching user events:', eventResponse.error);
-                    Alert.alert('Error', 'Failed to fetch user events');
+                    setErrorMessage('Error al obtener los eventos del usuario');
+                    setErrorModalVisible(true);
                 } else {
                     setUserEvents(eventResponse.data);
                 }
@@ -87,8 +92,8 @@ const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
 
                 await refreshUserRatings();
             } catch (error) {
-                console.error('Error fetching user data:', error);
-                Alert.alert('Error', 'Failed to fetch user data');
+                setErrorMessage('Error al obtener los eventos del usuario');
+                setErrorModalVisible(true);
             } finally {
                 setTimeout(() => {
                     setIsLoading(false);
@@ -210,6 +215,12 @@ const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
                 user={user}
                 refreshData={refreshUserRatings}
                 onClose={() => { setIsReviewModalVisible(false); refreshUserRatings() }}
+            />
+            <ErrorModal
+                visible={errorModalVisible}
+                title="Error"
+                message={errorMessage}
+                onClose={() => setErrorModalVisible(false)}
             />
         </Modal >
     );

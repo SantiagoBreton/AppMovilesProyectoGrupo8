@@ -5,6 +5,7 @@ import { getAllUserRatings } from '@/apiCalls/getAllUserRatings';
 import { createNewRating } from '@/apiCalls/createNewRating';
 import SpectatedUserModal from './SpectatedUserModal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import ErrorModal from './ErrorModal';
 
 interface User {
     id: number;
@@ -39,6 +40,8 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
     const [userRatings, setUserRatings] = useState<Rating[]>([]);
     const [userId, setUserId] = useState<number | null>(null);
     const [specModalVisible, setSpecModalVisible] = useState(false);
+    const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
   
     useEffect(() => {
       if (user) {
@@ -64,7 +67,8 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
   
     const handleSubmit = async () => {
       if (!comments || rating === 0) {
-        alert('Por favor, califica y deja un comentario');
+        setErrorMessage('Por favor, complete el comentario y el rating.');
+        setIsErrorModalVisible(true);
         return;
       }
   
@@ -166,6 +170,12 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
             </TouchableOpacity>
           </View>
         </View>
+        <ErrorModal
+          visible={isErrorModalVisible}
+          title="Error"
+          message ={errorMessage}
+          onClose={() => setIsErrorModalVisible(false)}
+        />
       </Modal>
     );
 };

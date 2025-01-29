@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, View, Text, TouchableOpacity, TouchableWithoutFeedback, StyleSheet, Alert, Image, ActivityIndicator } from 'react-native';
+import { Modal, View, Text, TouchableOpacity, TouchableWithoutFeedback, StyleSheet, Image, ActivityIndicator } from 'react-native';
 import MapView, { Circle } from 'react-native-maps';
 import { Float } from 'react-native/Libraries/Types/CodegenTypes';
 import { subscribeToEvent } from '@/apiCalls/subscribeToAnEvent';
@@ -13,6 +13,7 @@ import SpectatedUserModal from './SpectatedUserModal';
 import { StarRating } from '@/components/StarRating';
 import ConfirmationModal from './ConfirmationModal';
 import SuccessModal from './SuccesModal';
+import ErrorModal from './ErrorModal';
 
 interface CustomEvent {
     id: number;
@@ -60,6 +61,8 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
     const [isConfirmationVisible, setIsConfirmationVisible] = useState(false);
     const [isSuccessVisible, setIsSuccessVisible] = useState(false);
     const showSuscribe = userId !== eventDetails?.userId;
+    const [isErrorModalVisible, setIsErrorModalVisible] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
 
     useEffect(() => {
         const fetchUserId = async () => {
@@ -142,7 +145,8 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
             //onClose();
             refreshEvents();
         } catch (error: any) {
-            Alert.alert('Error subscribing to event:', error.message);
+            setErrorMessage(error.response.data.message);
+            setIsErrorModalVisible(true);
         }
     };
 
@@ -294,6 +298,12 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
                 visible={isSuccessVisible}
                 message="Te has suscrito al evento con éxito!"
                 onClose={() => {setIsSuccessVisible(false);onClose()}}
+            />
+            <ErrorModal
+                visible={isErrorModalVisible}
+                title="Error"
+                message={errorMessage}
+                onClose={() => setIsErrorModalVisible(false)}
             />
         </Modal>
     );
