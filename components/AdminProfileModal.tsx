@@ -1,12 +1,11 @@
 import React, { useEffect, useState, } from 'react';
-import { Modal, View, Text, TouchableOpacity, ScrollView, StyleSheet, Alert, Pressable, TextInput } from 'react-native';
+import { Modal, View, Text, TouchableOpacity, ScrollView, StyleSheet, Pressable, TextInput } from 'react-native';
 import { useEventContext } from '@/context/eventContext';
 import { updateProfile } from '@/apiCalls/updateProfile';
 import ImageUploader from './ImageUploader';
 import ConfirmationModal from './ConfirmationModal';
 import SuccessModal from './SuccesModal';
 import ErrorModal from './ErrorModal';
-
 
 interface User {
     id: number;

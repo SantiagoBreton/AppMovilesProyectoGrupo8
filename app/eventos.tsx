@@ -27,17 +27,12 @@ export default function CreacionEvento() {
     const [requestingUsers, setRequestingUsers] = useState<User[]>([]);
     const [userId, setUserId] = useState<number | null>(null);
     const [isAdminEventLoading, setIsAdminEventLoading] = useState(false);
-
     const allevents = getSubscribedEvents(trigger);
     const myUserEvents = myEvents(trigger);
     const { events: pendingEvents, loading, eventsError } = getPendingRequestedEvents(userId);
     const safePendingEvents = pendingEvents || [];
     const [selectedSubTab, setSelectedSubTab] = useState('activos');
 
-    console.log("Pending Events Response:", pendingEvents);
-    //console.log('Events pending to be accepted:', pendingToBeAcceptedEvents);
-    // console.log(pendingToBeAcceptedEvents.events[0].name);
-    // console.log(pendingToBeAcceptedEvents.events[1].name);
     const eventsToDisplay =
         selectedView === 'inscriptos' ? allevents.events : myUserEvents.myEvents;
     // Filtrar eventos según el sub-tab activo
@@ -47,7 +42,7 @@ export default function CreacionEvento() {
             : selectedSubTab === 'finalizados'
                 ? eventsToDisplay.filter(event => new Date(event.date) < new Date())
                 : safePendingEvents || [];
-    
+
     console.log("Filtered Events:", filteredEvents);
 
     useEffect(() => {
@@ -213,45 +208,27 @@ export default function CreacionEvento() {
                 {/* Lista de eventos activos */}
 
                 <FlatList
-    data={filteredEvents || []}
-    scrollEnabled={false}
-    renderItem={({ item }) => (
-        item ? (
-            <EventCardModal
-                event={{
-                    ...item,
-                    category: item.category || { name: "Sin categoría" } // Default if category is missing
-                }}
-                handleDetailsEvent={handleDetailsEvent}
-                handleAdministrarEvent={handleAdministrarEvent}
-            />
-        ) : (
-            <Text>Error loading event</Text>
-        )
-    )}
-    keyExtractor={(item, index) => item?.id?.toString() || index.toString()}
+                    data={filteredEvents || []}
+                    scrollEnabled={false}
+                    renderItem={({ item }) => (
+                        item ? (
+                            <EventCardModal
+                                event={{
+                                    ...item,
+                                    category: item.category || { name: "Sin categoría" } // Default if category is missing
+                                }}
+                                handleDetailsEvent={handleDetailsEvent}
+                                handleAdministrarEvent={handleAdministrarEvent}
+                            />
+                        ) : (
+                            <Text>Error loading event</Text>
+                        )
+                    )}
+                    keyExtractor={(item, index) => item?.id?.toString() || index.toString()}
                     ListEmptyComponent={
                         <Text style={styles.emptyMessage}>No hay eventos disponibles</Text>
                     }
                 />
-
-
-
-                {/* Lista de eventos finalizados */}
-                {/* <FlatList
-                    data={eventsToDisplay.filter(event => new Date(event.date) < new Date())}
-                    scrollEnabled={false}
-                    renderItem={({ item }) => (
-                        <EventCardModal
-                            event={item}
-                            handleDetailsEvent={handleDetailsEvent}
-                            handleAdministrarEvent={handleAdministrarEvent}
-                        />
-
-                    )}
-                    keyExtractor={(item) => item.id.toString()}
-                /> */}
-
             </ScrollView>
 
             {/* Botón para abrir el modal de creación de evento */}
@@ -293,12 +270,6 @@ const styles = StyleSheet.create({
         padding: 16,
         backgroundColor: '#ffffff',
     },
-
-
-
-
-
-
     loadingContainer: {
         flex: 1,
         justifyContent: 'center',
@@ -383,7 +354,5 @@ const styles = StyleSheet.create({
         color: '#999',
         marginTop: 20,
         fontSize: 16,
-    },
-
-
+    }
 });
