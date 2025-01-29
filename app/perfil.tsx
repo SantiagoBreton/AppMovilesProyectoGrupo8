@@ -60,39 +60,46 @@ export default function Perfil() {
             } catch (error) {
                 console.error('Error fetching user data:', error);
             } finally {
-                setIsLoading(false);
+
             }
         };
-        if (!isAdminModalVisible){
+        if (!isAdminModalVisible) {
             fetchUserData();
         }
     }, [isAdminModalVisible]);
 
     useEffect(() => {
-        const getUserBanner = async () => {
-            const storedUserId = await AsyncStorage.getItem('userId');
-            if (storedUserId) {
-                setUserId(parseInt(storedUserId, 10));
-            }
-            const result = await getUserBannerImage(userId || 0);
-            if (result.data) {
-                setBannerImage(result.data.imageUrl);
-            }
-        }
+        const fetchUserData = async () => {
 
-        const getUserImage = async () => {
-            const storedUserId = await AsyncStorage.getItem('userId');
-            if (storedUserId) {
-                setUserId(parseInt(storedUserId, 10));
-            }
-            const result = await getUserProfileImage(userId || 0);
-            if (result.data) {
-                setProfileImage(result.data.imageUrl);
-            }
-        }
+            try {
+                const storedUserId = await AsyncStorage.getItem('userId');
+                if (storedUserId) {
+                    setUserId(parseInt(storedUserId, 10));
+                }
 
-        getUserImage();
-        getUserBanner();
+                // Fetch both images simultaneously
+                const [bannerResult, profileResult] = await Promise.all([
+                    getUserBannerImage(userId || 0),
+                    getUserProfileImage(userId || 0),
+                ]);
+
+                // Set images if data exists
+                if (bannerResult.data) {
+                    setBannerImage(bannerResult.data.imageUrl);
+                }
+                if (profileResult.data) {
+                    setProfileImage(profileResult.data.imageUrl);
+                }
+
+            } catch (error) {
+                console.error("Error fetching images:", error);
+            } finally {
+                setIsLoading(false); // Stop loading when both images are set
+            }
+        };
+
+        fetchUserData();
+
     }, [isAdminModalVisible, userId]);
 
     useEffect(() => {
@@ -357,12 +364,12 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: '#fff',
-      },
-      loadingText: {
+    },
+    loadingText: {
         marginTop: 10,
         fontSize: 16,
         color: '#333',
-      },
+    },
     starContainer: {
         flexDirection: 'row',
         alignItems: 'center',
