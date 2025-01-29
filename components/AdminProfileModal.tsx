@@ -6,6 +6,7 @@ import ImageUploader from './ImageUploader';
 import ConfirmationModal from './ConfirmationModal';
 import SuccessModal from './SuccesModal';
 import ErrorModal from './ErrorModal';
+import { set } from 'lodash';
 
 interface User {
     id: number;
@@ -103,6 +104,18 @@ const AdminProfileModal: React.FC<AdminProfileModalProps> = ({
             setErrorMessageDescription('La descripción de usuario no puede tener más de 150 caracteres');
         }
     };
+    
+    const handleSaveChanges = (text: string) => {
+        if (text.length >= 6 && text.length <= 15) {
+            setNewPassword(text);
+            setErrorMessagePassword('');
+            setIsPasswordModalVisible(false);
+        }
+        else {
+            setNewPassword('');
+            setErrorMessagePassword('La contraseña no puede tener más de 15 caracteres y menos de 6');
+        }
+    }
 
     return (
         <Modal
@@ -253,14 +266,13 @@ const AdminProfileModal: React.FC<AdminProfileModalProps> = ({
                                     style={styles.input}
                                     placeholder="Nueva Contraseña"
                                     value={newPassword}
-                                    onChangeText={handlePasswordChange}
+                                    onChangeText={setNewPassword}
                                 />
                                 <View style={styles.modalButtons}>
                                     <TouchableOpacity
                                         style={styles.saveButton}
                                         onPress={() => {
-                                            setIsPasswordModalVisible(false);
-                                            // Handle Save Logic
+                                            handleSaveChanges(newPassword);
                                         }}
                                     >
                                         <Text style={styles.saveButtonText}>Guardar</Text>
@@ -269,6 +281,7 @@ const AdminProfileModal: React.FC<AdminProfileModalProps> = ({
                                         style={styles.cancelButton}
                                         onPress={() => {
                                             setIsPasswordModalVisible(false);
+                                            setErrorMessagePassword('');
                                             setNewPassword(''); // Clear the input
                                         }}
                                     >
