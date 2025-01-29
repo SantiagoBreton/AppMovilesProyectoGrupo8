@@ -27,23 +27,28 @@ export default function CreacionEvento() {
     const [requestingUsers, setRequestingUsers] = useState<User[]>([]);
     const [userId, setUserId] = useState<number | null>(null);
     const [isAdminEventLoading, setIsAdminEventLoading] = useState(false);
-    
+
     const allevents = getSubscribedEvents(trigger);
     const myUserEvents = myEvents(trigger);
-    const pendingToBeAcceptedEvents = getPendingRequestedEvents(trigger);
+    const { events: pendingEvents, loading, eventsError } = getPendingRequestedEvents(userId);
+    const safePendingEvents = pendingEvents || [];
     const [selectedSubTab, setSelectedSubTab] = useState('activos');
-    
+
+    console.log("Pending Events Response:", pendingEvents);
+    //console.log('Events pending to be accepted:', pendingToBeAcceptedEvents);
+    // console.log(pendingToBeAcceptedEvents.events[0].name);
+    // console.log(pendingToBeAcceptedEvents.events[1].name);
     const eventsToDisplay =
         selectedView === 'inscriptos' ? allevents.events : myUserEvents.myEvents;
     // Filtrar eventos según el sub-tab activo
-    const filteredEvents = eventsToDisplay.filter((event) =>
+    const filteredEvents =
         selectedSubTab === 'activos'
-
-            ? new Date(event.date) >= new Date()
+            ? eventsToDisplay.filter(event => new Date(event.date) >= new Date())
             : selectedSubTab === 'finalizados'
-                ? new Date(event.date) < new Date()
-                : event.status === 'pendiente' // Nuevos filtros para solicitudes pendientes
-    );
+                ? eventsToDisplay.filter(event => new Date(event.date) < new Date())
+                : safePendingEvents || [];
+    
+    console.log("Filtered Events:", filteredEvents);
 
     useEffect(() => {
         const fetchUserId = async () => {
@@ -191,7 +196,7 @@ export default function CreacionEvento() {
                         Pendientes
                     </Text>
                 )}
-                                <Text
+                <Text
                     style={[
                         styles.subTabButton,
                         selectedSubTab === 'finalizados' && styles.subTabButtonSelected,
@@ -208,17 +213,23 @@ export default function CreacionEvento() {
                 {/* Lista de eventos activos */}
 
                 <FlatList
-                    data={filteredEvents}
-                    scrollEnabled={false}
-                    renderItem={({ item }) => (
-                        <EventCardModal
-                            event={item}
-                            handleDetailsEvent={handleDetailsEvent}
-                            handleAdministrarEvent={handleAdministrarEvent}
-                        />
-
-                    )}
-                    keyExtractor={(item) => item.id.toString()}
+    data={filteredEvents || []}
+    scrollEnabled={false}
+    renderItem={({ item }) => (
+        item ? (
+            <EventCardModal
+                event={{
+                    ...item,
+                    category: item.category || { name: "Sin categoría" } // Default if category is missing
+                }}
+                handleDetailsEvent={handleDetailsEvent}
+                handleAdministrarEvent={handleAdministrarEvent}
+            />
+        ) : (
+            <Text>Error loading event</Text>
+        )
+    )}
+    keyExtractor={(item, index) => item?.id?.toString() || index.toString()}
                     ListEmptyComponent={
                         <Text style={styles.emptyMessage}>No hay eventos disponibles</Text>
                     }
