@@ -97,14 +97,14 @@ export default function Busqueda() {
             // Fetch profile images for all users
             filteredResults.data.forEach(async (user: User) => {
                 const profileImage = await getUserProfileImage(user.id);
-                   
+
                 setUserImages((prevImages) => ({
                     ...prevImages,
                     [user.id]: profileImage.data.imageUrl, // Store only the URL from the response
                 }));
 
             });
-            
+
         } catch (error) {
             setErrorMessage('Error al buscar usuarios');
             setIsErrorModalVisible(true);
@@ -184,24 +184,28 @@ export default function Busqueda() {
             ) : (
                 <ScrollView>
                     {/* Events Section */}
-                    <Text style={styles.sectionHeader}>Eventos</Text>
-                    <FlatList
-                        data={filteredEvents}
-                        renderItem={renderEventResult}
-                        keyExtractor={(item) => item.id.toString()}
-                        ListEmptyComponent={<Text style={styles.noResultsText}>No se encontraron eventos.</Text>}
-                        scrollEnabled={false}
-                    />
+                    <View style={styles.sectionContainer}>
+                        <Text style={styles.sectionHeader}>Eventos</Text>
+                        <FlatList
+                            data={filteredEvents}
+                            renderItem={renderEventResult}
+                            keyExtractor={(item) => item.id.toString()}
+                            ListEmptyComponent={<Text style={styles.noResultsText}>No se encontraron eventos.</Text>}
+                            scrollEnabled={false}
+                        />
+                    </View>
 
                     {/* Users Section */}
-                    <Text style={styles.sectionHeader}>Usuarios</Text>
-                    <FlatList
-                        data={filteredUsers}
-                        renderItem={renderUserResult}
-                        keyExtractor={(item) => item.id.toString()}
-                        ListEmptyComponent={<Text style={styles.noResultsText}>No se encontraron usuarios.</Text>}
-                        scrollEnabled={false}
-                    />
+                    <View style={styles.sectionContainer}>
+                        <Text style={styles.sectionHeader}>Usuarios</Text>
+                        <FlatList
+                            data={filteredUsers}
+                            renderItem={renderUserResult}
+                            keyExtractor={(item) => item.id.toString()}
+                            ListEmptyComponent={<Text style={styles.noResultsText}>No se encontraron usuarios.</Text>}
+                            scrollEnabled={false}
+                        />
+                    </View>
                 </ScrollView>
             )}
 
@@ -232,12 +236,32 @@ const styles = StyleSheet.create({
         marginBottom: 10,
         textAlign: 'center',
     },
+    scrollContainer: {
+        flex: 1,
+        paddingHorizontal: 16,
+        backgroundColor: '#f9f9f9',
+    },
+
+    sectionContainer: {
+        marginBottom: 30,
+    },
+
     sectionHeader: {
-        fontSize: 20,
+        fontSize: 24,
         fontWeight: 'bold',
         color: '#FF7F50',
-        marginTop: 10,
-        marginBottom: 5,
+        marginBottom: 15,
+        backgroundColor: '#fff5f0',
+        paddingVertical: 8,
+        paddingHorizontal: 16,
+        borderRadius: 20,
+        textAlign: 'center',
+        letterSpacing: 1.5,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 6,
+        elevation: 4,
     },
     searchContainer: {
         flexDirection: 'row',

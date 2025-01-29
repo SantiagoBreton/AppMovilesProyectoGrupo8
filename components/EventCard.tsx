@@ -8,6 +8,8 @@ import { Float } from "react-native/Libraries/Types/CodegenTypes";
 import DeleteConfirmationModal from "./DeleteConfirmationModal";
 import { getCategoryBackgroundColor } from "@/constants/CategoryColor";
 import ErrorModal from "./ErrorModal";
+import { set } from "lodash";
+import LottieView from "lottie-react-native";
 
 
 interface EventCardProps {
@@ -60,6 +62,7 @@ const EventCard: React.FC<EventCardProps> = ({
     }, []);
 
     const handleUnsubscribe = async (eventId: number) => {
+        setIsLoading(true);
         try {
             const currentUserId = await AsyncStorage.getItem('userId');
             if (currentUserId) {
@@ -69,6 +72,9 @@ const EventCard: React.FC<EventCardProps> = ({
         } catch (error) {
             setErrorMessage('No se pudo cancelar la inscripción.');
             setIsErrorModalVisible(true);
+        }
+        finally {
+            
         }
 
     };
@@ -88,14 +94,14 @@ const EventCard: React.FC<EventCardProps> = ({
 
     const backgroundColor = event ? getCategoryBackgroundColor(event) : '#fef6f2';
 
-    if (isDeletingLoading) {
+    if (isDeletingLoading || isLoading) {
         return (
             <View style={styles.eventCard}>
                 <Text style= {styles.deleteText}>Eliminando evento...</Text>
             </View>
         );
     }
-
+   
     return (
         <TouchableOpacity style={[styles.eventCard, { borderColor: backgroundColor }]} >
             {event && (
@@ -381,5 +387,24 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#333',
         textAlign: 'center',
+    },
+    loadingContainer: {
+        position: 'absolute',
+        alignSelf: 'center',
+        width: '100%',
+        height: '100%',
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(255, 255, 255, 0.7)',  // Slight transparency to show loading over content
+        zIndex: 9999,  // Makes sure this layer is above other components
+    },
+    loadingText: {
+        marginTop: 10,
+        fontSize: 16,
+        color: '#333',
+    },
+    lottieAnimation: {
+        width: 120,
+        height: 120,
     },
 });

@@ -234,6 +234,17 @@ export default function CreacionEvento() {
             <ScrollView>
 
                 {/* Lista de eventos activos */}
+                { isAdminEventLoading ? (
+                <View style={styles.loadingContainer}>
+                    <LottieView
+                        source={require('../assets/laoding/loadingAn.json')} // Replace with your Lottie JSON file
+                        autoPlay
+                        loop
+                        style={styles.lottieAnimation}
+                    />
+                    <Text style={styles.loadingText}>Cargando administracion de evento...</Text>
+                </View>
+                ) : (
 
                 <FlatList
                     data={filteredEvents || []}
@@ -256,7 +267,8 @@ export default function CreacionEvento() {
                     ListEmptyComponent={
                         <Text style={styles.emptyMessage}>No hay eventos disponibles</Text>
                     }
-                />
+                />)
+            }
             </ScrollView>
 
             {/* Botón para abrir el modal de creación de evento */}

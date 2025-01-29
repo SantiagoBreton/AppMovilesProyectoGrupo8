@@ -14,6 +14,7 @@ import { StarRating } from '@/components/StarRating';
 import ConfirmationModal from './ConfirmationModal';
 import SuccessModal from './SuccesModal';
 import ErrorModal from './ErrorModal';
+import LottieView from 'lottie-react-native';
 
 interface CustomEvent {
     id: number;
@@ -128,7 +129,12 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
     if (isLoading) {
         return (
             <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#FF7F50" />
+                <LottieView
+                    source={require('../assets/laoding/loadingAn.json')} // Replace with your Lottie JSON file
+                    autoPlay
+                    loop
+                    style={styles.lottieAnimation}
+                />
                 <Text style={styles.loadingText}>Cargando...</Text>
             </View>
         );
@@ -356,6 +362,10 @@ const styles = StyleSheet.create({
         paddingHorizontal: 30,
         backgroundColor: '#FF7F50',
         borderRadius: 25,
+    },
+    lottieAnimation: {
+        width: 120,
+        height: 120,
     },
     modalActionButtonText: {
         color: '#fff',

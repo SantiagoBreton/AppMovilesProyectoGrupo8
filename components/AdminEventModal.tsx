@@ -596,7 +596,8 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
                 message={succesMessage}
                 onClose={() => {
                     if (onCloseCallback) {
-                        onCloseCallback(); // Ejecuta la función que pasaste
+                        onCloseCallback();
+                        setIsSuccessModalVisible(false) // Ejecuta la función que pasaste
                     }
                 }}
             />
