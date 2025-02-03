@@ -70,31 +70,27 @@ export default function Perfil() {
 
     useEffect(() => {
         const fetchUserData = async () => {
-
             try {
                 const storedUserId = await AsyncStorage.getItem('userId');
                 if (storedUserId) {
                     setUserId(parseInt(storedUserId, 10));
-                }
+                    const [bannerResult, profileResult] = await Promise.all([
+                        getUserBannerImage(userId || 0),
+                        getUserProfileImage(userId || 0),
+                    ]);
 
-                // Fetch both images simultaneously
-                const [bannerResult, profileResult] = await Promise.all([
-                    getUserBannerImage(userId || 0),
-                    getUserProfileImage(userId || 0),
-                ]);
-
-                // Set images if data exists
-                if (bannerResult.data) {
-                    setBannerImage(bannerResult.data.imageUrl);
-                }
-                if (profileResult.data) {
-                    setProfileImage(profileResult.data.imageUrl);
+                    if (bannerResult.data) {
+                        setBannerImage(bannerResult.data.imageUrl);
+                    }
+                    if (profileResult.data) {
+                        setProfileImage(profileResult.data.imageUrl);
+                    }
                 }
 
             } catch (error) {
                 console.error("Error fetching images:", error);
             } finally {
-                setIsLoading(false); // Stop loading when both images are set
+                setIsLoading(false);
             }
         };
 
@@ -341,14 +337,14 @@ const styles = StyleSheet.create({
     sectionTitle: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#FF7F50', // Using the same orange color from the tab
+        color: '#FF7F50',
         marginBottom: 16,
         textAlign: 'center',
     },
     label: {
         fontSize: 16,
         fontWeight: 'bold',
-        color: '#FF7F50', // Using the same orange color from the tab
+        color: '#FF7F50',
         marginBottom: 4,
     },
     input: {
