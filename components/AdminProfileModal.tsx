@@ -136,13 +136,13 @@ const AdminProfileModal: React.FC<AdminProfileModalProps> = ({
                             <View style={styles.elegantDetailsContainer}>
                                 {/* Nombre del perfil */}
                                 <View style={styles.detailBlock}>
-                                    <Text style={styles.detailLabel}>📛 Nombre:</Text>
+                                    <Text style={styles.detailLabel}>🙍 Nombre:</Text>
                                     <Text style={styles.detailValue}>{adminProfileDetails.name}</Text>
                                 </View>
 
                                 {/* Email del perfil */}
                                 <View style={styles.detailBlock}>
-                                    <Text style={styles.detailLabel}>📄 Email:</Text>
+                                    <Text style={styles.detailLabel}>📧 Email:</Text>
                                     <Text style={styles.detailValue}>{adminProfileDetails.email}</Text>
                                 </View>
                                 {/* Email del perfil */}
@@ -178,7 +178,7 @@ const AdminProfileModal: React.FC<AdminProfileModalProps> = ({
                                     onPress={() => setIsImageUploader(true)}
                                 >
                                     <View style={styles.cardIconContainer}>
-                                        <Text style={styles.cardIcon}>📝</Text>
+                                        <Text style={styles.cardIcon}>📷</Text>
                                     </View>
                                     <Text style={styles.cardTitle}>Cambiar foto de Perfil</Text>
                                 </Pressable>
@@ -192,7 +192,7 @@ const AdminProfileModal: React.FC<AdminProfileModalProps> = ({
                                     onPress={() => setIsPasswordModalVisible(true)}
                                 >
                                     <View style={styles.cardIconContainer}>
-                                        <Text style={styles.cardIcon}>📝</Text>
+                                        <Text style={styles.cardIcon}>🔒</Text>
                                     </View>
                                     <Text style={styles.cardTitle}>Cambiar Contraseña</Text>
                                 </Pressable>
