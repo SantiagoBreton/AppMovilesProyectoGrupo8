@@ -8,9 +8,6 @@ import { Float } from "react-native/Libraries/Types/CodegenTypes";
 import DeleteConfirmationModal from "./DeleteConfirmationModal";
 import { getCategoryBackgroundColor } from "@/constants/CategoryColor";
 import ErrorModal from "./ErrorModal";
-import { set } from "lodash";
-import LottieView from "lottie-react-native";
-
 
 interface EventCardProps {
     event: EventWithId | null;
@@ -73,10 +70,6 @@ const EventCard: React.FC<EventCardProps> = ({
             setErrorMessage('No se pudo cancelar la inscripción.');
             setIsErrorModalVisible(true);
         }
-        finally {
-            
-        }
-
     };
 
     const handleDeleteEvent = async (eventId: number) => {

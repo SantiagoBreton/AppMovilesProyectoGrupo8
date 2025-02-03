@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, View, Text, TouchableOpacity, TouchableWithoutFeedback, StyleSheet, Image, ActivityIndicator } from 'react-native';
+import { Modal, View, Text, TouchableOpacity, TouchableWithoutFeedback, StyleSheet, Image} from 'react-native';
 import MapView, { Circle, Marker } from 'react-native-maps';
 import { Float } from 'react-native/Libraries/Types/CodegenTypes';
 import { subscribeToEvent } from '@/apiCalls/subscribeToAnEvent';
@@ -71,7 +71,7 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
             try {
                 const storedUserId = await AsyncStorage.getItem('userId');
                 if (storedUserId) {
-                    setUserId(parseInt(storedUserId, 10)); // Convierte el ID de string a número
+                    setUserId(parseInt(storedUserId, 10));
                 }
             } catch (error) {
                 console.error('Error fetching userId:', error);
@@ -146,10 +146,8 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
 
     const handleSubscribe = async (eventId: number) => {
         try {
-
             await subscribeToEvent(eventId);
             setIsSuccessVisible(true);
-            //onClose();
             refreshEvents();
         } catch (error: any) {
             setErrorMessage(error.response.data.message);
@@ -270,7 +268,6 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
                         >
                             <Marker
                                 pinColor={getCategoryBackgroundColor(eventDetails)}
-
                                 coordinate={{
                                     latitude: eventDetails.latitude,
                                     longitude: eventDetails.longitude
@@ -279,14 +276,12 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
                                 <Image
                                     source={getCategoryImage(eventDetails.category.name)}
                                     style={styles.markerImage}
-
-
                                 />
                             </Marker>
                             <Circle
                                 center={{
-                                    latitude: (eventDetails?.latitude ?? 0), // Offset latitude
-                                    longitude: (eventDetails?.longitude ?? 0), // Offset longitude
+                                    latitude: (eventDetails?.latitude ?? 0),
+                                    longitude: (eventDetails?.longitude ?? 0),
                                 }}
                                 radius={500}
                                 strokeColor="rgba(0, 255, 0, 0.5)"
@@ -319,7 +314,7 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
             <SuccessModal
                 visible={isSuccessVisible}
                 message="Se ha enviado la solicitud con éxito!"
-                onClose={() => { setIsSuccessVisible(false); onClose() }}
+                onClose={() => { setIsSuccessVisible(false); onClose(); setIsConfirmationVisible(false); }}
             />
             <ErrorModal
                 visible={isErrorModalVisible}
@@ -336,7 +331,7 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)', // Fondo semi-transparente
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
     },
     modalContent: {
         width: '80%',
@@ -372,7 +367,7 @@ const styles = StyleSheet.create({
         color: '#333',
     },
     modalActionButton: {
-        marginTop: 10, // Reducido el espacio
+        marginTop: 10,
         alignSelf: 'center',
         paddingVertical: 12,
         paddingHorizontal: 30,
@@ -390,17 +385,17 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     largeButton: {
-        paddingVertical: 20, // Botón más grande
-        width: '100%', // Ocupa todo el ancho del contenedor
+        paddingVertical: 20,
+        width: '100%', 
     },
     buttonRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginTop: 10, // Reducido el espacio
+        marginTop: 10,
     },
     subscribeButton: {
         flex: 1,
-        marginRight: 10, // Separación entre botones
+        marginRight: 10,
         backgroundColor: 'green',
         borderRadius: 25,
     },
@@ -420,7 +415,7 @@ const styles = StyleSheet.create({
     },
     separatedButton: {
         flex: 1,
-        marginLeft: 10, // Separación entre botones
+        marginLeft: 10,
         borderRadius: 25,
     },
     mapModalContainer: {
@@ -455,23 +450,23 @@ const styles = StyleSheet.create({
         height: '100%',
     },
     userCard: {
-        flexDirection: 'row', // Align image and info in a row
+        flexDirection: 'row',
         alignItems: 'center',
         marginBottom: 15,
         borderRadius: 8,
         backgroundColor: '#f8f8f8',
         padding: 10,
-        elevation: 2, // Add a slight shadow
+        elevation: 2,
     },
     userInfo: {
-        flexDirection: 'column', // Align name and button vertically
-        flex: 1, // Take up available space next to the image
+        flexDirection: 'column',
+        flex: 1, 
     },
     userName: {
         fontSize: 18,
         color: '#333',
-        marginBottom: 5, // Space between name and button
-        maxWidth: '59%', // Limit the width of the name
+        marginBottom: 5,
+        maxWidth: '59%',
     },
     profilePicture: {
         width: 50,
@@ -496,8 +491,8 @@ const styles = StyleSheet.create({
         height: '100%',
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'rgba(255, 255, 255, 0.7)',  // Slight transparency to show loading over content
-        zIndex: 9999,  // Makes sure this layer is above other components
+        backgroundColor: 'rgba(255, 255, 255, 0.7)',
+        zIndex: 9999, 
     },
     loadingText: {
         marginTop: 10,
