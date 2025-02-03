@@ -148,8 +148,8 @@ export default function Index() {
                 pinColor={getCategoryBackgroundColor(event)}
 
                 coordinate={{
-                  latitude: event.latitude + event.latitudeOffset,
-                  longitude: event.longitude + event.longitudeOffset
+                  latitude: event.latitude ,
+                  longitude: event.longitude 
                 }}
                 onPress={() => handleMarkerPress(event)}
               >
@@ -164,8 +164,8 @@ export default function Index() {
               <Circle
                 key={`circle-${event.id}`}
                 center={{
-                  latitude: event.latitude + event.latitudeOffset,
-                  longitude: event.longitude + event.longitudeOffset
+                  latitude: event.latitude ,
+                  longitude: event.longitude 
                 }}
                 radius={500}
                 strokeColor={`${getCategoryBackgroundColor(event)}80`} // Borde con opacidad

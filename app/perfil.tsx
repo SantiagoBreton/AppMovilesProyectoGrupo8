@@ -156,135 +156,136 @@ export default function Perfil() {
     }
 
     return (
-        <ScrollView style={styles.container}>
-
-            <View style={styles.bannerContainer}>
-                <ImageBackground
-                    source={{ uri: bannerImage || 'https://www.gravatar.com/avatar/2c7d99fe281ecd3bcd65ab915bac6dd5?s=250' }}
-                    style={styles.banner}
-                />
-                <View style={styles.profileContainer}>
-                    <Image
-                        source={{ uri: profileImage || 'https://www.gravatar.com/avatar/2c7d99fe281ecd3bcd65ab915bac6dd5?s=250' }}
-                        style={styles.profileImage}
+        <ScrollView>
+            <View style={styles.container}>
+                <View style={styles.bannerContainer}>
+                    <ImageBackground
+                        source={{ uri: bannerImage || 'https://www.gravatar.com/avatar/2c7d99fe281ecd3bcd65ab915bac6dd5?s=250' }}
+                        style={styles.banner}
                     />
-                </View>
-            </View>
-
-            <View style={styles.userName}>
-                <Text style={styles.name}>{user?.name}</Text>
-            </View>
-
-            <TouchableOpacity onPress={() => setIsReviewModalVisible(true)}>
-                <View style={styles.starContainer}>
-                    <Text style={styles.text}>Valoración:  </Text>
-                    <StarRating rating={user?.rating || 0} size={24} />
-                    <Text style={styles.text}>{`(${isNaN(user?.rating || 0) ? 0 : (user?.rating || 0).toFixed(1)})`}</Text>
-                </View>
-            </TouchableOpacity>
-
-            <View style={styles.section}>
-                <Text style={styles.label}>Nombre:</Text>
-                <Text style={styles.input}>{user?.name}</Text>
-            </View>
-            <View style={styles.section}>
-                <Text style={styles.label}>Email:</Text>
-                <Text style={styles.input}>{user?.email}</Text>
-            </View>
-            <View style={styles.section}>
-                <Text style={styles.label}>Descripción:</Text>
-                <Text style={styles.input}>{user?.description}</Text>
-            </View>
-
-            <View style={styles.buttonContainer}>
-                <TouchableOpacity
-                    style={styles.closeSessionButton}
-                    onPress={() => handleLogout()}
-                >
-                    <Text style={styles.closeSessionButtonText}>Cerrar Sesión</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                    style={styles.editProfileButton}
-                    onPress={() => handleEditarPerfil()}
-                >
-                    <Text style={styles.editProfileButtonText}>Editar Perfil</Text>
-                </TouchableOpacity>
-            </View>
-
-            <View style={styles.section}>
-
-                <Text style={styles.sectionTitle}>Eventos Creados</Text>
-                <TextInput
-                    style={styles.searchBar}
-                    placeholder="Buscar eventos por nombre"
-                    value={searchQuery}
-                    onChangeText={setSearchQuery}
-                />
-                <TouchableOpacity
-                    style={styles.filterButton}
-                    onPress={() => setIsCategoryModalVisible(true)}
-                >
-                    <Text style={styles.filterButtonText}>Categoría: {selectedCategory}</Text>
-                </TouchableOpacity>
-
-                {filteredEvents.length > 0 ? (
-                    <FlatList
-                        data={filteredEvents}
-                        scrollEnabled={false}
-                        renderItem={({ item }) => (
-                            <EventCard2 event={item} />
-                        )}
-                        keyExtractor={(item) => item.id.toString()}
-                        ListFooterComponent={
-                            <Text style={styles.footerText}>
-                                {`Total de eventos: ${filteredEvents.length}`}
-                            </Text>
-                        }
-                    />
-                ) : (
-                    <Text style={styles.noEventsText}>No se han creado eventos aún.</Text>
-                )}
-
-                <Modal
-                    visible={isCategoryModalVisible}
-                    animationType="slide"
-                    transparent={true}
-                    onRequestClose={() => setIsCategoryModalVisible(false)}
-                >
-                    <View style={styles.modalContainer}>
-                        <View style={styles.modalContent}>
-                            <Text style={styles.modalTitle}>Seleccionar Categoría</Text>
-                            {categories.map((category) => (
-                                <TouchableOpacity
-                                    key={category}
-                                    style={styles.modalOption}
-                                    onPress={() => handleCategorySelection(category)}
-                                >
-                                    <Text style={styles.modalOptionText}>{category}</Text>
-                                </TouchableOpacity>
-                            ))}
-                            <Pressable
-                                style={styles.closeButton}
-                                onPress={() => setIsCategoryModalVisible(false)}
-                            >
-                                <Text style={styles.closeButtonText}>Cerrar</Text>
-                            </Pressable>
-                        </View>
+                    <View style={styles.profileContainer}>
+                        <Image
+                            source={{ uri: profileImage || 'https://www.gravatar.com/avatar/2c7d99fe281ecd3bcd65ab915bac6dd5?s=250' }}
+                            style={styles.profileImage}
+                        />
                     </View>
-                </Modal>
-            </View>
-            <AdminProfileModal
-                isVisible={isAdminModalVisible}
-                adminProfileDetails={user?.id ? { id: user.id, name: user.name, email: user.email, description: user.description } : null}
-                onClose={() => setIsAdminModalVisible(false)} />
+                </View>
 
-            <ReviewModal
-                isVisible={isReviewModalVisible}
-                user={user}
-                refreshData={refreshUserRatings}
-                onClose={() => { setIsReviewModalVisible(false); refreshUserRatings(); }}
-            />
+                <View style={styles.userName}>
+                    <Text style={styles.name}>{user?.name}</Text>
+                </View>
+
+                <TouchableOpacity onPress={() => setIsReviewModalVisible(true)}>
+                    <View style={styles.starContainer}>
+                        <Text style={styles.text}>Valoración:  </Text>
+                        <StarRating rating={user?.rating || 0} size={24} />
+                        <Text style={styles.text}>{`(${isNaN(user?.rating || 0) ? 0 : (user?.rating || 0).toFixed(1)})`}</Text>
+                    </View>
+                </TouchableOpacity>
+
+                <View style={styles.section}>
+                    <Text style={styles.label}>Nombre:</Text>
+                    <Text style={styles.input}>{user?.name}</Text>
+                </View>
+                <View style={styles.section}>
+                    <Text style={styles.label}>Email:</Text>
+                    <Text style={styles.input}>{user?.email}</Text>
+                </View>
+                <View style={styles.section}>
+                    <Text style={styles.label}>Descripción:</Text>
+                    <Text style={styles.input}>{user?.description}</Text>
+                </View>
+
+                <View style={styles.buttonContainer}>
+                    <TouchableOpacity
+                        style={styles.closeSessionButton}
+                        onPress={() => handleLogout()}
+                    >
+                        <Text style={styles.closeSessionButtonText}>Cerrar Sesión</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        style={styles.editProfileButton}
+                        onPress={() => handleEditarPerfil()}
+                    >
+                        <Text style={styles.editProfileButtonText}>Editar Perfil</Text>
+                    </TouchableOpacity>
+                </View>
+
+                <View style={styles.section}>
+
+                    <Text style={styles.sectionTitle}>Eventos Creados</Text>
+                    <TextInput
+                        style={styles.searchBar}
+                        placeholder="Buscar eventos por nombre"
+                        value={searchQuery}
+                        onChangeText={setSearchQuery}
+                    />
+                    <TouchableOpacity
+                        style={styles.filterButton}
+                        onPress={() => setIsCategoryModalVisible(true)}
+                    >
+                        <Text style={styles.filterButtonText}>Categoría: {selectedCategory}</Text>
+                    </TouchableOpacity>
+
+                    {filteredEvents.length > 0 ? (
+                        <FlatList
+                            data={filteredEvents}
+                            scrollEnabled={false}
+                            renderItem={({ item }) => (
+                                <EventCard2 event={item} />
+                            )}
+                            keyExtractor={(item) => item.id.toString()}
+                            ListFooterComponent={
+                                <Text style={styles.footerText}>
+                                    {`Total de eventos: ${filteredEvents.length}`}
+                                </Text>
+                            }
+                        />
+                    ) : (
+                        <Text style={styles.noEventsText}>No se han creado eventos aún.</Text>
+                    )}
+
+                    <Modal
+                        visible={isCategoryModalVisible}
+                        animationType="slide"
+                        transparent={true}
+                        onRequestClose={() => setIsCategoryModalVisible(false)}
+                    >
+                        <View style={styles.modalContainer}>
+                            <View style={styles.modalContent}>
+                                <Text style={styles.modalTitle}>Seleccionar Categoría</Text>
+                                {categories.map((category) => (
+                                    <TouchableOpacity
+                                        key={category}
+                                        style={styles.modalOption}
+                                        onPress={() => handleCategorySelection(category)}
+                                    >
+                                        <Text style={styles.modalOptionText}>{category}</Text>
+                                    </TouchableOpacity>
+                                ))}
+                                <Pressable
+                                    style={styles.closeButton}
+                                    onPress={() => setIsCategoryModalVisible(false)}
+                                >
+                                    <Text style={styles.closeButtonText}>Cerrar</Text>
+                                </Pressable>
+                            </View>
+                        </View>
+                    </Modal>
+                </View>
+                <AdminProfileModal
+                    isVisible={isAdminModalVisible}
+                    adminProfileDetails={user?.id ? { id: user.id, name: user.name, email: user.email, description: user.description } : null}
+                    onClose={() => setIsAdminModalVisible(false)} />
+
+                <ReviewModal
+                    isVisible={isReviewModalVisible}
+                    user={user}
+                    refreshData={refreshUserRatings}
+                    onClose={() => { setIsReviewModalVisible(false); refreshUserRatings(); }}
+                />
+            </View>
         </ScrollView>
     );
 }
@@ -294,11 +295,11 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#F4F4F4',
         paddingHorizontal: 16,
-        paddingVertical: 10,
+        paddingVertical: 35,
     },
     bannerContainer: {
         alignItems: 'center',
-        marginTop: 10,
+        marginTop: 0,
     },
     banner: {
         width: '100%',

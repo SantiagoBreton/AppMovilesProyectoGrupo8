@@ -138,16 +138,21 @@ const EventCreationModal: React.FC<EventCreationModalProps> = ({
         setLatitude(latitude);
         setLongitude(longitude);
         setUbicacion(`${latitude},${longitude}`);
-        const addresses = await Location.reverseGeocodeAsync({
-            latitude: latitude,
-            longitude: longitude,
-        });
-
-        const location =
-            addresses.length > 0
-                ? `${addresses[0].city}, ${addresses[0].region}, ${addresses[0].country}`
-                : 'Address not found';
-        setEventAssLocation(location);
+        try {
+            const addresses = await Location.reverseGeocodeAsync({
+                latitude: latitude,
+                longitude: longitude,
+            });
+    
+            const location =
+                addresses.length > 0
+                    ? `${addresses[0].city}, ${addresses[0].region}, ${addresses[0].country}`
+                    : 'Address not found';
+            setEventAssLocation(location);
+        } catch (error) {
+            setEventAssLocation('Address not found');
+        }
+       
     };
 
     const confirmLocationSelection = () => {

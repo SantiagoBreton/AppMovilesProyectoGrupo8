@@ -133,10 +133,10 @@ const EventCard: React.FC<EventCardProps> = ({
                         {userId !== null && event.userId === userId && isEventOngoing && (
                             <>
                                 <TouchableOpacity
-                                    style={styles.adminButton}
+                                    style={styles.detailsButton}
                                     onPress={() => handleAdministrarEvent(event)}
                                 >
-                                    <Text style={styles.adminButtonText}>Administrar</Text>
+                                    <Text style={styles.detailsButtonText}>Administrar</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity
                                     style={styles.deleteButton}
@@ -342,7 +342,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     deleteButton: {
-        backgroundColor: '#dc2626',
+        backgroundColor: '#FF4E50',
         paddingVertical: 12,
         paddingHorizontal: 20,
         borderRadius: 10,
@@ -370,7 +370,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     unsubscribeButton: {
-        backgroundColor: '#f97316',
+        backgroundColor: '#FF4E50', 
         paddingVertical: 12,
         paddingHorizontal: 20,
         borderRadius: 10,

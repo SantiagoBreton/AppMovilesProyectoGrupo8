@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Modal, View, Text, TouchableOpacity, TouchableWithoutFeedback, StyleSheet, Image, ActivityIndicator } from 'react-native';
-import MapView, { Circle } from 'react-native-maps';
+import MapView, { Circle, Marker } from 'react-native-maps';
 import { Float } from 'react-native/Libraries/Types/CodegenTypes';
 import { subscribeToEvent } from '@/apiCalls/subscribeToAnEvent';
 import { useEventContext } from '@/context/eventContext';
@@ -15,6 +15,7 @@ import ConfirmationModal from './ConfirmationModal';
 import SuccessModal from './SuccesModal';
 import ErrorModal from './ErrorModal';
 import LottieView from 'lottie-react-native';
+import { getCategoryBackgroundColor, getCategoryImage } from '@/constants/CategoryColor';
 
 interface CustomEvent {
     id: number;
@@ -261,16 +262,31 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
                         <MapView
                             style={styles.map}
                             initialRegion={{
-                                latitude: (eventDetails?.latitude ?? 0) + 0.004, // Offset latitude
-                                longitude: (eventDetails?.longitude ?? 0) + 0.004, // Offset longitude
+                                latitude: (eventDetails?.latitude ?? 0), // Offset latitude
+                                longitude: (eventDetails?.longitude ?? 0),// Offset longitude
                                 latitudeDelta: 0.015,
                                 longitudeDelta: 0.015,
                             }}
                         >
+                            <Marker
+                                pinColor={getCategoryBackgroundColor(eventDetails)}
+
+                                coordinate={{
+                                    latitude: eventDetails.latitude,
+                                    longitude: eventDetails.longitude
+                                }}
+                            >
+                                <Image
+                                    source={getCategoryImage(eventDetails.category.name)}
+                                    style={styles.markerImage}
+
+
+                                />
+                            </Marker>
                             <Circle
                                 center={{
-                                    latitude: (eventDetails?.latitude ?? 0) + 0.001, // Offset latitude
-                                    longitude: (eventDetails?.longitude ?? 0) + 0.001, // Offset longitude
+                                    latitude: (eventDetails?.latitude ?? 0), // Offset latitude
+                                    longitude: (eventDetails?.longitude ?? 0), // Offset longitude
                                 }}
                                 radius={500}
                                 strokeColor="rgba(0, 255, 0, 0.5)"
@@ -296,14 +312,14 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
             <ConfirmationModal
                 visible={isConfirmationVisible}
                 title="Confirmar"
-                message="¿Estás seguro de que deseas suscribirte a este evento?"
+                message="¿Estás seguro de que deseas ir a este evento?"
                 onConfirm={() => handleSubscribe(eventDetails.id)}
                 onCancel={() => setIsConfirmationVisible(false)}
             />
             <SuccessModal
                 visible={isSuccessVisible}
-                message="Te has suscrito al evento con éxito!"
-                onClose={() => {setIsSuccessVisible(false);onClose()}}
+                message="Se ha enviado la solicitud con éxito!"
+                onClose={() => { setIsSuccessVisible(false); onClose() }}
             />
             <ErrorModal
                 visible={isErrorModalVisible}
@@ -488,6 +504,10 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#333',
     },
+    markerImage: {
+        width: 50,
+        height: 50,
+      },
 });
 
 export default EventDetailModal;
