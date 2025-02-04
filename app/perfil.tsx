@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {
-    View, Text, TextInput, StyleSheet, Image, ScrollView, FlatList,TouchableOpacity,ImageBackground,Modal,Pressable} from 'react-native';
+import { View, Text, TextInput, StyleSheet, Image, ScrollView, FlatList,TouchableOpacity,ImageBackground,Modal,Pressable} from 'react-native';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { myEvents } from '@/apiCalls/myEvents';
 import { useEventContext } from '@/context/eventContext';

@@ -4,10 +4,11 @@ import { createNewUser } from '@/apiCalls/createNewUser';
 import { loginUser } from '@/apiCalls/loginUser';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuthContext } from '@/context/userLoginContext';
+import LottieView from 'lottie-react-native';
+import { set } from 'lodash';
 
 export default function InicioPerfil() {
   const [isLogin, setIsLogin] = useState(true);
-
   const [password, setPassword] = useState('');
   const [userName, setUsername] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
@@ -16,21 +17,25 @@ export default function InicioPerfil() {
   const emailAnimation = useState(new Animated.Value(1))[0];
   const passwordAnimation = useState(new Animated.Value(1))[0];
   const confirmPasswordAnimation = useState(new Animated.Value(1))[0];
+  const [isLoading, setIsLoading] = useState(false);
 
   const createUser = async () => {
     const email = emailNoLowerCase.toLowerCase();
-  
+
     const user = { email, password, name: userName, rating: 0 };
     if (validateUser(user)) {
+      setIsLoading(true);
       try {
         const res = await createNewUser(user);
 
         if (res) {
+          setIsLoading(false);
           login();
         } else {
           setErrorMessage('Error al crear el usuario, por favor inténtalo de nuevo.');
         }
       } catch (error) {
+        setIsLoading(false);
         setErrorMessage('Error al crear el usuario, por favor inténtalo de nuevo.');
       }
     }
@@ -111,6 +116,20 @@ export default function InicioPerfil() {
       }).start();
     });
   };
+
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <LottieView
+          source={require('../assets/laoding/loadingAn.json')}
+          autoPlay
+          loop
+          style={styles.lottieAnimation}
+        />
+        <Text style={styles.loadingText}>Creando nuevo usuario...</Text>
+      </View>
+    );
+  }
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -216,4 +235,19 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 10,
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: '#333',
+  },
+  lottieAnimation: {
+    width: 120,
+    height: 120,
+  }
 });

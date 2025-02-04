@@ -80,7 +80,6 @@ export default function Index() {
     );
   }
 
-
   const handleProximityChange = debounce((value: number) => {
     setProximityFilter(value);
     refreshEvents();
@@ -93,7 +92,6 @@ export default function Index() {
     setSelectedCategory(null);
     setFilteredEvents(events);
     setFilterModalVisible(false);
-
   };
 
   const handleDateChange = (event: any, date?: Date) => {
@@ -168,7 +166,7 @@ export default function Index() {
                   longitude: event.longitude 
                 }}
                 radius={500}
-                strokeColor={`${getCategoryBackgroundColor(event)}80`} // Borde con opacidad
+                strokeColor={`${getCategoryBackgroundColor(event)}80`}
                 fillColor={`${getCategoryBackgroundColor(event)}60`}
                 strokeWidth={2}
               />
