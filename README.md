@@ -130,8 +130,3 @@ appmovilproyecto/
 └── README.md           # Documentación del proyecto
 ```
 
-
-
-## Contacto
-Para dudas o sugerencias, contáctame en [tu-email@example.com] o abre un issue en el repositorio.
-
