@@ -103,10 +103,14 @@ Asegúrate de tener instalado:
   npm run web
   ```
 
-Configuración de Variables de Entorno
-Crea un archivo .env en la raíz del proyecto y agrega las siguientes variables:
+3. Configuración de Variables de Entorno
+   Crea un archivo .env en la raíz del proyecto y agrega las siguientes variables:
+   ```bash
+   
 
-EXPO_PUBLIC_SERVER_IP = Tu ip
+   EXPO_PUBLIC_SERVER_IP = Tu ip
+
+   ```
 
 
 ## Scripts Disponibles
