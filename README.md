@@ -103,6 +103,12 @@ Asegúrate de tener instalado:
   npm run web
   ```
 
+Configuración de Variables de Entorno
+Crea un archivo .env en la raíz del proyecto y agrega las siguientes variables:
+
+EXPO_PUBLIC_SERVER_IP = Tu ip
+
+
 ## Scripts Disponibles
 
 - `npm start`: Inicia el servidor de desarrollo de Expo.
