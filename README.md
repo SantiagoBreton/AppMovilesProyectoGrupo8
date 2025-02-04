@@ -31,9 +31,59 @@ Asegúrate de tener instalado:
    cd appmovilproyecto
    ```
 2. Instala las dependencias:
+ 📦 Dependencias principales
    ```bash
-   npm install
+   npm install @expo/vector-icons
+   npm install @prisma/client
+   npm install @react-native-async-storage/async-storage
+   npm install @react-native-community/datetimepicker
+   npm install @types/react-native-dotenv
+   npm install axios
+   npm install expo
+   npm install expo-constants
+   npm install expo-file-system
+   npm install expo-font
+   npm install expo-image-picker
+   npm install expo-linking
+   npm install expo-location
+   npm install expo-router
+   npm install expo-splash-screen
+   npm install expo-status-bar
+   npm install expo-system-ui
+   npm install expo-web-browser
+   npm install lottie-react-native
+   npm install react
+   npm install react-dom
+   npm install react-native
+   npm install react-native-dotenv
+   npm install react-native-elements
+   npm install react-native-gesture-handler
+   npm install react-native-image-picker
+   npm install react-native-linear-gradient
+   npm install react-native-maps
+   npm install react-native-paper
+   npm install react-native-reanimated
+   npm install react-native-safe-area-context
+   npm install react-native-screens
+   npm install react-native-svg
+   npm install react-native-web
    ```
+
+   🛠 Dependencias de desarrollo
+   ```bash
+   npm install --save-dev @babel/core
+   npm install --save-dev @types/jest
+   npm install --save-dev @types/lodash
+   npm install --save-dev @types/react
+   npm install --save-dev @types/react-native-maps
+   npm install --save-dev @types/react-test-renderer
+   npm install --save-dev jest
+   npm install --save-dev jest-expo
+   npm install --save-dev prisma
+   npm install --save-dev react-test-renderer
+   npm install --save-dev typescript
+   ```
+   
 
 ### Ejecución
 - Para iniciar el proyecto en modo desarrollo:
