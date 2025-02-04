@@ -149,6 +149,9 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
                 onChangeText={setComments}
                 multiline
               />
+              {userRatings.length == 0 && (
+                <Text style={styles.noEventsText}>Este usuario no ha sifo calificado aún.</Text>
+              )}
               <FlatList
                 data={userRatings}
                 renderItem={renderComment}
@@ -162,6 +165,9 @@ const ReviewModal: React.FC<ReviewModalProps> = ({
           ) : (
             <>
               <Text style={styles.modalTitle}>Comentarios recibidos</Text>
+              {userRatings.length == 0 && (
+                <Text style={styles.noEventsText}>Este usuario no ha sifo calificado aún.</Text>
+              )}
               <FlatList
                 data={userRatings}
                 renderItem={renderComment}
@@ -318,6 +324,12 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
     marginTop: 10,
+  },
+  noEventsText: {
+    textAlign: 'center',
+    fontSize: 16,
+    color: '#999',
+    marginTop: 16,
   },
 });
 

@@ -58,7 +58,6 @@ const SpectatedUserModal: React.FC<SpectatedUserModalProps> = ({
     const [filteredEvents, setFilteredEvents] = useState(userEvents);
     const [isLoading, setIsLoading] = useState(true);
     const [isRevieModalVisible, setIsReviewModalVisible] = useState(false);
-    
     const [userRating, setUserRating] = useState<Rating[]>([]);
     const [profileImage, setProfileImage] = useState<string | null>(null);
     const [bannerImage, setBannerImage] = useState<string | null>(null);
