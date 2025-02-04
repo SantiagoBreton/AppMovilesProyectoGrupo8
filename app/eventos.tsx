@@ -14,7 +14,6 @@ import EventCardModal from '@/components/EventCard';
 import { getAllRequestingUsersToAnEvent } from '@/apiCalls/getAllRequestingUsersToAnEvent';
 import { getPendingRequestedEvents } from '@/apiCalls/getPendingRequestedEvents';
 import ErrorModal from '@/components/ErrorModal';
-import { set } from 'lodash';
 import LottieView from 'lottie-react-native';
 
 
@@ -160,7 +159,7 @@ export default function CreacionEvento() {
         return (
             <View style={styles.loadingContainer}>
                 <LottieView
-                    source={require('../assets/laoding/loadingAn.json')} // Replace with your Lottie JSON file
+                    source={require('../assets/laoding/loadingAn.json')} 
                     autoPlay
                     loop
                     style={styles.lottieAnimation}
@@ -237,7 +236,7 @@ export default function CreacionEvento() {
                 { isAdminEventLoading ? (
                 <View style={styles.loadingContainer}>
                     <LottieView
-                        source={require('../assets/laoding/loadingAn.json')} // Replace with your Lottie JSON file
+                        source={require('../assets/laoding/loadingAn.json')} 
                         autoPlay
                         loop
                         style={styles.lottieAnimation}

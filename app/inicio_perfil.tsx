@@ -7,17 +7,19 @@ import { useAuthContext } from '@/context/userLoginContext';
 
 export default function InicioPerfil() {
   const [isLogin, setIsLogin] = useState(true);
-  const [email, setEmail] = useState('');
+
   const [password, setPassword] = useState('');
   const [userName, setUsername] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [emailNoLowerCase, setEmailNoLowerCase] = useState('');
   const { login } = useAuthContext();
-
   const emailAnimation = useState(new Animated.Value(1))[0];
   const passwordAnimation = useState(new Animated.Value(1))[0];
   const confirmPasswordAnimation = useState(new Animated.Value(1))[0];
-  
+
   const createUser = async () => {
+    const email = emailNoLowerCase.toLowerCase();
+  
     const user = { email, password, name: userName, rating: 0 };
     if (validateUser(user)) {
       try {
@@ -55,6 +57,7 @@ export default function InicioPerfil() {
   };
 
   const loginNewUser = async () => {
+    const email = emailNoLowerCase.toLowerCase();
     const user = { email, password, name: "" };
 
     try {
@@ -121,8 +124,8 @@ export default function InicioPerfil() {
           <TextInput
             style={styles.input}
             placeholder="Correo Electrónico"
-            value={email}
-            onChangeText={setEmail}
+            value={emailNoLowerCase}
+            onChangeText={setEmailNoLowerCase}
             keyboardType="email-address"
             autoCapitalize="none"
             placeholderTextColor="#A9A9A9"

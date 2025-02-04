@@ -5,7 +5,6 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { unsubscribeUserFromAnEvent } from '@/apiCalls/unsubscribeUserFromEvent';
 import { useEventContext } from '@/context/eventContext';
 import { updateEvent } from '@/apiCalls/updateEvent';
-import DeleteConfirmationModal from './DeleteConfirmationModal';
 import { confirmSubscriptionToAnEvent } from '@/apiCalls/confirmSubscriptionToAnEvent';
 import { denySubscriptionToAnEvent } from '@/apiCalls/denySubscriptionToAnEvent';
 import { getUserProfileImage } from '@/apiCalls/getUserProfileImage';
@@ -14,7 +13,8 @@ import SpectatedUserModal from './SpectatedUserModal';
 import ConfirmationModal from './ConfirmationModal';
 import SuccessModal from './SuccesModal';
 import ErrorModal from './ErrorModal';
-import { set } from 'lodash';
+import { update } from 'lodash';
+
 
 interface EventWithId {
     id: number;
@@ -83,29 +83,36 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
 
 
     useEffect(() => {
+
+        
         setUpdatedSubscribedUsers(subscribedUsers);
         setUpdatedRequestingUsers(requestingUsers);
+    }, [subscribedUsers, requestingUsers]); 
+    
+    useEffect(() => {
+    
         updatedRequestingUsers.forEach(async (user: User) => {
+            
             const profileImage = await getUserProfileImage(user.id);
                
             setUserImages((prevImages) => ({
                 ...prevImages,
-                [user.id]: profileImage.data.imageUrl, // Store only the URL from the response
+                [user.id]: profileImage.data.imageUrl, 
             }));
-
         });
+    
         updatedSubscribedUsers.forEach(async (user: User) => {
             const profileImage = await getUserProfileImage(user.id);
            
             setUserImages((prevImages) => ({
                 ...prevImages,
-                [user.id]: profileImage.data.imageUrl, // Store only the URL from the response
+                [user.id]: profileImage.data.imageUrl, 
             }));
-
+            console.log(userImages);
         });
-
-
-    }, [subscribedUsers, requestingUsers]);
+    
+    }, [updatedRequestingUsers, updatedSubscribedUsers]); 
+    
 
     const handleDateChange = (event: any, date?: Date) => {
         setDatePickerVisible(false);
@@ -586,7 +593,7 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
                 message={confirmationMessage}
                 onConfirm={() => {
                     if (onConfirmCallback) {
-                        onConfirmCallback(); // Ejecuta la función que pasaste
+                        onConfirmCallback();
                     }; setIsConfirmationModalVisible(false);
                 }}
                 onCancel={() => setIsConfirmationModalVisible(false)}
@@ -597,7 +604,7 @@ const AdminEventModal: React.FC<AdminEventModalProps> = ({
                 onClose={() => {
                     if (onCloseCallback) {
                         onCloseCallback();
-                        setIsSuccessModalVisible(false) // Ejecuta la función que pasaste
+                        setIsSuccessModalVisible(false) 
                     }
                 }}
             />

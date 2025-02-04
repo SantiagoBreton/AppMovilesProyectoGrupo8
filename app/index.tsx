@@ -70,7 +70,7 @@ export default function Index() {
     return (
       <View style={styles.loadingContainer}>
         <LottieView
-          source={require('../assets/laoding/loadingAn.json')} // Replace with your Lottie JSON file
+          source={require('../assets/laoding/loadingAn.json')} 
           autoPlay
           loop
           style={styles.lottieAnimation}
