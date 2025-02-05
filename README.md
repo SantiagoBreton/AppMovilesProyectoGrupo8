@@ -67,6 +67,8 @@ Asegúrate de tener instalado:
    npm install react-native-screens
    npm install react-native-svg
    npm install react-native-web
+   npm install @react-native-community/datetimepicker
+
    ```
 
    🛠 Dependencias de desarrollo
